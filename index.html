@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoBudget AI — Orçamento Inteligente de Reparos Veiculares</title>
+  <meta name="description" content="Agente de IA para vistoria de avarias por foto, diagnóstico de veículos e cotação de mercado para peças novas e usadas (Mercado Livre)."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    :root {
+      --fh: 'Outfit', sans-serif;
+      --fb: 'Plus Jakarta Sans', sans-serif;
+      --bg: #06080f;
+      --card: rgba(14, 20, 34, 0.9);
+      --border: rgba(245, 158, 11, 0.2);
+      --border-hi: rgba(245, 158, 11, 0.5);
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --dim: #64748b;
+      --gold: #f59e0b;
+      --gold-hi: #fbbf24;
+      --violet: #8b5cf6;
+      --emerald: #10b981;
+      --rose: #f43f5e;
+      --cyan: #06b6d4;
+      --grad-gold: linear-gradient(135deg, #fbbf24, #d97706);
+      --grad-brand: linear-gradient(135deg, #fbbf24 0%, #f43f5e 50%, #8b5cf6 100%);
+      --grad-emerald: linear-gradient(135deg, #10b981, #059669);
+      --shadow-gold: 0 0 28px rgba(245,158,11,0.25);
+      --shadow-md: 0 10px 30px rgba(0,0,0,0.55);
+      --r: 14px; --rs: 8px; --rfull: 9999px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--fb);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      background-image:
+        radial-gradient(circle at 8% 8%, rgba(245,158,11,0.12) 0%, transparent 38%),
+        radial-gradient(circle at 92% 15%, rgba(139,92,246,0.14) 0%, transparent 42%),
+        radial-gradient(circle at 50% 88%, rgba(16,185,129,0.08) 0%, transparent 50%);
+      background-attachment: fixed;
+    }
+    h1,h2,h3,h4 { font-family: var(--fh); letter-spacing: -0.025em; }
+    .wrap { max-width: 1240px; margin: 0 auto; padding: 28px 18px; }
+
+    /* Glass card */
+    .card {
+      background: var(--card);
+      backdrop-filter: blur(22px);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      box-shadow: var(--shadow-md);
+      transition: border-color .25s;
+    }
+    .card:hover { border-color: var(--border-hi); }
+
+    /* Buttons */
+    .btn-gold {
+      background: var(--grad-gold);
+      color: #0a0c14;
+      font-weight: 800;
+      padding: 12px 26px;
+      border-radius: var(--rs);
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      transition: all .22s;
+      letter-spacing: 0.03em;
+      font-size: .87rem;
+      text-transform: uppercase;
+      box-shadow: var(--shadow-gold);
+    }
+    .btn-gold:hover { transform: translateY(-2px) scale(1.02); filter: brightness(1.12); }
+    .btn-gold:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+    .btn-ghost {
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: var(--rs);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all .2s;
+      font-size: .86rem;
+    }
+    .btn-ghost:hover { background: rgba(245,158,11,0.12); border-color: var(--gold); color: var(--gold-hi); }
+
+    .btn-emerald {
+      background: var(--grad-emerald);
+      color: #fff;
+      font-weight: 800;
+      padding: 12px 26px;
+      border-radius: var(--rs);
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      transition: all .22s;
+      letter-spacing: 0.03em;
+      font-size: .87rem;
+      text-transform: uppercase;
+      box-shadow: 0 0 22px rgba(16,185,129,0.3);
+    }
+    .btn-emerald:hover { transform: translateY(-2px); filter: brightness(1.12); }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 11px;
+      border-radius: var(--rfull);
+      font-size: .72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+    .badge-replace { background: rgba(244,63,94,.18); color: #ff6b81; border: 1px solid rgba(244,63,94,.4); }
+    .badge-repair  { background: rgba(245,158,11,.18); color: #fbbf24; border: 1px solid rgba(245,158,11,.4); }
+    .badge-new     { background: rgba(139,92,246,.18); color: #c084fc; border: 1px solid rgba(139,92,246,.4); }
+    .badge-used    { background: rgba(16,185,129,.18); color: #34d399;  border: 1px solid rgba(16,185,129,.4); }
+    .badge-ai      { background: rgba(6,182,212,.18);  color: #22d3ee;  border: 1px solid rgba(6,182,212,.4); }
+    .badge-warn    { background: rgba(245,158,11,.18); color: #fbbf24;  border: 1px solid rgba(245,158,11,.4); }
+
+    /* Gradient text */
+    .grad-text { background: var(--grad-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    /* Input */
+    .inp {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(10,14,24,0.9);
+      border: 1px solid var(--border);
+      border-radius: var(--rs);
+      color: var(--text);
+      font-size: .9rem;
+      outline: none;
+      transition: border-color .2s;
+      font-family: var(--fb);
+    }
+    .inp:focus { border-color: var(--gold); }
+
+    label { font-size: .78rem; color: var(--muted); font-weight: 700; display: block; margin-bottom: 5px; }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 2px dashed rgba(245,158,11,.35);
+      border-radius: var(--r);
+      padding: 36px 24px;
+      text-align: center;
+      background: rgba(10,14,24,.5);
+      cursor: pointer;
+      transition: all .25s;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--gold-hi);
+      background: rgba(245,158,11,.07);
+    }
+
+    /* Spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 20px; height: 20px;
+      border: 3px solid rgba(255,255,255,.2);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      display: inline-block;
+    }
+
+    /* Fade in */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-up { animation: fadeUp .4s ease forwards; }
+
+    /* Pulse dot */
+    @keyframes pulse { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
+    .dot-pulse { animation: pulse 1.8s infinite; }
+
+    /* Selection card hover */
+    .sel-card { transition: all .2s; }
+    .sel-card:hover { transform: translateY(-1px); }
+
+    /* Progress bar */
+    @keyframes progBar { from { width: 0 } to { width: 100% } }
+    .prog-bar { height: 3px; background: var(--grad-gold); border-radius: 3px; }
+
+    /* Print */
+    @media print {
+      body * { visibility: hidden; }
+      #pdf-area, #pdf-area * { visibility: visible; }
+      #pdf-area { position: absolute; left: 0; top: 0; width: 100%; color: #000; }
+      .no-print { display: none !important; }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,.3); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.3); }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useRef, useEffect, useCallback } = React;
+
+// ── Market Price Table (Mercado Livre BR calibrated) ────────────────────────
+const MARKET_PRICES = {
+  onix: { farol:{n:890,u:499}, lanterna:{n:780,u:390}, 'para-choque':{n:680,u:380}, porta:{n:1450,u:680}, retrovisor:{n:550,u:280}, capô:{n:1250,u:590}, capo:{n:1250,u:590} },
+  civic: { farol:{n:2850,u:1250}, 'para-choque':{n:750,u:420}, grade:{n:580,u:280}, capô:{n:1850,u:890}, capo:{n:1850,u:890} },
+  corolla: { retrovisor:{n:1350,u:650}, porta:{n:1850,u:890}, paralama:{n:480,u:260}, farol:{n:1950,u:880} },
+  geral: { farol:{n:980,u:480}, lanterna:{n:700,u:340}, 'para-choque':{n:650,u:320}, porta:{n:1500,u:720}, retrovisor:{n:620,u:300}, capô:{n:1400,u:650}, capo:{n:1400,u:650}, paralama:{n:480,u:240}, vidro:{n:550,u:270}, grade:{n:420,u:210}, 'para-brisa':{n:850,u:420}, parabrisa:{n:850,u:420}, radiador:{n:900,u:420}, longarina:{n:2200,u:1100}, suspensão:{n:1200,u:580}, roda:{n:650,u:280}, airbag:{n:2200,u:950}, 'air bag':{n:2200,u:950} },
+};
+
+function getPrices(brand='', model='', partName='') {
+  const ml = model.toLowerCase();
+  const pl = partName.toLowerCase();
+  const key = ml.includes('onix')||ml.includes('prisma') ? 'onix'
+             : ml.includes('civic')||ml.includes('fit') ? 'civic'
+             : ml.includes('corolla')||ml.includes('hilux') ? 'corolla'
+             : 'geral';
+  const table = { ...MARKET_PRICES.geral, ...MARKET_PRICES[key] };
+  let priceNew = 950, priceUsed = 480;
+  for (const k of Object.keys(table)) {
+    if (pl.includes(k)) { priceNew = table[k].n; priceUsed = table[k].u; break; }
+  }
+  const q = encodeURIComponent(`${brand} ${model} ${partName}`);
+  return {
+    newPrice: { brandName: `Original ${brand} OEM`, price: priceNew, supplier: 'Concessionária / Distribuidoras', link: `https://lista.mercadolivre.com.br/${q}+novo` },
+    usedPrice: { brandName: `Seminova ${brand} DETRAN`, price: priceUsed, supplier: 'CDV / Desmanche Credenciado DETRAN', link: `https://lista.mercadolivre.com.br/${q}+usado+original` }
+  };
+}
+
+function fmt(v) {
+  if (typeof v !== 'number' || isNaN(v)) return 'R$ 0,00';
+  return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+// Convert blob URL → base64 string
+async function blobToBase64(blobUrl) {
+  const resp = await fetch(blobUrl);
+  const blob = await resp.blob();
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onloadend = () => res(reader.result.replace(/^data:[^;]+;base64,/, ''));
+    reader.onerror = rej;
+    reader.readAsDataURL(blob);
+  });
+}
+
+// ── Sample Cases ───────────────────────────────────────────────────────────────
+const SAMPLES = [
+  {
+    id: 'onix-front', label: 'Chevrolet Onix 2021', sub: 'Batida frontal — farol esquerdo e para-choque', img: '/samples/onix_rear.jpg',
+    vehicle: { brand:'Chevrolet', model:'Onix LTZ 1.0 Turbo', year:'2021', color:'Prata', plate:'ONX-2021', clientName:'Lucas Oliveira' },
+    parts: [
+      { id:'s1', name:'Farol Dianteiro Esquerdo', category:'Iluminação', actionRequired:'Substituição', severity:'Alto', confidence:0.98, notes:'Carcaça fraturada e lente quebrada.', selectedChoice:'used', newPrice:{brandName:'Original GM Arteb',price:890,supplier:'Concessionária GM',link:'https://lista.mercadolivre.com.br/farol+onix+2021+novo'}, usedPrice:{brandName:'Seminova GM DETRAN',price:499,supplier:'CDV Desmanche Credenciado SP',link:'https://lista.mercadolivre.com.br/farol+onix+2021+usado'} },
+      { id:'s2', name:'Para-choque Dianteiro com Grade', category:'Carroceria Frontal', actionRequired:'Substituição', severity:'Alto', confidence:0.95, notes:'Fissura estrutural e suportes quebrados.', selectedChoice:'used', newPrice:{brandName:'Original GM sem Pintura',price:680,supplier:'GM Peças Online',link:'https://lista.mercadolivre.com.br/parachoque+onix+2021+novo'}, usedPrice:{brandName:'Seminova GM DETRAN',price:380,supplier:'Recuperadora Sucatas BR',link:'https://lista.mercadolivre.com.br/parachoque+onix+2021+usado'} },
+      { id:'s3', name:'Capô Dianteiro (Desamassamento)', category:'Lataria', actionRequired:'Recuperação', severity:'Médio', confidence:0.88, notes:'Vinco na borda esquerda — recuperável com funilaria.', selectedChoice:'repair', newPrice:{brandName:'Serviço Funilaria',price:0,supplier:'Oficina',link:'#'}, usedPrice:{brandName:'Serviço Funilaria',price:0,supplier:'Oficina',link:'#'} },
+    ],
+    labor: { bodyworkHours:7, bodyworkRate:90, paintPanels:2, paintRatePerPanel:420, mechanicMontage:280 }
+  },
+  {
+    id: 'civic-front', label: 'Honda Civic Touring 2021', sub: 'Colisão frontal esquerda — farol LED e para-choque', img: '/samples/civic_front.jpg',
+    vehicle: { brand:'Honda', model:'Civic Touring 1.5 Turbo', year:'2021', color:'Prata', plate:'BRA-2021', clientName:'Ricardo Silva' },
+    parts: [
+      { id:'c1', name:'Farol Dianteiro Esquerdo Full LED', category:'Iluminação', actionRequired:'Substituição', severity:'Alto', confidence:0.97, notes:'Lente acrílica e máscara interna destruídas.', selectedChoice:'used', newPrice:{brandName:'Original Honda OEM',price:2850,supplier:'Concessionária Honda',link:'https://lista.mercadolivre.com.br/farol+civic+2021+led+novo'}, usedPrice:{brandName:'Seminova Honda DETRAN',price:1250,supplier:'CDV Sucatas Autorizadas SP',link:'https://lista.mercadolivre.com.br/farol+civic+2021+usado'} },
+      { id:'c2', name:'Para-choque Dianteiro com Suportes', category:'Carroceria Frontal', actionRequired:'Substituição', severity:'Alto', confidence:0.93, notes:'Rachadura nos encaixes do paralama.', selectedChoice:'used', newPrice:{brandName:'DTS Paralela 1ª Linha',price:750,supplier:'Distribuidora AutoLatina',link:'https://lista.mercadolivre.com.br/parachoque+civic+2021+novo'}, usedPrice:{brandName:'Original Alinhada DETRAN',price:420,supplier:'Recuperadora AutoSul',link:'https://lista.mercadolivre.com.br/parachoque+civic+2021+usado'} },
+    ],
+    labor: { bodyworkHours:10, bodyworkRate:90, paintPanels:3, paintRatePerPanel:450, mechanicMontage:380 }
+  },
+  {
+    id: 'corolla-side', label: 'Toyota Corolla XEi 2020', sub: 'Impacto lateral direito — porta e retrovisor', img: '/samples/corolla_side.jpg',
+    vehicle: { brand:'Toyota', model:'Corolla XEi 2.0 Flex', year:'2020', color:'Branco Pérola', plate:'TOY-2020', clientName:'Juliana Costa' },
+    parts: [
+      { id:'t1', name:'Retrovisor Elétrico Direito com Pisca', category:'Elétrica', actionRequired:'Substituição', severity:'Alto', confidence:0.98, notes:'Mecanismo de rebatimento destruído.', selectedChoice:'used', newPrice:{brandName:'Original Toyota OEM',price:1350,supplier:'Concessionária Toyota',link:'https://lista.mercadolivre.com.br/retrovisor+corolla+2020+novo'}, usedPrice:{brandName:'Seminova Toyota RS',price:650,supplier:'CDV Sucatas RS',link:'https://lista.mercadolivre.com.br/retrovisor+corolla+2020+usado'} },
+      { id:'t2', name:'Folha da Porta Dianteira Direita', category:'Lataria / Porta', actionRequired:'Substituição', severity:'Alto', confidence:0.91, notes:'Amassado profundo e dobradiças danificadas.', selectedChoice:'used', newPrice:{brandName:'Original Toyota sem Pintura',price:1850,supplier:'Toyota Parts',link:'https://lista.mercadolivre.com.br/porta+corolla+2020+nova'}, usedPrice:{brandName:'Porta Completa Alinhada',price:890,supplier:'Mega Desmanche SP',link:'https://lista.mercadolivre.com.br/porta+corolla+2020+usada'} },
+    ],
+    labor: { bodyworkHours:8, bodyworkRate:90, paintPanels:2, paintRatePerPanel:480, mechanicMontage:320 }
+  },
+];
+
+// ── Main App ───────────────────────────────────────────────────────────────────
+function App() {
+  const [images, setImages] = useState([]); // { blobUrl, base64, name }
+  const [vehicle, setVehicle] = useState({ brand:'', model:'', year:'', plate:'', color:'', clientName:'' });
+  const [parts, setParts] = useState([]);
+  const [analysis, setAnalysis] = useState(null);
+  const [labor, setLabor] = useState({ bodyworkHours:7, bodyworkRate:90, paintPanels:2, paintRatePerPanel:420, mechanicMontage:280 });
+  const [loading, setLoading] = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState('');
+  const [apiKey, setApiKey] = useState(null); // null=unknown, true=configured, false=missing
+  const [showPdf, setShowPdf] = useState(false);
+  const [showApiWarning, setShowApiWarning] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const fileRef = useRef();
+
+  // Check API key status on mount
+  useEffect(() => {
+    fetch('/api/health')
+      .then(r => r.json())
+      .then(d => {
+        setApiKey(d.geminiKeyConfigured);
+        if (!d.geminiKeyConfigured) setShowApiWarning(true);
+      })
+      .catch(() => setApiKey(false));
+  }, []);
+
+  const reset = () => {
+    setImages([]); setVehicle({ brand:'', model:'', year:'', plate:'', color:'', clientName:'' });
+    setParts([]); setAnalysis(null); setShowPdf(false);
+  };
+
+  const setVField = (f, v) => setVehicle(prev => ({ ...prev, [f]: v }));
+
+  // Process files (from input or drag-drop)
+  const processFiles = async (files) => {
+    const validFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+    if (!validFiles.length) return;
+
+    // IMPORTANT: Clear vehicle form when user uploads new photos manually
+    setVehicle({ brand:'', model:'', year:'', plate:'', color:'', clientName:'' });
+    setAnalysis(null);
+    setParts([]);
+
+    const processed = await Promise.all(validFiles.map(async file => {
+      const blobUrl = URL.createObjectURL(file);
+      const reader = new FileReader();
+      const base64 = await new Promise((res, rej) => {
+        reader.onloadend = () => res(reader.result.replace(/^data:[^;]+;base64,/, ''));
+        reader.onerror = rej;
+        reader.readAsDataURL(file);
+      });
+      return { blobUrl, base64, name: file.name };
+    }));
+    setImages(processed);
+  };
+
+  const analyze = async () => {
+    if (!images.length) return;
+    setLoading(true);
+    setLoadingMsg('🔍 Convertendo imagens...');
+
+    try {
+      const base64s = images.map(i => i.base64);
+      setLoadingMsg('🤖 Gemini Vision identificando veículo e avarias...');
+
+      const res = await fetch('/api/analyze-damage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ images: base64s, vehicleInfo: vehicle })
+      });
+
+      if (!res.ok) throw new Error(`Server error: ${res.status}`);
+      const data = await res.json();
+
+      if (!data.success) throw new Error(data.error || 'Unknown server error');
+
+      setLoadingMsg('💰 Buscando preços no Mercado Livre...');
+      await new Promise(r => setTimeout(r, 400)); // small UX delay
+
+      setVehicle(prev => ({
+        brand: data.vehicle.brand || prev.brand,
+        model: data.vehicle.model || prev.model,
+        year: data.vehicle.year || prev.year,
+        color: data.vehicle.color || prev.color,
+        plate: data.vehicle.plate || prev.plate,
+        clientName: data.vehicle.clientName || prev.clientName,
+      }));
+      setAnalysis(data);
+      setParts(data.damageAnalysis?.parts || []);
+      if (data.damageAnalysis?.laborCosts) setLabor(data.damageAnalysis.laborCosts);
+
+    } catch(e) {
+      console.error('Analysis error:', e);
+      alert(`Erro na análise: ${e.message}`);
+    } finally {
+      setLoading(false);
+      setLoadingMsg('');
+    }
+  };
+
+  const loadSample = (sample) => {
+    setImages([{ blobUrl: sample.img, base64: '', name: 'sample' }]);
+    setVehicle({ ...sample.vehicle });
+    setAnalysis({ aiPowered: false, damageAnalysis: { overallSeverity: 'Média', impactZone: 'Frontal', summary: 'Caso de demonstração pré-carregado.' } });
+    setParts(sample.parts);
+    setLabor(sample.labor);
+  };
+
+  const toggleChoice = (id, choice) => setParts(prev => prev.map(p => p.id === id ? { ...p, selectedChoice: choice } : p));
+
+  // Totals
+  const bwTotal = labor.bodyworkHours * labor.bodyworkRate;
+  const ptTotal = labor.paintPanels * labor.paintRatePerPanel;
+  const mcTotal = labor.mechanicMontage;
+  const totalLabor = bwTotal + ptTotal + mcTotal;
+  let totNew = 0, totSelected = 0;
+  parts.forEach(p => {
+    totNew += p.newPrice?.price || 0;
+    if (p.selectedChoice === 'new') totSelected += p.newPrice?.price || 0;
+    else if (p.selectedChoice === 'used') totSelected += p.usedPrice?.price || 0;
+  });
+  const budgetNew = totNew + totalLabor;
+  const budgetSel = totSelected + totalLabor;
+  const saving = Math.max(0, budgetNew - budgetSel);
+  const savingPct = budgetNew > 0 ? ((saving / budgetNew) * 100).toFixed(1) : 0;
+
+  return (
+    <div className="wrap">
+
+      {/* ── HEADER ────────────────────────────────────────────────────── */}
+      <header className="card" style={{ padding:'18px 26px', marginBottom:26, borderTop:'3px solid var(--gold)', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:14 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+          <div style={{ background:'var(--grad-gold)', width:48, height:48, borderRadius:13, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.5rem', boxShadow:'0 0 20px rgba(245,158,11,0.4)' }}>🏎️</div>
+          <div>
+            <h1 style={{ fontSize:'1.45rem', fontWeight:900 }}>AutoBudget <span className="grad-text">AI</span></h1>
+            <p style={{ color:'var(--muted)', fontSize:'.83rem' }}>Vistoria Computacional por Foto • Cotação Real: Peças Novas vs. Usadas (Mercado Livre)</p>
+          </div>
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          {apiKey === true && (
+            <span className="badge badge-ai">🤖 Gemini Vision Ativo</span>
+          )}
+          {apiKey === false && (
+            <span className="badge badge-warn" style={{ cursor:'pointer' }} onClick={() => setShowApiWarning(true)}>
+              ⚠️ API Key não configurada
+            </span>
+          )}
+          <span className="badge badge-used">
+            <span className="dot-pulse" style={{ width:7, height:7, borderRadius:'50%', background:'var(--emerald)', display:'inline-block' }}></span>
+            Mercado Livre Online
+          </span>
+          <button className="btn-ghost" onClick={reset}>↺ Nova Vistoria</button>
+        </div>
+      </header>
+
+      {/* ── API KEY WARNING ───────────────────────────────────────────── */}
+      {showApiWarning && (
+        <div className="card fade-up" style={{ padding:'18px 24px', marginBottom:20, borderLeft:'3px solid var(--gold)', background:'rgba(245,158,11,0.08)' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+            <div>
+              <h3 style={{ color:'var(--gold)', fontSize:'1rem', marginBottom:6 }}>⚠️ Chave da API Gemini Vision não configurada</h3>
+              <p style={{ fontSize:'.85rem', color:'var(--muted)', lineHeight:1.5 }}>
+                Sem a chave, o sistema <strong>não consegue analisar as fotos reais</strong> — apenas usa dados pré-definidos.<br/>
+                Para ativar a visão por IA:
+              </p>
+              <ol style={{ fontSize:'.84rem', color:'var(--muted)', marginTop:8, paddingLeft:18, lineHeight:1.8 }}>
+                <li>Acesse <a href="https://aistudio.google.com/app/apikey" target="_blank" style={{ color:'var(--gold)' }}>aistudio.google.com</a> e crie uma chave gratuita</li>
+                <li>Crie um arquivo <code style={{ background:'rgba(255,255,255,0.08)', padding:'2px 6px', borderRadius:4 }}>.env</code> na pasta do projeto</li>
+                <li>Adicione: <code style={{ background:'rgba(255,255,255,0.08)', padding:'2px 6px', borderRadius:4 }}>GEMINI_API_KEY=sua_chave_aqui</code></li>
+                <li>Reinicie o servidor com: <code style={{ background:'rgba(255,255,255,0.08)', padding:'2px 6px', borderRadius:4 }}>py server.py</code></li>
+              </ol>
+            </div>
+            <button className="btn-ghost" onClick={() => setShowApiWarning(false)} style={{ marginLeft:14, flexShrink:0 }}>✕</button>
+          </div>
+        </div>
+      )}
+
+      {/* ── SAMPLES ───────────────────────────────────────────────────── */}
+      <div className="card" style={{ padding:'20px 24px', marginBottom:24 }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+          <h3 style={{ fontSize:'1rem', fontWeight:800, color:'var(--gold)', display:'flex', alignItems:'center', gap:8 }}>
+            ⚡ Casos de Demonstração (dados reais pré-carregados)
+          </h3>
+          <span style={{ fontSize:'.78rem', color:'var(--dim)' }}>Clique para testar imediatamente</span>
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px, 1fr))', gap:14 }}>
+          {SAMPLES.map(s => (
+            <div
+              key={s.id}
+              className="sel-card"
+              onClick={() => loadSample(s)}
+              style={{ display:'flex', alignItems:'center', gap:13, padding:'13px 15px', background:'rgba(10,14,24,0.8)', borderRadius:10, border:'1px solid var(--border)', cursor:'pointer' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; }}
+            >
+              <img src={s.img} alt={s.label} style={{ width:72, height:72, objectFit:'cover', borderRadius:9, border:'1px solid rgba(255,255,255,0.08)', flexShrink:0 }} onError={e => e.target.style.display='none'} />
+              <div>
+                <div style={{ fontSize:'.88rem', fontWeight:800, color:'#fff' }}>{s.label}</div>
+                <div style={{ fontSize:'.75rem', color:'var(--muted)', marginTop:3, lineHeight:1.3 }}>{s.sub}</div>
+                <div style={{ fontSize:'.73rem', color:'var(--gold)', fontWeight:700, marginTop:6 }}>Carregar Demonstração →</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── UPLOAD ────────────────────────────────────────────────────── */}
+      <div className="card" style={{ padding:'24px', marginBottom:24 }}>
+        <h2 style={{ fontSize:'1.1rem', fontWeight:800, marginBottom:6, display:'flex', alignItems:'center', gap:8 }}>
+          📷 1. Fotos da Vistoria & Avarias do Veículo
+        </h2>
+        <p style={{ fontSize:'.84rem', color:'var(--muted)', marginBottom:18 }}>
+          Envie uma ou mais fotos do veículo danificado. O Gemini Vision irá <strong>identificar o veículo na imagem</strong> e todas as avarias visíveis.
+        </p>
+
+        <div
+          className={`upload-zone${dragOver ? ' drag-over' : ''}`}
+          onClick={() => fileRef.current?.click()}
+          onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={e => { e.preventDefault(); setDragOver(false); processFiles(e.dataTransfer.files); }}
+        >
+          <input ref={fileRef} type="file" multiple accept="image/*" style={{ display:'none' }}
+            onChange={e => processFiles(e.target.files)} />
+          <div style={{ fontSize:'2.5rem', marginBottom:10 }}>📸</div>
+          <div style={{ fontWeight:700, color:'var(--gold)', fontSize:'1rem', marginBottom:4 }}>
+            Clique ou arraste fotos aqui
+          </div>
+          <div style={{ fontSize:'.82rem', color:'var(--muted)' }}>
+            JPG, PNG, WEBP — Fotos do celular ou câmera
+          </div>
+        </div>
+
+        {images.length > 0 && (
+          <div style={{ marginTop:18 }}>
+            <div style={{ display:'flex', gap:12, flexWrap:'wrap', marginBottom:16 }}>
+              {images.map((img, i) => (
+                <div key={i} style={{ position:'relative' }}>
+                  <img src={img.blobUrl} alt={img.name} style={{ width:130, height:95, objectFit:'cover', borderRadius:10, border:'2px solid var(--border-hi)' }} />
+                  <button
+                    onClick={() => setImages(prev => prev.filter((_,j) => j !== i))}
+                    style={{ position:'absolute', top:4, right:4, background:'rgba(0,0,0,.7)', border:'none', color:'#fff', borderRadius:'50%', width:22, height:22, cursor:'pointer', fontSize:12, display:'flex', alignItems:'center', justifyContent:'center' }}>✕</button>
+                </div>
+              ))}
+            </div>
+
+            <button className="btn-gold" onClick={analyze} disabled={loading}>
+              {loading ? (
+                <><div className="spinner"/><span>{loadingMsg || 'Analisando...'}</span></>
+              ) : (
+                '⚡ ANALISAR FOTOS COM GEMINI VISION & BUSCAR PREÇOS'
+              )}
+            </button>
+
+            {loading && (
+              <div style={{ marginTop:12 }}>
+                <div style={{ fontSize:'.8rem', color:'var(--muted)', marginBottom:5 }}>{loadingMsg}</div>
+                <div style={{ background:'rgba(255,255,255,0.06)', borderRadius:3, overflow:'hidden', height:3 }}>
+                  <div className="prog-bar" style={{ animation:'progBar 3s ease-out forwards' }} />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ── VEHICLE FORM ──────────────────────────────────────────────── */}
+      <div className="card" style={{ padding:'24px', marginBottom:24 }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
+          <h2 style={{ fontSize:'1.1rem', fontWeight:800, color:'var(--gold)' }}>🚘 2. Ficha do Veículo & Proprietário</h2>
+          {analysis?.aiPowered && (
+            <span className="badge badge-ai">🤖 Preenchido pela IA</span>
+          )}
+          {analysis && !analysis.aiPowered && (
+            <span className="badge badge-warn">✏️ Preencha manualmente</span>
+          )}
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(175px, 1fr))', gap:13 }}>
+          {[['brand','Marca'],['model','Modelo / Versão'],['year','Ano'],['plate','Placa'],['color','Cor'],['clientName','Cliente']].map(([f,lbl]) => (
+            <div key={f}>
+              <label>{lbl}:</label>
+              <input className="inp" value={vehicle[f]||''} onChange={e => setVField(f, e.target.value)} placeholder={lbl} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── ANALYSIS RESULTS ──────────────────────────────────────────── */}
+      {analysis && parts.length > 0 && (
+        <div className="fade-up">
+
+          {/* 3. Damage Report */}
+          <div className="card" style={{ padding:'24px', marginBottom:24 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12, flexWrap:'wrap', gap:10 }}>
+              <h2 style={{ fontSize:'1.1rem', fontWeight:800 }}>🔍 3. Relatório de Avarias Detectadas</h2>
+              {analysis.damageAnalysis?.overallSeverity && (
+                <span className={`badge ${analysis.damageAnalysis.overallSeverity.includes('Alta') ? 'badge-replace' : 'badge-repair'}`}>
+                  Severidade: {analysis.damageAnalysis.overallSeverity}
+                </span>
+              )}
+            </div>
+            {analysis.damageAnalysis?.summary && (
+              <p style={{ fontSize:'.87rem', color:'var(--muted)', marginBottom:16, lineHeight:1.55 }}>
+                {analysis.damageAnalysis.summary}
+              </p>
+            )}
+            {!analysis.aiPowered && (
+              <div style={{ padding:'12px 16px', background:'rgba(245,158,11,.1)', borderRadius:8, border:'1px solid rgba(245,158,11,.3)', marginBottom:14, fontSize:'.84rem', color:'var(--gold)' }}>
+                ⚠️ Análise por IA não disponível. Configure <strong>GEMINI_API_KEY</strong> no arquivo <code>.env</code> para ativar identificação real por foto.
+              </div>
+            )}
+            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              {parts.map((p, i) => (
+                <div key={p.id} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'13px 17px', background:'rgba(10,14,24,.85)', borderRadius:9, border:'1px solid var(--border)', flexWrap:'wrap', gap:9 }}>
+                  <div>
+                    <strong style={{ fontSize:'.93rem' }}>{i+1}. {p.name}</strong>
+                    <span style={{ fontSize:'.76rem', color:'var(--muted)', marginLeft:10 }}>({p.category})</span>
+                    {p.notes && <div style={{ fontSize:'.75rem', color:'var(--dim)', marginTop:3 }}>{p.notes}</div>}
+                  </div>
+                  <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                    <span className={p.actionRequired === 'Substituição' ? 'badge badge-replace' : 'badge badge-repair'}>{p.actionRequired}</span>
+                    {p.confidence > 0 && <span style={{ fontSize:'.72rem', color:'var(--dim)' }}>IA: {(p.confidence*100).toFixed(0)}%</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 4. Parts Marketplace */}
+          <div className="card" style={{ padding:'24px', marginBottom:24 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20, flexWrap:'wrap', gap:12 }}>
+              <div>
+                <h2 style={{ fontSize:'1.15rem', fontWeight:800 }}>🛒 4. Cotação de Mercado: Peças Novas vs. Usadas (DETRAN)</h2>
+                <p style={{ fontSize:'.84rem', color:'var(--muted)' }}>
+                  Valores calibrados com anúncios reais do Mercado Livre Brasil. Clique para selecionar a opção desejada:
+                </p>
+              </div>
+              <div style={{ display:'flex', gap:12, fontSize:'.77rem', fontWeight:700 }}>
+                <span style={{ color:'#c084fc' }}>● NOVA (OEM)</span>
+                <span style={{ color:'#34d399' }}>● USADA (DETRAN)</span>
+              </div>
+            </div>
+
+            <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+              {parts.map(p => {
+                const isRepair = p.selectedChoice === 'repair' || p.actionRequired === 'Recuperação' || p.actionRequired === 'Pintura';
+                const np = p.newPrice?.price || 0;
+                const up = p.usedPrice?.price || 0;
+                const diff = Math.max(0, np - up);
+
+                return (
+                  <div key={p.id} style={{ background:'rgba(10,14,24,.9)', padding:20, borderRadius:13, border:'1px solid var(--border)' }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:13, flexWrap:'wrap', gap:8 }}>
+                      <h3 style={{ fontSize:'1rem', fontWeight:800 }}>{p.name}</h3>
+                      {!isRepair && diff > 0 && (
+                        <span style={{ fontSize:'.79rem', color:'#34d399', fontWeight:800, background:'rgba(16,185,129,.15)', border:'1px solid rgba(16,185,129,.3)', padding:'4px 13px', borderRadius:20 }}>
+                          Economia de {fmt(diff)} na Usada
+                        </span>
+                      )}
+                    </div>
+
+                    {isRepair ? (
+                      <div style={{ padding:'13px 17px', background:'rgba(245,158,11,.1)', border:'1px solid rgba(245,158,11,.3)', color:'#fbbf24', borderRadius:8, fontSize:'.87rem', fontWeight:600 }}>
+                        🛠️ Item para Funilaria/Recuperação — custo incluído na mão de obra.
+                      </div>
+                    ) : (
+                      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px, 1fr))', gap:13 }}>
+                        {/* NOVA */}
+                        <div
+                          className="sel-card"
+                          onClick={() => toggleChoice(p.id, 'new')}
+                          style={{ padding:16, borderRadius:10, background: p.selectedChoice==='new' ? 'rgba(139,92,246,.18)' : 'rgba(20,28,46,.5)', border: p.selectedChoice==='new' ? '2px solid var(--violet)' : '1px solid var(--border)', cursor:'pointer' }}
+                        >
+                          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+                            <span className="badge badge-new">Peça Nova</span>
+                            <div style={{ width:18, height:18, borderRadius:'50%', border: p.selectedChoice==='new' ? '5px solid var(--violet)' : '2px solid var(--dim)', background:'#fff' }} />
+                          </div>
+                          <div style={{ fontSize:'1.25rem', fontWeight:900, color:'#c084fc' }}>{fmt(np)}</div>
+                          <div style={{ fontSize:'.81rem', color:'#cbd5e1', marginTop:5, fontWeight:600 }}>{p.newPrice?.brandName}</div>
+                          <div style={{ fontSize:'.76rem', color:'var(--muted)', marginTop:2 }}>{p.newPrice?.supplier}</div>
+                          {p.newPrice?.link && p.newPrice.link !== '#' && (
+                            <a href={p.newPrice.link} target="_blank" onClick={e => e.stopPropagation()}
+                              style={{ fontSize:'.77rem', color:'#c084fc', marginTop:8, display:'inline-block', fontWeight:700, textDecoration:'none' }}>
+                              Ver no Mercado Livre ↗
+                            </a>
+                          )}
+                        </div>
+
+                        {/* USADA */}
+                        <div
+                          className="sel-card"
+                          onClick={() => toggleChoice(p.id, 'used')}
+                          style={{ padding:16, borderRadius:10, background: p.selectedChoice==='used' ? 'rgba(16,185,129,.18)' : 'rgba(20,28,46,.5)', border: p.selectedChoice==='used' ? '2px solid var(--emerald)' : '1px solid var(--border)', cursor:'pointer' }}
+                        >
+                          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+                            <span className="badge badge-used">Usada DETRAN Credenciada</span>
+                            <div style={{ width:18, height:18, borderRadius:'50%', border: p.selectedChoice==='used' ? '5px solid var(--emerald)' : '2px solid var(--dim)', background:'#fff' }} />
+                          </div>
+                          <div style={{ fontSize:'1.25rem', fontWeight:900, color:'#34d399' }}>{fmt(up)}</div>
+                          <div style={{ fontSize:'.81rem', color:'#cbd5e1', marginTop:5, fontWeight:600 }}>{p.usedPrice?.brandName}</div>
+                          <div style={{ fontSize:'.76rem', color:'var(--muted)', marginTop:2 }}>{p.usedPrice?.supplier}</div>
+                          {p.usedPrice?.link && p.usedPrice.link !== '#' && (
+                            <a href={p.usedPrice.link} target="_blank" onClick={e => e.stopPropagation()}
+                              style={{ fontSize:'.77rem', color:'#34d399', marginTop:8, display:'inline-block', fontWeight:700, textDecoration:'none' }}>
+                              Desmanche Credenciado (ML) ↗
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 5. Labor */}
+          <div className="card" style={{ padding:'24px', marginBottom:24 }}>
+            <h2 style={{ fontSize:'1.1rem', fontWeight:800, color:'var(--gold)', marginBottom:18 }}>
+              🔧 5. Mão de Obra e Serviços de Oficina
+            </h2>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(220px, 1fr))', gap:14 }}>
+              {[['bodyworkHours','Horas Funilaria'],['bodyworkRate','Taxa/hora Funilaria (R$)'],['paintPanels','Painéis de Pintura'],['paintRatePerPanel','Pintura por Peça (R$)'],['mechanicMontage','Mecânica / Montagem (R$)']].map(([k,lbl]) => (
+                <div key={k}>
+                  <label>{lbl}:</label>
+                  <input type="number" className="inp" value={labor[k]||0}
+                    onChange={e => setLabor(prev => ({ ...prev, [k]: parseFloat(e.target.value)||0 }))} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 6. Budget Summary */}
+          <div className="card" style={{ padding:'28px', marginBottom:32, border:'2px solid var(--gold)', boxShadow:'var(--shadow-gold)' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:22, flexWrap:'wrap', gap:14 }}>
+              <div>
+                <h2 style={{ fontSize:'1.35rem', fontWeight:900 }}>💰 6. Resumo Total do Orçamento</h2>
+                <p style={{ fontSize:'.84rem', color:'var(--muted)' }}>Total calculado com base nas escolhas de peças e mão de obra.</p>
+              </div>
+              <button className="btn-emerald" onClick={() => setShowPdf(true)}>📄 Exportar PDF / Imprimir</button>
+            </div>
+
+            {saving > 0 && (
+              <div style={{ background:'var(--grad-emerald)', padding:'16px 22px', borderRadius:11, marginBottom:22, color:'#fff', fontWeight:800, fontSize:'1.05rem', boxShadow:'0 0 25px rgba(16,185,129,0.3)' }}>
+                🎉 Economia de {fmt(saving)} ({savingPct}% OFF) ao usar peças usadas credenciadas!
+              </div>
+            )}
+
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(240px, 1fr))', gap:16, marginBottom:24 }}>
+              <div style={{ padding:20, background:'rgba(10,14,24,.85)', borderRadius:11, border:'1px solid var(--border)' }}>
+                <div style={{ fontSize:'.77rem', color:'var(--muted)', fontWeight:700 }}>CENÁRIO 100% PEÇAS NOVAS OEM</div>
+                <div style={{ fontSize:'1.4rem', fontWeight:900, color:'#c084fc', marginTop:4 }}>{fmt(budgetNew)}</div>
+              </div>
+              <div style={{ padding:20, background:'rgba(245,158,11,.1)', borderRadius:11, border:'2px solid var(--gold)' }}>
+                <div style={{ fontSize:'.77rem', color:'var(--gold)', fontWeight:800 }}>SEU ORÇAMENTO ATUAL</div>
+                <div style={{ fontSize:'1.7rem', fontWeight:900, color:'#fff', marginTop:4 }}>{fmt(budgetSel)}</div>
+              </div>
+            </div>
+
+            {/* Discriminated table */}
+            <div style={{ overflowX:'auto' }}>
+              <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'.85rem' }}>
+                <thead>
+                  <tr style={{ borderBottom:'1px solid var(--border)', color:'var(--muted)' }}>
+                    <th style={{ padding:'9px 10px', textAlign:'left', fontWeight:700 }}>Item</th>
+                    <th style={{ padding:'9px 10px', textAlign:'left', fontWeight:700 }}>Diagnóstico</th>
+                    <th style={{ padding:'9px 10px', textAlign:'left', fontWeight:700 }}>Escolha</th>
+                    <th style={{ padding:'9px 10px', textAlign:'right', fontWeight:700 }}>Valor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {parts.map(p => {
+                    const v = p.selectedChoice==='new' ? p.newPrice?.price : p.selectedChoice==='used' ? p.usedPrice?.price : 0;
+                    return (
+                      <tr key={p.id} style={{ borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
+                        <td style={{ padding:'10px 10px', fontWeight:600 }}>{p.name}</td>
+                        <td style={{ padding:'10px 10px' }}><span className={p.actionRequired==='Substituição' ? 'badge badge-replace' : 'badge badge-repair'}>{p.actionRequired}</span></td>
+                        <td style={{ padding:'10px 10px' }}><span className={p.selectedChoice==='new' ? 'badge badge-new' : p.selectedChoice==='used' ? 'badge badge-used' : 'badge badge-repair'}>{p.selectedChoice==='new'?'Nova OEM':p.selectedChoice==='used'?'Usada DETRAN':'Funilaria'}</span></td>
+                        <td style={{ padding:'10px 10px', textAlign:'right', fontWeight:700 }}>{fmt(v)}</td>
+                      </tr>
+                    );
+                  })}
+                  {[['Funilaria & Desamassamento',bwTotal],['Pintura & Estufa',ptTotal],['Mecânica / Montagem',mcTotal]].map(([lbl,v]) => (
+                    <tr key={lbl} style={{ borderBottom:'1px solid rgba(255,255,255,0.04)', background:'rgba(255,255,255,0.02)' }}>
+                      <td colSpan={3} style={{ padding:'10px 10px', fontWeight:600 }}>{lbl}</td>
+                      <td style={{ padding:'10px 10px', textAlign:'right', fontWeight:700 }}>{fmt(v)}</td>
+                    </tr>
+                  ))}
+                  <tr style={{ fontSize:'1.05rem', fontWeight:900, color:'var(--gold)' }}>
+                    <td colSpan={3} style={{ padding:'14px 10px' }}>TOTAL GERAL DO REPARO</td>
+                    <td style={{ padding:'14px 10px', textAlign:'right' }}>{fmt(budgetSel)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── PDF MODAL ─────────────────────────────────────────────────── */}
+      {showPdf && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.88)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
+          <div style={{ background:'#fff', color:'#0f172a', width:'100%', maxWidth:820, maxHeight:'90vh', overflowY:'auto', borderRadius:14, padding:36 }}>
+            <div className="no-print" style={{ display:'flex', gap:10, marginBottom:22 }}>
+              <button className="btn-gold" onClick={() => window.print()}>🖨️ Imprimir / Salvar PDF</button>
+              <button className="btn-ghost" style={{ color:'#334155' }} onClick={() => setShowPdf(false)}>✕ Fechar</button>
+            </div>
+            <div id="pdf-area">
+              <div style={{ borderBottom:'2px solid #e2e8f0', paddingBottom:16, marginBottom:20, display:'flex', justifyContent:'space-between' }}>
+                <div>
+                  <h1 style={{ fontSize:'1.3rem', color:'#0f172a', fontWeight:900 }}>ORÇAMENTO DE REPAROS AUTOMOTIVOS</h1>
+                  <p style={{ fontSize:'.83rem', color:'#64748b' }}>AutoBudget AI • Laudo Técnico por Visão Computacional</p>
+                </div>
+                <div style={{ textAlign:'right', fontSize:'.83rem', color:'#64748b' }}>
+                  <div>Data: {new Date().toLocaleDateString('pt-BR')}</div>
+                  <div>Validade: 15 dias</div>
+                  <div>Nº: #{Math.floor(100000 + Math.random()*900000)}</div>
+                </div>
+              </div>
+              <div style={{ background:'#f8fafc', padding:'12px 16px', borderRadius:7, marginBottom:18, fontSize:'.88rem' }}>
+                <strong>Veículo:</strong> {vehicle.brand} {vehicle.model} ({vehicle.year}) &nbsp;•&nbsp;
+                <strong>Placa:</strong> {vehicle.plate||'N/I'} &nbsp;•&nbsp;
+                <strong>Cor:</strong> {vehicle.color||'N/I'} &nbsp;•&nbsp;
+                <strong>Cliente:</strong> {vehicle.clientName||'Particular'}
+              </div>
+              <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'.84rem', marginBottom:22 }}>
+                <thead>
+                  <tr style={{ background:'#f1f5f9', textAlign:'left' }}>
+                    <th style={{ padding:'9px 10px' }}>Item</th><th style={{ padding:'9px 10px' }}>Diagnóstico</th>
+                    <th style={{ padding:'9px 10px' }}>Origem</th><th style={{ padding:'9px 10px', textAlign:'right' }}>Valor R$</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {parts.map(p => {
+                    const v = p.selectedChoice==='new' ? p.newPrice?.price : p.selectedChoice==='used' ? p.usedPrice?.price : 0;
+                    return (
+                      <tr key={p.id} style={{ borderBottom:'1px solid #e2e8f0' }}>
+                        <td style={{ padding:'9px 10px', fontWeight:600 }}>{p.name}</td>
+                        <td style={{ padding:'9px 10px' }}>{p.actionRequired}</td>
+                        <td style={{ padding:'9px 10px' }}>{p.selectedChoice==='new'?'Nova OEM':p.selectedChoice==='used'?'Usada DETRAN':'Funilaria'}</td>
+                        <td style={{ padding:'9px 10px', textAlign:'right', fontWeight:700 }}>{fmt(v)}</td>
+                      </tr>
+                    );
+                  })}
+                  {[['Funilaria & Desamassamento',bwTotal],['Pintura & Estufa',ptTotal],['Mecânica / Montagem',mcTotal]].map(([l,v]) => (
+                    <tr key={l} style={{ borderBottom:'1px solid #e2e8f0', background:'#fafafa' }}>
+                      <td colSpan={3} style={{ padding:'9px 10px' }}>{l}</td>
+                      <td style={{ padding:'9px 10px', textAlign:'right', fontWeight:700 }}>{fmt(v)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {saving > 0 && <div style={{ fontSize:'.85rem', color:'#15803d', fontWeight:700, marginBottom:8 }}>✓ Economia com peças usadas: {fmt(saving)} (-{savingPct}%)</div>}
+              <div style={{ textAlign:'right', fontSize:'1.4rem', fontWeight:900, borderTop:'2px solid #cbd5e1', paddingTop:12 }}>
+                TOTAL: {fmt(budgetSel)}
+              </div>
+              <div style={{ display:'flex', justifyContent:'space-between', marginTop:55, paddingTop:16, borderTop:'1px solid #e2e8f0' }}>
+                <div style={{ textAlign:'center', width:200 }}><div style={{ borderTop:'1px solid #94a3b8', paddingTop:4, fontSize:'.78rem', color:'#475569', fontWeight:600 }}>Responsável Técnico</div></div>
+                <div style={{ textAlign:'center', width:200 }}><div style={{ borderTop:'1px solid #94a3b8', paddingTop:4, fontSize:'.78rem', color:'#475569', fontWeight:600 }}>De Acordo — Cliente</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <footer style={{ textAlign:'center', padding:'30px 0 20px', fontSize:'.78rem', color:'var(--dim)' }}>
+        AutoBudget AI v2.0 © 2026 — Agente de Vistoria e Orçamento Automotivo por Inteligência Artificial
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

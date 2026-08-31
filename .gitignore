@@ -1,0 +1,11 @@
+﻿# Secrets and credentials (CRITICAL)
+.env
+
+# Dependencies and build output
+node_modules/
+dist/
+
+# Logs and OS files
+*.log
+.DS_Store
+Thumbs.db
