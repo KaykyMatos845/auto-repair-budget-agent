@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AutoBudget AI v2.5 — Vistoria, FIPE, Bounding Boxes & WhatsApp</title>
+  <title>AutoBudget AI — Orçamento Inteligente de Reparos Veiculares</title>
   <meta name="description" content="Agente de IA para vistoria de avarias por foto, diagnóstico de veículos e cotação de mercado para peças novas e usadas (Mercado Livre)."/>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -211,7 +211,56 @@
     ::-webkit-scrollbar-track { background: rgba(0,0,0,.3); }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.3); }
-  .btn-whatsapp { background: linear-gradient(135deg, #25D366, #128C7E); color: #fff; font-weight: 800; padding: 12px 24px; border-radius: var(--rs); border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 9px; transition: all .22s; font-size: .87rem; text-transform: uppercase; box-shadow: 0 0 20px rgba(37,211,102,0.35); } .btn-whatsapp:hover { transform: translateY(-2px); filter: brightness(1.1); }
+  
+    .img-box-container {
+      position: relative;
+      display: inline-block;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 2px solid var(--border-hi);
+    }
+    .bbox-overlay {
+      position: absolute;
+      border: 3px solid #f43f5e;
+      background: rgba(244,63,94,0.25);
+      border-radius: 6px;
+      box-shadow: 0 0 14px rgba(244,63,94,0.7);
+      pointer-events: none;
+      transition: all .3s;
+    }
+    .bbox-label {
+      position: absolute;
+      top: -24px;
+      left: -2px;
+      background: #f43f5e;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 4px 4px 4px 0;
+      white-space: nowrap;
+      text-transform: uppercase;
+    }
+
+
+    .btn-whatsapp {
+      background: linear-gradient(135deg, #25D366, #128C7E);
+      color: #fff;
+      font-weight: 800;
+      padding: 12px 24px;
+      border-radius: var(--rs);
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      transition: all .22s;
+      font-size: .87rem;
+      text-transform: uppercase;
+      box-shadow: 0 0 20px rgba(37,211,102,0.35);
+    }
+    .btn-whatsapp:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
 </style>
 </head>
 <body>
@@ -403,6 +452,31 @@ function App() {
     setLabor(sample.labor);
   };
 
+  
+  const shareWhatsApp = () => {
+    const pList = parts.map((p,i) => {
+      const v = p.selectedChoice==='new' ? p.newPrice?.price : p.selectedChoice==='used' ? p.usedPrice?.price : 0;
+      return `${i+1}. ${p.name} - ${fmt(v)} (${p.selectedChoice==='used'?'Usada DETRAN':'Nova OEM'})`;
+    }).join('\n');
+
+    const msg = `🏎️ *ORÇAMENTO DE REPAROS AUTOMOTIVOS*
+📅 Data: ${new Date().toLocaleDateString('pt-BR')}
+🚘 Veículo: ${vehicle.brand} ${vehicle.model} (${vehicle.year})
+🏷️ Placa: ${vehicle.plate||'N/I'} | Cliente: ${vehicle.clientName||'Cliente'}
+📊 Valor FIPE: ${fmt(fipeVal)} | Compromisso: ${fipePct}% da FIPE ${isTotalLoss?'🚨 (RISCO PERDA TOTAL)':''}
+
+📋 *PEÇAS & COMPONENTES:*
+${pList}
+
+🔧 *MÃO DE OBRA & PINTURA:* ${fmt(totalLabor)}
+🎉 *Economia peças usadas:* ${fmt(saving)} (${savingPct}% OFF)
+💰 *TOTAL DO ORÇAMENTO:* *${fmt(budgetSel)}*
+
+_AutoBudget AI v2.5 — Vistoria Computacional_`;
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+  };
+
   const toggleChoice = (id, choice) => setParts(prev => prev.map(p => p.id === id ? { ...p, selectedChoice: choice } : p));
 
   // Totals
@@ -418,6 +492,11 @@ function App() {
   });
   const budgetNew = totNew + totalLabor;
   const budgetSel = totSelected + totalLabor;
+
+  const fipeVal = vehicle.fipeValue || 68500;
+  const fipePct = ((budgetSel / fipeVal) * 100).toFixed(1);
+  const isTotalLoss = fipePct >= 75.0;
+
   const saving = Math.max(0, budgetNew - budgetSel);
   const savingPct = budgetNew > 0 ? ((saving / budgetNew) * 100).toFixed(1) : 0;
 
@@ -734,7 +813,10 @@ function App() {
                 <h2 style={{ fontSize:'1.35rem', fontWeight:900 }}>💰 6. Resumo Total do Orçamento</h2>
                 <p style={{ fontSize:'.84rem', color:'var(--muted)' }}>Total calculado com base nas escolhas de peças e mão de obra.</p>
               </div>
-              <button className="btn-emerald" onClick={() => setShowPdf(true)}>📄 Exportar PDF / Imprimir</button>
+              
+                <button className="btn-whatsapp" onClick={shareWhatsApp}>📲 Enviar por WhatsApp</button>
+
+                <button className="btn-emerald" onClick={() => setShowPdf(true)}>📄 Exportar PDF / Imprimir</button>
             </div>
 
             {saving > 0 && (
