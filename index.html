@@ -3,782 +3,894 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AutoBudget AI v2.5 — Vistoria, FIPE, Perda Total & WhatsApp</title>
-  <meta name="description" content="Sistema completo de vistoria veicular com IA Gemini, Tabela FIPE, Alerta de Perda Total, Bounding Boxes nas fotos, cotação Mercado Livre e envio por WhatsApp."/>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <title>AutoBudget AI v3.0 — Vistoria Automotiva Profissional</title>
+  <meta name="description" content="Sistema de orcamento automotivo com analise IA, calculo por operacao (R$80/h), alerta de perda total FIPE e links diretos Mercado Livre." />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    :root {
-      --fh: 'Outfit', sans-serif;
-      --fb: 'Plus Jakarta Sans', sans-serif;
-      --bg: #06080f;
-      --card: rgba(14, 20, 34, 0.92);
-      --border: rgba(245, 158, 11, 0.22);
-      --border-hi: rgba(245, 158, 11, 0.55);
-      --text: #f1f5f9;
-      --muted: #94a3b8;
-      --dim: #64748b;
-      --gold: #f59e0b;
-      --gold-hi: #fbbf24;
-      --violet: #8b5cf6;
-      --emerald: #10b981;
-      --rose: #f43f5e;
-      --cyan: #06b6d4;
-      --grad-gold: linear-gradient(135deg, #fbbf24, #d97706);
-      --grad-brand: linear-gradient(135deg, #fbbf24 0%, #f43f5e 50%, #8b5cf6 100%);
-      --grad-emerald: linear-gradient(135deg, #10b981, #059669);
-      --grad-danger: linear-gradient(135deg, #f43f5e, #be123c);
-      --shadow-gold: 0 0 28px rgba(245,158,11,0.25);
-      --shadow-md: 0 10px 30px rgba(0,0,0,0.55);
-      --r: 14px; --rs: 8px; --rfull: 9999px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: var(--fb);
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      background-image:
-        radial-gradient(circle at 8% 8%, rgba(245,158,11,0.12) 0%, transparent 38%),
-        radial-gradient(circle at 92% 15%, rgba(139,92,246,0.14) 0%, transparent 42%),
-        radial-gradient(circle at 50% 88%, rgba(16,185,129,0.08) 0%, transparent 50%);
-      background-attachment: fixed;
-    }
-    h1,h2,h3,h4 { font-family: var(--fh); letter-spacing: -0.025em; }
-    .wrap { max-width: 1240px; margin: 0 auto; padding: 28px 18px; }
 
-    .card {
-      background: var(--card);
-      backdrop-filter: blur(22px);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      box-shadow: var(--shadow-md);
-      transition: border-color .25s;
-    }
-    .card:hover { border-color: var(--border-hi); }
+:root {
+  --fh: 'Outfit', sans-serif;
+  --fb: 'Plus Jakarta Sans', sans-serif;
+  --bg: #06080f;
+  --card: rgba(14, 20, 34, 0.92);
+  --border: rgba(245, 158, 11, 0.22);
+  --border-hi: rgba(245, 158, 11, 0.55);
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --dim: #64748b;
+  --gold: #f59e0b;
+  --gold-hi: #fbbf24;
+  --violet: #8b5cf6;
+  --emerald: #10b981;
+  --rose: #f43f5e;
+  --grad-gold: linear-gradient(135deg, #fbbf24, #d97706);
+  --grad-brand: linear-gradient(135deg, #fbbf24 0%, #f43f5e 50%, #8b5cf6 100%);
+  --grad-emerald: linear-gradient(135deg, #10b981, #059669);
+  --grad-danger: linear-gradient(135deg, #f43f5e, #be123c);
+  --shadow-gold: 0 0 28px rgba(245,158,11,0.25);
+  --shadow-md: 0 10px 30px rgba(0,0,0,0.55);
+  --r: 14px; --rs: 8px; --rfull: 9999px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--fb); background: var(--bg); color: var(--text); min-height: 100vh;
+  background-image:
+    radial-gradient(circle at 8% 8%, rgba(245,158,11,0.12) 0%, transparent 38%),
+    radial-gradient(circle at 92% 15%, rgba(139,92,246,0.14) 0%, transparent 42%),
+    radial-gradient(circle at 50% 88%, rgba(16,185,129,0.08) 0%, transparent 50%);
+  background-attachment: fixed;
+}
+h1,h2,h3,h4 { font-family: var(--fh); letter-spacing: -0.025em; }
+.wrap { max-width: 1260px; margin: 0 auto; padding: 28px 18px; }
+.card {
+  background: var(--card); backdrop-filter: blur(22px);
+  border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow-md); transition: border-color .25s;
+}
+.card:hover { border-color: var(--border-hi); }
+.btn-gold {
+  background: var(--grad-gold); color: #0a0c14; font-weight: 800;
+  padding: 11px 22px; border-radius: var(--rs); border: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px; transition: all .22s;
+  font-size: .86rem; text-transform: uppercase; box-shadow: var(--shadow-gold);
+}
+.btn-gold:hover { transform: translateY(-2px); filter: brightness(1.12); }
+.btn-gold:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+.btn-whatsapp {
+  background: linear-gradient(135deg, #25D366, #128C7E); color: #fff; font-weight: 800;
+  padding: 11px 22px; border-radius: var(--rs); border: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px; transition: all .22s;
+  font-size: .86rem; text-transform: uppercase; box-shadow: 0 0 20px rgba(37,211,102,0.35);
+}
+.btn-whatsapp:hover { transform: translateY(-2px); filter: brightness(1.1); }
+.btn-ghost {
+  background: rgba(255,255,255,0.05); color: var(--text); font-weight: 600;
+  padding: 9px 16px; border-radius: var(--rs); border: 1px solid var(--border);
+  cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all .2s; font-size: .85rem;
+}
+.btn-ghost:hover { background: rgba(245,158,11,0.12); border-color: var(--gold); color: var(--gold-hi); }
+.btn-emerald {
+  background: var(--grad-emerald); color: #fff; font-weight: 800;
+  padding: 11px 22px; border-radius: var(--rs); border: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px; transition: all .22s;
+  font-size: .86rem; text-transform: uppercase; box-shadow: 0 0 22px rgba(16,185,129,0.3);
+}
+.btn-emerald:hover { transform: translateY(-2px); filter: brightness(1.12); }
+.badge {
+  display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px;
+  border-radius: var(--rfull); font-size: .7rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.badge-replace { background: rgba(244,63,94,.18); color: #ff6b81; border: 1px solid rgba(244,63,94,.4); }
+.badge-repair  { background: rgba(245,158,11,.18); color: #fbbf24; border: 1px solid rgba(245,158,11,.4); }
+.badge-new     { background: rgba(139,92,246,.18); color: #c084fc; border: 1px solid rgba(139,92,246,.4); }
+.badge-used    { background: rgba(16,185,129,.18); color: #34d399; border: 1px solid rgba(16,185,129,.4); }
+.badge-ai      { background: rgba(6,182,212,.18); color: #22d3ee; border: 1px solid rgba(6,182,212,.4); }
+.grad-text { background: var(--grad-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.inp {
+  width: 100%; padding: 9px 13px; background: rgba(10,14,24,0.9);
+  border: 1px solid var(--border); border-radius: var(--rs); color: var(--text);
+  font-size: .88rem; outline: none; transition: border-color .2s; font-family: var(--fb);
+}
+.inp:focus { border-color: var(--gold); }
+label { font-size: .75rem; color: var(--muted); font-weight: 700; display: block; margin-bottom: 4px; }
+.upload-zone {
+  border: 2px dashed rgba(245,158,11,.35); border-radius: var(--r); padding: 32px 24px;
+  text-align: center; background: rgba(10,14,24,.5); cursor: pointer; transition: all .25s;
+}
+.upload-zone:hover { border-color: var(--gold-hi); background: rgba(245,158,11,.07); }
+.img-box-container { position: relative; display: inline-block; overflow: hidden; border-radius: 12px; border: 2px solid var(--border-hi); }
+.bbox-overlay {
+  position: absolute; border: 3px solid #f43f5e; background: rgba(244,63,94,0.25);
+  border-radius: 6px; box-shadow: 0 0 14px rgba(244,63,94,0.7); pointer-events: none;
+}
+.bbox-label {
+  position: absolute; top: -24px; left: -2px; background: #f43f5e; color: #fff;
+  font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px 4px 4px 0;
+  white-space: nowrap; text-transform: uppercase;
+}
+.op-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+@media (max-width: 700px) { .op-grid { grid-template-columns: repeat(3, 1fr); } }
+.op-cell {
+  background: rgba(6,8,15,.7); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 8px; text-align: center;
+  transition: border-color .2s;
+}
+.op-cell:hover { border-color: var(--gold); }
+.op-cell .op-val { font-size: 1rem; font-weight: 800; color: var(--gold-hi); margin-top: 4px; }
+.op-cell .op-cost { font-size: .7rem; color: var(--emerald); margin-top: 2px; }
+.tbl { width: 100%; border-collapse: collapse; font-size: .83rem; }
+.tbl th { padding: 9px 10px; text-align: left; color: var(--muted); font-weight: 700; border-bottom: 1px solid var(--border); }
+.tbl td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.tbl tr:hover td { background: rgba(245,158,11,0.04); }
+@media print {
+  body * { visibility: hidden; }
+  #pdf-area, #pdf-area * { visibility: visible; }
+  #pdf-area { position: absolute; left: 0; top: 0; width: 100%; color: #000; }
+  .no-print { display: none !important; }
+}
 
-    .btn-gold {
-      background: var(--grad-gold);
-      color: #0a0c14;
-      font-weight: 800;
-      padding: 12px 26px;
-      border-radius: var(--rs);
-      border: none;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 9px;
-      transition: all .22s;
-      letter-spacing: 0.03em;
-      font-size: .87rem;
-      text-transform: uppercase;
-      box-shadow: var(--shadow-gold);
-    }
-    .btn-gold:hover { transform: translateY(-2px) scale(1.02); filter: brightness(1.12); }
-    .btn-gold:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
-
-    .btn-whatsapp {
-      background: linear-gradient(135deg, #25D366, #128C7E);
-      color: #fff;
-      font-weight: 800;
-      padding: 12px 24px;
-      border-radius: var(--rs);
-      border: none;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 9px;
-      transition: all .22s;
-      font-size: .87rem;
-      text-transform: uppercase;
-      box-shadow: 0 0 20px rgba(37,211,102,0.35);
-    }
-    .btn-whatsapp:hover { transform: translateY(-2px); filter: brightness(1.1); }
-
-    .btn-ghost {
-      background: rgba(255,255,255,0.05);
-      color: var(--text);
-      font-weight: 600;
-      padding: 10px 18px;
-      border-radius: var(--rs);
-      border: 1px solid var(--border);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      transition: all .2s;
-      font-size: .86rem;
-    }
-    .btn-ghost:hover { background: rgba(245,158,11,0.12); border-color: var(--gold); color: var(--gold-hi); }
-
-    .btn-emerald {
-      background: var(--grad-emerald);
-      color: #fff;
-      font-weight: 800;
-      padding: 12px 26px;
-      border-radius: var(--rs);
-      border: none;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 9px;
-      transition: all .22s;
-      font-size: .87rem;
-      text-transform: uppercase;
-      box-shadow: 0 0 22px rgba(16,185,129,0.3);
-    }
-    .btn-emerald:hover { transform: translateY(-2px); filter: brightness(1.12); }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 4px 11px;
-      border-radius: var(--rfull);
-      font-size: .72rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-    }
-    .badge-replace { background: rgba(244,63,94,.18); color: #ff6b81; border: 1px solid rgba(244,63,94,.4); }
-    .badge-repair  { background: rgba(245,158,11,.18); color: #fbbf24; border: 1px solid rgba(245,158,11,.4); }
-    .badge-new     { background: rgba(139,92,246,.18); color: #c084fc; border: 1px solid rgba(139,92,246,.4); }
-    .badge-used    { background: rgba(16,185,129,.18); color: #34d399;  border: 1px solid rgba(16,185,129,.4); }
-    .badge-ai      { background: rgba(6,182,212,.18);  color: #22d3ee;  border: 1px solid rgba(6,182,212,.4); }
-
-    .grad-text { background: var(--grad-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-    .inp {
-      width: 100%;
-      padding: 10px 14px;
-      background: rgba(10,14,24,0.9);
-      border: 1px solid var(--border);
-      border-radius: var(--rs);
-      color: var(--text);
-      font-size: .9rem;
-      outline: none;
-      transition: border-color .2s;
-      font-family: var(--fb);
-    }
-    .inp:focus { border-color: var(--gold); }
-
-    label { font-size: .78rem; color: var(--muted); font-weight: 700; display: block; margin-bottom: 5px; }
-
-    .upload-zone {
-      border: 2px dashed rgba(245,158,11,.35);
-      border-radius: var(--r);
-      padding: 36px 24px;
-      text-align: center;
-      background: rgba(10,14,24,.5);
-      cursor: pointer;
-      transition: all .25s;
-    }
-    .upload-zone:hover { border-color: var(--gold-hi); background: rgba(245,158,11,.07); }
-
-    .img-box-container {
-      position: relative;
-      display: inline-block;
-      overflow: hidden;
-      border-radius: 12px;
-      border: 2px solid var(--border-hi);
-    }
-    .bbox-overlay {
-      position: absolute;
-      border: 3px solid #f43f5e;
-      background: rgba(244,63,94,0.25);
-      border-radius: 6px;
-      box-shadow: 0 0 14px rgba(244,63,94,0.7);
-      pointer-events: none;
-      transition: all .3s;
-    }
-    .bbox-label {
-      position: absolute;
-      top: -24px;
-      left: -2px;
-      background: #f43f5e;
-      color: #fff;
-      font-size: 10px;
-      font-weight: 800;
-      padding: 2px 7px;
-      border-radius: 4px 4px 4px 0;
-      white-space: nowrap;
-      text-transform: uppercase;
-    }
-
-    @media print {
-      body * { visibility: hidden; }
-      #pdf-area, #pdf-area * { visibility: visible; }
-      #pdf-area { position: absolute; left: 0; top: 0; width: 100%; color: #000; }
-      .no-print { display: none !important; }
-    }
   </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-
-
 const { useState, useRef, useEffect } = React;
+const LABOR_RATE = 80;
+const OPS = ['fun', 'pin', 'tap', 'mec', 'rec'];
+const OP_LABEL = { fun: 'Funilaria', pin: 'Pintura', tap: 'Tapec./Vidrac.', mec: 'Mecanica', rec: 'Recuperacao' };
+const DEFAULT_OPS = { fun: 0, pin: 0, tap: 0, mec: 0, rec: 0 };
 
 function fmt(v) {
   if (typeof v !== 'number' || isNaN(v)) return 'R$ 0,00';
   return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
+function partLaborTotal(ops) {
+  return OPS.reduce(function(s, k) { return s + (parseFloat((ops || {})[k]) || 0); }, 0) * LABOR_RATE;
+}
+function partLaborHours(ops) {
+  return OPS.reduce(function(s, k) { return s + (parseFloat((ops || {})[k]) || 0); }, 0);
+}
 
 const SAMPLES = [
   {
-    id: 'onix-front', label: 'Chevrolet Onix 2021', sub: 'Batida traseira/lateral — Tampa e Para-choque', img: '/samples/onix_rear.jpg',
-    vehicle: { brand:'Chevrolet', model:'Onix LTZ 1.0 Turbo', year:'2021', color:'Prata', plate:'ONX-2021', clientName:'Lucas Oliveira', fipeValue: 68500 },
+    id: 'onix', label: 'Chevrolet Onix 2021', sub: 'Batida traseira — Tampa e Farol', img: '/samples/onix_rear.jpg',
+    vehicle: { brand: 'Chevrolet', model: 'Onix LTZ 1.0 Turbo', year: '2021', color: 'Prata', plate: 'ONX-2021', clientName: 'Lucas Oliveira', fipeValue: 68500 },
     parts: [
-      { id:'s1', name:'Farol Dianteiro Esquerdo', category:'Iluminação', actionRequired:'Substituição', severity:'Alto', confidence:0.98, notes:'Carcaça fraturada e lente quebrada.', box:[20,15,55,55], selectedChoice:'used', newPrice:{brandName:'Original GM Arteb',price:890,supplier:'Concessionária GM',link:'https://produto.mercadolivre.com.br/MLB-5501296624-farol-led-chevrolet-onix-2020-2021-2022-2023-2024-_JM'}, usedPrice:{brandName:'Seminova GM DETRAN',price:499,supplier:'CDV Desmanche Credenciado SP',link:'https://produto.mercadolivre.com.br/MLB-5405547970-farol-onix-2020-2021-2022-2023-2024-2025-direito-original-_JM'} },
-      { id:'s2', name:'Para-choque Dianteiro com Grade', category:'Carroceria Frontal', actionRequired:'Substituição', severity:'Alto', confidence:0.95, notes:'Fissura estrutural e suportes quebrados.', box:[45,30,80,85], selectedChoice:'used', newPrice:{brandName:'Original GM sem Pintura',price:680,supplier:'GM Peças Online',link:'https://produto.mercadolivre.com.br/MLB-3610996841-parachoque-dianteiro-onix-premier-turbo-2020-2021-2022-2023-_JM'}, usedPrice:{brandName:'Seminova GM DETRAN',price:380,supplier:'Recuperadora Sucatas BR',link:'https://produto.mercadolivre.com.br/MLB-3482701449-parachoque-dianteiro-chevrolet-onix-2020-2021-2022-original-_JM'} },
-      { id:'s3', name:'Capô Dianteiro (Desamassamento)', category:'Lataria', actionRequired:'Recuperação', severity:'Médio', confidence:0.88, notes:'Vinco na borda esquerda — recuperável com funilaria.', box:[10,25,45,75], selectedChoice:'repair', newPrice:{brandName:'Serviço Funilaria',price:0,supplier:'Oficina',link:'#'}, usedPrice:{brandName:'Serviço Funilaria',price:0,supplier:'Oficina',link:'#'} },
+      { id: 's1', name: 'Farol Dianteiro Esquerdo', category: 'Iluminacao', actionRequired: 'Substituicao',
+        notes: 'Carcaca fraturada e lente quebrada.', box: [20,15,55,55], selectedChoice: 'used',
+        ops: { fun: 0, pin: 0.5, tap: 0, mec: 0.5, rec: 0 },
+        newPrice: { brandName: 'Original GM Arteb', price: 890, link: 'https://produto.mercadolivre.com.br/MLB-5501296624-farol-led-chevrolet-onix-2020-2021-2022-2023-2024-_JM' },
+        usedPrice: { brandName: 'Seminova GM DETRAN', price: 499, link: 'https://produto.mercadolivre.com.br/MLB-5405547970-farol-onix-2020-2021-2022-2023-2024-2025-direito-original-_JM' } },
+      { id: 's2', name: 'Tampa Traseira', category: 'Lataria', actionRequired: 'Recuperacao',
+        notes: 'Amassado profundo e risco na pintura.', box: [40,25,80,82], selectedChoice: 'repair',
+        ops: { fun: 2, pin: 5, tap: 0.5, mec: 0, rec: 0 },
+        newPrice: { brandName: 'Servico', price: 0, link: '#' },
+        usedPrice: { brandName: 'Servico', price: 0, link: '#' } },
+      { id: 's3', name: 'Para-choque Traseiro', category: 'Carroceria', actionRequired: 'Substituicao',
+        notes: 'Fissura estrutural — substituicao necessaria.', box: [60,20,90,85], selectedChoice: 'used',
+        ops: { fun: 0, pin: 1, tap: 0, mec: 0, rec: 0 },
+        newPrice: { brandName: 'Original GM', price: 680, link: 'https://produto.mercadolivre.com.br/MLB-3610996841-parachoque-dianteiro-onix-premier-turbo-2020-2021-2022-2023-_JM' },
+        usedPrice: { brandName: 'Seminova DETRAN', price: 380, link: 'https://produto.mercadolivre.com.br/MLB-3482701449-parachoque-dianteiro-chevrolet-onix-2020-2021-2022-original-_JM' } },
     ],
-    labor: { bodyworkHours:7, bodyworkRate:95, paintPanels:2, paintRatePerPanel:480, mechanicMontage:350 }
+    thirdParty: [{ id: 'tp1', name: 'Alinhamento e balanceamento', value: 180 }]
   },
   {
-    id: 'civic-front', label: 'Honda Civic Touring 2021', sub: 'Colisão frontal esquerda — farol LED e para-choque', img: '/samples/civic_front.jpg',
-    vehicle: { brand:'Honda', model:'Civic Touring 1.5 Turbo', year:'2021', color:'Prata', plate:'BRA-2021', clientName:'Ricardo Silva', fipeValue: 128000 },
+    id: 'civic', label: 'Honda Civic Touring 2021', sub: 'Colisao frontal — Farol e Para-choque', img: '/samples/civic_front.jpg',
+    vehicle: { brand: 'Honda', model: 'Civic Touring 1.5 Turbo', year: '2021', color: 'Prata', plate: 'BRA-2021', clientName: 'Ricardo Silva', fipeValue: 128000 },
     parts: [
-      { id:'c1', name:'Farol Dianteiro Esquerdo Full LED', category:'Iluminação', actionRequired:'Substituição', severity:'Alto', confidence:0.97, notes:'Lente acrílica e máscara interna destruídas.', box:[15,10,50,45], selectedChoice:'used', newPrice:{brandName:'Original Honda OEM',price:2850,supplier:'Concessionária Honda',link:'https://produto.mercadolivre.com.br/MLB-3388190019-farol-dianteiro-esquerdo-honda-civic-g10-full-led-2020-2021-_JM'}, usedPrice:{brandName:'Seminova Honda DETRAN',price:1250,supplier:'CDV Sucatas Autorizadas SP',link:'https://produto.mercadolivre.com.br/MLB-3518290112-farol-full-led-honda-civic-g10-2019-2020-2021-original-usado-_JM'} },
-      { id:'c2', name:'Para-choque Dianteiro com Suportes', category:'Carroceria Frontal', actionRequired:'Substituição', severity:'Alto', confidence:0.93, notes:'Rachadura nos encaixes do paralama.', box:[40,20,85,90], selectedChoice:'used', newPrice:{brandName:'DTS Paralela 1ª Linha',price:750,supplier:'Distribuidora AutoLatina',link:'https://produto.mercadolivre.com.br/MLB-2109820012-parachoque-dianteiro-honda-civic-g10-2020-2021-original-_JM'}, usedPrice:{brandName:'Original Alinhada DETRAN',price:420,supplier:'Recuperadora AutoSul',link:'https://produto.mercadolivre.com.br/MLB-3418290912-parachoque-dianteiro-honda-civic-g10-2021-usado-original-_JM'} },
+      { id: 'c1', name: 'Farol Dianteiro Esquerdo Full LED', category: 'Iluminacao', actionRequired: 'Substituicao',
+        notes: 'Lente acrilica e mascara interna destruidas.', box: [15,10,50,45], selectedChoice: 'used',
+        ops: { fun: 0, pin: 0.5, tap: 0, mec: 1, rec: 0 },
+        newPrice: { brandName: 'Original Honda OEM', price: 2850, link: 'https://produto.mercadolivre.com.br/MLB-3388190019-farol-dianteiro-esquerdo-honda-civic-g10-full-led-2020-2021-_JM' },
+        usedPrice: { brandName: 'Seminova Honda DETRAN', price: 1250, link: 'https://produto.mercadolivre.com.br/MLB-3518290112-farol-full-led-honda-civic-g10-2019-2020-2021-original-usado-_JM' } },
+      { id: 'c2', name: 'Para-choque Dianteiro', category: 'Carroceria', actionRequired: 'Substituicao',
+        notes: 'Rachadura nos encaixes do paralama.', box: [40,20,85,90], selectedChoice: 'used',
+        ops: { fun: 0.5, pin: 2, tap: 0, mec: 0, rec: 0 },
+        newPrice: { brandName: 'DTS 1a Linha', price: 750, link: 'https://produto.mercadolivre.com.br/MLB-2109820012-parachoque-dianteiro-honda-civic-g10-2020-2021-original-_JM' },
+        usedPrice: { brandName: 'Alinhada DETRAN', price: 420, link: 'https://produto.mercadolivre.com.br/MLB-3418290912-parachoque-dianteiro-honda-civic-g10-2021-usado-original-_JM' } },
     ],
-    labor: { bodyworkHours:10, bodyworkRate:95, paintPanels:3, paintRatePerPanel:480, mechanicMontage:380 }
+    thirdParty: [{ id: 'tp2', name: 'Geometria da direcao', value: 220 }]
   },
   {
-    id: 'corolla-side', label: 'Toyota Corolla XEi 2020', sub: 'Impacto lateral direito — porta e retrovisor', img: '/samples/corolla_side.jpg',
-    vehicle: { brand:'Toyota', model:'Corolla XEi 2.0 Flex', year:'2020', color:'Branco Pérola', plate:'TOY-2020', clientName:'Juliana Costa', fipeValue: 135000 },
+    id: 'corolla', label: 'Toyota Corolla XEi 2020', sub: 'Impacto lateral — Porta e Retrovisor', img: '/samples/corolla_side.jpg',
+    vehicle: { brand: 'Toyota', model: 'Corolla XEi 2.0 Flex', year: '2020', color: 'Branco Perola', plate: 'TOY-2020', clientName: 'Juliana Costa', fipeValue: 135000 },
     parts: [
-      { id:'t1', name:'Retrovisor Elétrico Direito com Pisca', category:'Elétrica', actionRequired:'Substituição', severity:'Alto', confidence:0.98, notes:'Mecanismo de rebatimento destruído.', box:[25,65,55,90], selectedChoice:'used', newPrice:{brandName:'Original Toyota OEM',price:1350,supplier:'Concessionária Toyota',link:'https://produto.mercadolivre.com.br/MLB-3219080112-retrovisor-eletrico-toyota-corolla-2020-2021-2022-original-_JM'}, usedPrice:{brandName:'Seminova Toyota RS',price:650,supplier:'CDV Sucatas RS',link:'https://produto.mercadolivre.com.br/MLB-3489102911-retrovisor-direito-corolla-2020-2021-original-usado-_JM'} },
-      { id:'t2', name:'Folha da Porta Dianteira Direita', category:'Lataria / Porta', actionRequired:'Substituição', severity:'Alto', confidence:0.91, notes:'Amassado profundo e dobradiças danificadas.', box:[30,15,80,70], selectedChoice:'used', newPrice:{brandName:'Original Toyota sem Pintura',price:1850,supplier:'Toyota Parts',link:'https://produto.mercadolivre.com.br/MLB-3318902811-porta-dianteira-direita-corolla-2020-2021-2022-original-_JM'}, usedPrice:{brandName:'Porta Completa Alinhada',price:890,supplier:'Mega Desmanche SP',link:'https://produto.mercadolivre.com.br/MLB-3590129811-porta-dianteira-direita-toyota-corolla-2020-2021-usada-_JM'} },
+      { id: 't1', name: 'Retrovisor Eletrico Direito', category: 'Eletrica', actionRequired: 'Substituicao',
+        notes: 'Mecanismo de rebatimento destruido.', box: [25,65,55,90], selectedChoice: 'used',
+        ops: { fun: 0, pin: 0.5, tap: 0, mec: 1, rec: 0 },
+        newPrice: { brandName: 'Original Toyota OEM', price: 1350, link: 'https://produto.mercadolivre.com.br/MLB-3219080112-retrovisor-eletrico-toyota-corolla-2020-2021-2022-original-_JM' },
+        usedPrice: { brandName: 'Seminova Toyota RS', price: 650, link: 'https://produto.mercadolivre.com.br/MLB-3489102911-retrovisor-direito-corolla-2020-2021-original-usado-_JM' } },
+      { id: 't2', name: 'Porta Dianteira Direita', category: 'Lataria / Porta', actionRequired: 'Recuperacao',
+        notes: 'Amassado profundo e dobracas danificadas.', box: [30,15,80,70], selectedChoice: 'repair',
+        ops: { fun: 3, pin: 4, tap: 1, mec: 0.5, rec: 0 },
+        newPrice: { brandName: 'Servico', price: 0, link: '#' },
+        usedPrice: { brandName: 'Servico', price: 0, link: '#' } },
     ],
-    labor: { bodyworkHours:8, bodyworkRate:95, paintPanels:2, paintRatePerPanel:480, mechanicMontage:350 }
+    thirdParty: []
   },
 ];
 
-
 function App() {
   const [images, setImages] = useState([]);
-  const [vehicle, setVehicle] = useState({ brand:'', model:'', year:'', plate:'', color:'', clientName:'', fipeValue: 68500 });
+  const [vehicle, setVehicle] = useState({ brand: '', model: '', year: '', plate: '', color: '', clientName: '', fipeValue: 68500 });
   const [parts, setParts] = useState([]);
+  const [thirdParty, setThirdParty] = useState([]);
   const [analysis, setAnalysis] = useState(null);
-  const [labor, setLabor] = useState({ bodyworkHours:7, bodyworkRate:95, paintPanels:2, paintRatePerPanel:480, mechanicMontage:350 });
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState('');
   const [apiKey, setApiKey] = useState(null);
   const [showPdf, setShowPdf] = useState(false);
-  const [osStatus, setOsStatus] = useState('📋 Em Vistoria');
-  const [osList, setOsList] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('autobudget_os_list')||'[]'); } catch { return []; }
+  const [activeTab, setActiveTab] = useState('budget');
+  const [osStatus, setOsStatus] = useState('Em Vistoria');
+  const [osList, setOsList] = useState(function() {
+    try { return JSON.parse(localStorage.getItem('autobudget_os_list') || '[]'); } catch(e) { return []; }
   });
   const fileRef = useRef();
 
-  useEffect(() => {
-    fetch('/api/health')
-      .then(r => r.json())
-      .then(d => setApiKey(d.geminiKeyConfigured))
-      .catch(() => setApiKey(false));
+  useEffect(function() {
+    fetch('/api/health').then(function(r) { return r.json(); }).then(function(d) { setApiKey(d.geminiKeyConfigured); }).catch(function() { setApiKey(false); });
   }, []);
 
-  const setVField = (f, v) => setVehicle(prev => ({ ...prev, [f]: v }));
+  const setVField = function(f, v) { setVehicle(function(prev) { return { ...prev, [f]: v }; }); };
 
-  const processFiles = async (files) => {
-    const validFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
-    if (!validFiles.length) return;
-    setVehicle({ brand:'', model:'', year:'', plate:'', color:'', clientName:'', fipeValue: 68500 });
-    setAnalysis(null);
-    setParts([]);
-
-    const processed = await Promise.all(validFiles.map(async file => {
-      const blobUrl = URL.createObjectURL(file);
-      const reader = new FileReader();
-      const base64 = await new Promise((res, rej) => {
-        reader.onloadend = () => res(reader.result.replace(/^data:[^;]+;base64,/, ''));
-        reader.onerror = rej;
-        reader.readAsDataURL(file);
+  const setPartOp = function(partId, op, val) {
+    setParts(function(prev) {
+      return prev.map(function(p) {
+        if (p.id !== partId) return p;
+        return { ...p, ops: { ...(p.ops || DEFAULT_OPS), [op]: parseFloat(val) || 0 } };
       });
-      return { blobUrl, base64, name: file.name };
-    }));
-    setImages(processed);
+    });
   };
 
-  const analyze = async () => {
-    if (!images.length) return;
-    setLoading(true);
-    setLoadingMsg('🔍 Processando foto...');
+  const toggleChoice = function(id, choice) {
+    setParts(function(prev) { return prev.map(function(p) { return p.id === id ? { ...p, selectedChoice: p.selectedChoice === choice ? 'repair' : choice } : p; }); });
+  };
 
-    try {
-      const base64s = images.map(i => i.base64);
-      setLoadingMsg('🤖 Gemini 3.6 Flash mapeando danos e coordenadas...');
-
-      const res = await fetch('/api/analyze-damage', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images: base64s, vehicleInfo: vehicle })
+  const addThirdParty = function() { setThirdParty(function(prev) { return [...prev, { id: 'tp' + Date.now(), name: '', value: 0 }]; }); };
+  const removeThirdParty = function(id) { setThirdParty(function(prev) { return prev.filter(function(t) { return t.id !== id; }); }); };
+  const setTPField = function(id, field, val) {
+    setThirdParty(function(prev) {
+      return prev.map(function(t) {
+        if (t.id !== id) return t;
+        return { ...t, [field]: field === 'value' ? (parseFloat(val) || 0) : val };
       });
-
-      if (!res.ok) throw new Error('Server error: ' + res.status);
-      const data = await res.json();
-
-      setVehicle(prev => ({
-        brand: data.vehicle.brand || prev.brand,
-        model: data.vehicle.model || prev.model,
-        year: data.vehicle.year || prev.year,
-        color: data.vehicle.color || prev.color,
-        plate: data.vehicle.plate || prev.plate,
-        clientName: data.vehicle.clientName || prev.clientName,
-        fipeValue: data.vehicle.fipeValue || 68500,
-      }));
-      setAnalysis(data);
-      setParts(data.damageAnalysis?.parts || []);
-      if (data.damageAnalysis?.laborCosts) setLabor(data.damageAnalysis.laborCosts);
-
-    } catch(e) {
-      alert('Erro na análise: ' + e.message);
-    } finally {
-      setLoading(false);
-      setLoadingMsg('');
-    }
+    });
   };
 
-  const loadSample = (sample) => {
-    setImages([{ blobUrl: sample.img, base64: '', name: 'sample' }]);
-    setVehicle({ ...sample.vehicle });
-    setAnalysis({ aiPowered: false, damageAnalysis: { overallSeverity: 'Média', impactZone: 'Frontal', summary: 'Caso de demonstração pré-carregado.' } });
-    setParts(sample.parts);
-    setLabor(sample.labor);
-  };
+  const totalLaborParts = parts.reduce(function(sum, p) { return sum + partLaborTotal(p.ops || DEFAULT_OPS); }, 0);
+  const totalThirdPartyVal = thirdParty.reduce(function(sum, t) { return sum + (parseFloat(t.value) || 0); }, 0);
+  const totalLabor = totalLaborParts + totalThirdPartyVal;
 
-  const toggleChoice = (id, choice) => setParts(prev => prev.map(p => p.id === id ? { ...p, selectedChoice: choice } : p));
-
-  const bwTotal = (labor.bodyworkHours||0) * (labor.bodyworkRate||0);
-  const ptTotal = (labor.paintPanels||0) * (labor.paintRatePerPanel||0);
-  const mcTotal = (labor.mechanicMontage||0);
-  const totalLabor = bwTotal + ptTotal + mcTotal;
-
-  let totNew = 0, totSelected = 0;
-  parts.forEach(p => {
-    totNew += p.newPrice?.price || 0;
-    if (p.selectedChoice === 'new') totSelected += p.newPrice?.price || 0;
-    else if (p.selectedChoice === 'used') totSelected += p.usedPrice?.price || 0;
+  let totNew = 0; let totSelected = 0;
+  parts.forEach(function(p) {
+    totNew += p.newPrice ? (p.newPrice.price || 0) : 0;
+    const sp = p.selectedChoice === 'new' ? (p.newPrice ? p.newPrice.price || 0 : 0) :
+               p.selectedChoice === 'used' ? (p.usedPrice ? p.usedPrice.price || 0 : 0) : 0;
+    totSelected += sp;
   });
 
   const budgetNew = totNew + totalLabor;
   const budgetSel = totSelected + totalLabor;
   const saving = Math.max(0, budgetNew - budgetSel);
-  const savingPct = budgetNew > 0 ? ((saving / budgetNew) * 100).toFixed(1) : 0;
-
+  const savingPct = budgetNew > 0 ? ((saving / budgetNew) * 100).toFixed(1) : '0.0';
   const fipeVal = vehicle.fipeValue || 68500;
   const fipePct = ((budgetSel / fipeVal) * 100).toFixed(1);
-  const isTotalLoss = fipePct >= 75.0;
+  const isTotalLoss = parseFloat(fipePct) >= 75.0;
 
-  const saveOS = () => {
+  const processFiles = async function(files) {
+    const imgs = [];
+    for (const f of Array.from(files)) {
+      const blobUrl = URL.createObjectURL(f);
+      const b64 = await new Promise(function(resolve) {
+        const reader = new FileReader();
+        reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
+        reader.readAsDataURL(f);
+      });
+      imgs.push({ blobUrl, base64: b64, name: f.name });
+    }
+    setImages(imgs);
+  };
+
+  const analyze = async function() {
+    if (!images.length || !vehicle.brand) return;
+    setLoading(true); setLoadingMsg('Analisando imagens com Gemini AI...');
+    try {
+      const resp = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ images: images.map(function(i) { return i.base64; }), vehicle })
+      });
+      if (!resp.ok) throw new Error('Server error: ' + resp.status);
+      const data = await resp.json();
+      if (data.error) throw new Error(data.error);
+      const enriched = (data.parts || []).map(function(p, i) {
+        return { ...p, id: 'p' + Date.now().toString().slice(-6) + i, ops: DEFAULT_OPS, selectedChoice: p.actionRequired === 'Substituicao' ? 'used' : 'repair' };
+      });
+      setParts(enriched);
+      setThirdParty([]);
+      setAnalysis({ aiPowered: true });
+    } catch(e) {
+      alert('Erro na analise: ' + e.message);
+    } finally {
+      setLoading(false); setLoadingMsg('');
+    }
+  };
+
+  const loadSample = function(s) {
+    setImages([{ blobUrl: s.img, base64: '', name: 'sample.jpg' }]);
+    setVehicle({ ...s.vehicle });
+    setParts(s.parts.map(function(p) { return { ...p, ops: p.ops || { ...DEFAULT_OPS } }; }));
+    setThirdParty(s.thirdParty || []);
+    setAnalysis({ aiPowered: false });
+  };
+
+  const saveOS = function() {
     const newOs = {
       id: 'OS-' + Date.now().toString().slice(-6),
       date: new Date().toLocaleDateString('pt-BR'),
-      vehicle: vehicle.brand + " " + vehicle.model + " (" + vehicle.year + ")",
-      plate: vehicle.plate || 'Sem placa',
-      client: vehicle.clientName || 'Cliente',
-      status: osStatus,
+      vehicle: vehicle.brand + ' ' + vehicle.model,
+      plate: vehicle.plate,
+      client: vehicle.clientName,
       total: budgetSel,
-      partsCount: parts.length
+      fipePct: fipePct,
+      isTotalLoss: isTotalLoss,
+      status: osStatus
     };
-    const updated = [newOs, ...osList.slice(0, 19)];
+    const updated = [newOs, ...osList].slice(0, 50);
     setOsList(updated);
     localStorage.setItem('autobudget_os_list', JSON.stringify(updated));
-    alert('✅ Ordem de Serviço ' + newOs.id + ' salva no histórico!');
+    alert('OS ' + newOs.id + ' salva no historico!');
   };
 
-  const shareWhatsApp = () => {
-    const pList = parts.map((p,i) => {
-      const v = p.selectedChoice==='new' ? p.newPrice?.price : p.selectedChoice==='used' ? p.usedPrice?.price : 0;
-      return (i + 1) + '. ' + p.name + ' - ' + fmt(v) + ' (' + (p.selectedChoice==='used' ? 'Usada DETRAN' : 'Nova OEM') + ')';
+  const shareWhatsApp = function() {
+    const pList = parts.map(function(p, i) {
+      const v = p.selectedChoice === 'new' ? (p.newPrice ? p.newPrice.price : 0) :
+                p.selectedChoice === 'used' ? (p.usedPrice ? p.usedPrice.price : 0) : 0;
+      const opsDetail = OPS.filter(function(op) { return parseFloat((p.ops || {})[op]) > 0; })
+        .map(function(op) { return OP_LABEL[op] + ': ' + (p.ops[op]) + 'h'; }).join(', ');
+      return (i + 1) + '. ' + p.name + ' — ' + fmt(v) + (opsDetail ? ' | MO: ' + opsDetail : '');
     }).join('\n');
-
+    const tpList = thirdParty.filter(function(t) { return t.name; })
+      .map(function(t) { return '  • ' + t.name + ': ' + fmt(t.value); }).join('\n');
     const lines = [
-      '\ud83c\udfce\ufe0f *OR\u00c7AMENTO DE REPAROS AUTOMOTIVOS*',
-      '\ud83d\udcc5 Data: ' + new Date().toLocaleDateString('pt-BR'),
-      '\ud83d\ude97 Ve\u00edculo: ' + vehicle.brand + ' ' + vehicle.model + ' (' + vehicle.year + ')',
-      '\ud83c\udff7\ufe0f Placa: ' + (vehicle.plate || 'N/I') + ' | Cliente: ' + (vehicle.clientName || 'Cliente'),
-      '\ud83d\udcca FIPE: ' + fmt(fipeVal) + ' | ' + fipePct + '% ' + (isTotalLoss ? '\ud83d\udea8 RISCO PERDA TOTAL' : ''),
+      '*ORCAMENTO DE REPAROS AUTOMOTIVOS*',
+      'Data: ' + new Date().toLocaleDateString('pt-BR'),
+      'Veiculo: ' + vehicle.brand + ' ' + vehicle.model + ' (' + vehicle.year + ')',
+      'Placa: ' + (vehicle.plate || 'N/I') + ' | Cliente: ' + (vehicle.clientName || 'Cliente'),
+      'FIPE: ' + fmt(fipeVal) + ' | Comprometimento: ' + fipePct + '% ' + (isTotalLoss ? '— RISCO PERDA TOTAL' : ''),
       '',
-      '\ud83d\udccb *PE\u00c7AS & COMPONENTES:*',
+      '*PECAS & COMPONENTES:*',
       pList,
       '',
-      '\ud83d\udd27 *M\u00c3O DE OBRA & PINTURA:* ' + fmt(totalLabor),
-      '\ud83c\udf89 Economia: ' + fmt(saving) + ' (' + savingPct + '% OFF)',
-      '\ud83d\udcb0 *TOTAL DO OR\u00c7AMENTO:* *' + fmt(budgetSel) + '*',
+      '*MAO DE OBRA (R$ 80,00/h)*',
+      '  Funilaria + Pintura + Tapec./Vidrac. + Mec. + Rec.: ' + fmt(totalLaborParts),
+      (tpList ? '*SERVICOS DE TERCEIROS:*\n' + tpList + '\n  Subtotal: ' + fmt(totalThirdPartyVal) : ''),
       '',
-      'Status OS: ' + osStatus,
-      '_AutoBudget AI v2.5_'
-    ];
-
+      '*TOTAL DO ORCAMENTO: ' + fmt(budgetSel) + '*',
+      'Economia com usadas: ' + fmt(saving) + ' (' + savingPct + '% OFF)',
+      '',
+      'Status: ' + osStatus,
+      '_AutoBudget AI v3.0 — Vistoria Computacional_'
+    ].filter(function(l) { return l !== undefined; });
     const msg = lines.join('\n');
     window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
   };
 
   return (
-    <div className="wrap">
+    <div className='wrap'>
 
-      <header className="card" style={{ padding:'18px 26px', marginBottom:26, borderTop:'3px solid var(--gold)', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:14 }}>
+      {/* HEADER */}
+      <header className='card' style={{ padding:'18px 26px', marginBottom:22, borderTop:'3px solid var(--gold)', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:14 }}>
         <div style={{ display:'flex', alignItems:'center', gap:14 }}>
-          <div style={{ background:'var(--grad-gold)', width:48, height:48, borderRadius:13, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.5rem', boxShadow:'0 0 20px rgba(245,158,11,0.4)' }}>🏎️</div>
+          <div style={{ width:42, height:42, borderRadius:'50%', background:'var(--grad-gold)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.3rem', boxShadow:'var(--shadow-gold)' }}>🏎️</div>
           <div>
-            <h1 style={{ fontSize:'1.45rem', fontWeight:900 }}>AutoBudget <span className="grad-text">AI v2.5</span></h1>
-            <p style={{ color:'var(--muted)', fontSize:'.83rem' }}>Vistoria Computacional • FIPE • Perda Total ({'>'+'75%'}) • Links Diretos Mercado Livre</p>
+            <h1 style={{ fontSize:'1.2rem', fontWeight:900 }}><span className='grad-text'>AutoBudget AI</span> <span style={{ fontWeight:400, color:'var(--dim)', fontSize:'.9rem' }}>v3.0</span></h1>
+            <p style={{ color:'var(--muted)', fontSize:'.75rem' }}>Vistoria Computacional • R$ 80,00/h fixo • FIPE + Perda Total + Links ML</p>
           </div>
         </div>
-        <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
-          {apiKey === true && <span className="badge badge-ai">🤖 Gemini 3.6 Flash</span>}
-          <span className="badge badge-used"><span style={{ width:7, height:7, borderRadius:'50%', background:'var(--emerald)', display:'inline-block' }}></span> Mercado Livre Live</span>
-          <button className="btn-ghost" onClick={() => { setImages([]); setAnalysis(null); setParts([]); }}>↺ Nova Vistoria</button>
+        <div style={{ display:'flex', gap:10 }}>
+          <button className='btn-ghost' onClick={function() { setActiveTab(activeTab === 'history' ? 'budget' : 'history'); }}>
+            📋 Historico ({osList.length})
+          </button>
+          {apiKey === false && <span style={{ fontSize:'.75rem', color:'var(--rose)', background:'rgba(244,63,94,.12)', padding:'6px 12px', borderRadius:6 }}>⚠️ API Key nao configurada</span>}
+          {apiKey === true && <span style={{ fontSize:'.75rem', color:'var(--emerald)', background:'rgba(16,185,129,.12)', padding:'6px 12px', borderRadius:6 }}>✅ Gemini AI Ativo</span>}
         </div>
       </header>
 
-      <div className="card" style={{ padding:'20px 24px', marginBottom:24 }}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
-          <h3 style={{ fontSize:'1rem', fontWeight:800, color:'var(--gold)', display:'flex', alignItems:'center', gap:8 }}>
-            ⚡ Casos de Vistoria de Demonstração
-          </h3>
-          <span style={{ fontSize:'.78rem', color:'var(--dim)' }}>Clique para testar com foto e Bounding Boxes</span>
-        </div>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px, 1fr))', gap:14 }}>
-          {SAMPLES.map(s => (
-            <div key={s.id} className="sel-card" onClick={() => loadSample(s)} style={{ display:'flex', alignItems:'center', gap:13, padding:'13px 15px', background:'rgba(10,14,24,0.8)', borderRadius:10, border:'1px solid var(--border)', cursor:'pointer' }}>
-              <img src={s.img} alt={s.label} style={{ width:72, height:72, objectFit:'cover', borderRadius:9, border:'1px solid rgba(255,255,255,0.08)', flexShrink:0 }} />
-              <div>
-                <div style={{ fontSize:'.88rem', fontWeight:800, color:'#fff' }}>{s.label}</div>
-                <div style={{ fontSize:'.75rem', color:'var(--muted)', marginTop:3 }}>{s.sub}</div>
-                <div style={{ fontSize:'.73rem', color:'var(--gold)', fontWeight:700, marginTop:6 }}>Carregar Vistoria →</div>
+      {/* FIPE + BUDGET QUICK VIEW */}
+      {parts.length > 0 && (
+        <div className='card' style={{ marginBottom:22, padding:'18px 24px', borderLeft:'4px solid ' + (isTotalLoss ? 'var(--rose)' : 'var(--gold)') }}>
+          <div style={{ display:'flex', flexWrap:'wrap', gap:22, alignItems:'center' }}>
+            <div style={{ minWidth:200 }}>
+              <label style={{ fontSize:'.7rem', color:'var(--muted)', fontWeight:700 }}>VALOR TABELA FIPE (manual)</label>
+              <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:4 }}>
+                <span style={{ color:'var(--dim)', fontWeight:700 }}>R$</span>
+                <input type='number' className='inp' value={vehicle.fipeValue || 68500}
+                  onChange={function(e) { setVField('fipeValue', parseFloat(e.target.value) || 0); }}
+                  style={{ maxWidth:150, fontWeight:700, fontSize:'1.05rem' }} />
               </div>
             </div>
-          ))}
+            <div style={{ display:'flex', gap:26, flexWrap:'wrap' }}>
+              <div>
+                <div style={{ fontSize:'.7rem', color:'var(--muted)' }}>Pecas Selecionadas</div>
+                <div style={{ fontSize:'1.3rem', fontWeight:900, color:'var(--text)' }}>{fmt(totSelected)}</div>
+              </div>
+              <div>
+                <div style={{ fontSize:'.7rem', color:'var(--muted)' }}>MO + Terceiros</div>
+                <div style={{ fontSize:'1.3rem', fontWeight:900, color:'var(--violet)' }}>{fmt(totalLabor)}</div>
+              </div>
+              <div>
+                <div style={{ fontSize:'.7rem', color:'var(--muted)' }}>TOTAL</div>
+                <div style={{ fontSize:'1.5rem', fontWeight:900, color:'var(--gold)' }}>{fmt(budgetSel)}</div>
+              </div>
+              <div style={{ paddingLeft:18, borderLeft:'1px solid var(--border)' }}>
+                <div style={{ fontSize:'.7rem', color:'var(--muted)' }}>% da FIPE</div>
+                <div style={{ fontSize:'1.5rem', fontWeight:900, color: isTotalLoss ? 'var(--rose)' : 'var(--emerald)' }}>{fipePct}%</div>
+              </div>
+            </div>
+            {isTotalLoss && (
+              <div style={{ background:'rgba(244,63,94,.15)', border:'1px solid rgba(244,63,94,.5)', borderRadius:8, padding:'8px 16px', color:'var(--rose)', fontWeight:700, fontSize:'.85rem' }}>
+                🚨 ALERTA PERDA TOTAL — Custo supera 75% da FIPE
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="card" style={{ padding:'24px', marginBottom:24 }}>
-        <h2 style={{ fontSize:'1.1rem', fontWeight:800, marginBottom:6 }}>📸 1. Fotos da Vistoria do Veículo</h2>
-        <p style={{ fontSize:'.84rem', color:'var(--muted)', marginBottom:18 }}>
-          Envie fotos das avarias. A IA identificará o modelo, todas as peças danificadas e desenhará as <strong>Bounding Boxes nas fotos</strong>.
-        </p>
-
-        <div className="upload-zone" onClick={() => fileRef.current?.click()}>
-          <input ref={fileRef} type="file" multiple accept="image/*" style={{ display:'none' }} onChange={e => processFiles(e.target.files)} />
-          <div style={{ fontSize:'2.5rem', marginBottom:10 }}>📸</div>
-          <div style={{ fontWeight:700, color:'var(--gold)', fontSize:'1rem', marginBottom:4 }}>Clique ou arraste fotos aqui</div>
-          <div style={{ fontSize:'.82rem', color:'var(--muted)' }}>JPG, PNG, WEBP — Suporta múltiplas imagens</div>
-        </div>
-
-        {images.length > 0 && (
-          <div style={{ marginTop:18 }}>
-            <div style={{ display:'flex', gap:14, flexWrap:'wrap', marginBottom:16 }}>
-              {images.map((img, i) => (
-                <div key={i} className="img-box-container">
-                  <img src={img.blobUrl} alt={img.name} style={{ width:280, height:180, objectFit:'cover', display:'block' }} />
-                  {/* Bounding Box Overlays */}
-                  {parts.map((p, idx) => {
-                    if (!p.box) return null;
-                    const [ymin, xmin, ymax, xmax] = p.box;
+      {activeTab === 'history' && (
+        <div className='card' style={{ padding:'24px', marginBottom:24 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', marginBottom:18, alignItems:'center' }}>
+            <h2 style={{ fontSize:'1.1rem', fontWeight:800 }}>📋 Historico de OS</h2>
+            <button className='btn-ghost' onClick={function() { setActiveTab('budget'); }}>← Voltar</button>
+          </div>
+          {osList.length === 0 ? (
+            <p style={{ color:'var(--dim)', textAlign:'center', padding:32 }}>Nenhuma OS salva ainda.</p>
+          ) : (
+            <div style={{ overflowX:'auto' }}>
+              <table className='tbl'>
+                <thead><tr><th>OS</th><th>Data</th><th>Veiculo</th><th>Placa</th><th>Cliente</th><th>Total</th><th>% FIPE</th><th>Status</th></tr></thead>
+                <tbody>
+                  {osList.map(function(os) {
                     return (
-                      <div key={idx} className="bbox-overlay" style={{
-                        top: ymin + "%",
-                        left: xmin + "%",
-                        width: Math.max(18, xmax - xmin) + "%",
-                        height: Math.max(18, ymax - ymin) + "%",
-                      }}>
-                        <div className="bbox-label">{p.name.split(' ')[0]}</div>
-                      </div>
+                      <tr key={os.id}>
+                        <td style={{ fontWeight:700 }}>{os.id}</td>
+                        <td>{os.date}</td>
+                        <td>{os.vehicle}</td>
+                        <td><code style={{ background:'rgba(255,255,255,0.08)', padding:'2px 6px', borderRadius:4 }}>{os.plate}</code></td>
+                        <td>{os.client}</td>
+                        <td style={{ fontWeight:700, color:'var(--gold)' }}>{fmt(os.total)}</td>
+                        <td style={{ fontWeight:700, color: parseFloat(os.fipePct) >= 75 ? 'var(--rose)' : 'var(--emerald)' }}>{os.fipePct}%</td>
+                        <td><span className='badge badge-repair'>{os.status}</span></td>
+                      </tr>
                     );
                   })}
-                </div>
-              ))}
-            </div>
-
-            <button className="btn-gold" onClick={analyze} disabled={loading}>
-              {loading ? (
-                <><div className="spinner"/><span>{loadingMsg || 'Analisando...'}</span></>
-              ) : (
-                '⚡ ANALISAR FOTOS COM GEMINI VISION'
-              )}
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="card" style={{ padding:'24px', marginBottom:24 }}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16, flexWrap:'wrap', gap:10 }}>
-          <h2 style={{ fontSize:'1.1rem', fontWeight:800, color:'var(--gold)' }}>🚘 2. Ficha do Veículo & Tabela FIPE</h2>
-          <span className="badge badge-used">📊 FIPE Ref: {fmt(fipeVal)}</span>
-        </div>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(165px, 1fr))', gap:13 }}>
-          {[['brand','Marca'],['model','Modelo / Versão'],['year','Ano'],['plate','Placa'],['color','Cor'],['clientName','Cliente']].map(([f,lbl]) => (
-            <div key={f}>
-              <label>{lbl}:</label>
-              <input className="inp" value={vehicle[f]||''} onChange={e => setVField(f, e.target.value)} placeholder={lbl} />
-            </div>
-          ))}
-          <div>
-            <label>Valor Tabela FIPE (R$):</label>
-            <input type="number" className="inp" value={vehicle.fipeValue||68500} onChange={e => setVField('fipeValue', parseFloat(e.target.value)||0)} />
-          </div>
-        </div>
-      </div>
-
-      {parts.length > 0 && (
-        <div className="fade-up">
-
-          {/* PERDA TOTAL ALERT */}
-          {isTotalLoss && (
-            <div className="card" style={{ padding:'22px 26px', marginBottom:24, background:'var(--grad-danger)', color:'#fff', border:'2px solid #ff4d6d', boxShadow:'0 0 35px rgba(244,63,94,0.45)' }}>
-              <div style={{ display:'flex', alignItems:'center', gap:16 }}>
-                <div style={{ fontSize:'2.8rem' }}>🚨</div>
-                <div>
-                  <h2 style={{ fontSize:'1.35rem', fontWeight:900, textTransform:'uppercase', letterSpacing:'.03em' }}>
-                    ALERTA DE PERDA TOTAL (Sinistro {'>'} 75% da Tabela FIPE)
-                  </h2>
-                  <p style={{ fontSize:'.9rem', opacity:0.95, marginTop:4, lineHeight:1.5 }}>
-                    O orçamento atual de <strong>{fmt(budgetSel)}</strong> atinge <strong>{fipePct}%</strong> da Tabela FIPE do veículo ({fmt(fipeVal)}).
-                    Segundo a regulamentação de sinistros, avarias superiores a 75% caracterizam <strong>Perda Total (PT)</strong>.
-                  </p>
-                </div>
-              </div>
+                </tbody>
+              </table>
             </div>
           )}
+        </div>
+      )}
 
-          <div className="card" style={{ padding:'24px', marginBottom:24 }}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12, flexWrap:'wrap', gap:10 }}>
-              <h2 style={{ fontSize:'1.1rem', fontWeight:800 }}>🔍 3. Mapeamento de Avarias & Bounding Boxes</h2>
-              <span className="badge badge-replace">Compromisso FIPE: {fipePct}%</span>
-            </div>
-            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-              {parts.map((p, i) => (
-                <div key={p.id} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'13px 17px', background:'rgba(10,14,24,.85)', borderRadius:9, border:'1px solid var(--border)', flexWrap:'wrap', gap:9 }}>
-                  <div>
-                    <strong style={{ fontSize:'.93rem' }}>{i+1}. {p.name}</strong>
-                    <span style={{ fontSize:'.76rem', color:'var(--muted)', marginLeft:10 }}>({p.category})</span>
-                    {p.notes && <div style={{ fontSize:'.75rem', color:'var(--dim)', marginTop:3 }}>{p.notes}</div>}
-                  </div>
-                  <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                    <span className={p.actionRequired==='Substituição' ? 'badge badge-replace' : 'badge badge-repair'}>{p.actionRequired}</span>
-                  </div>
-                </div>
-              ))}
+      {activeTab === 'budget' && (
+        <div>
+
+          {/* SAMPLES */}
+          <div className='card' style={{ padding:'20px 24px', marginBottom:22 }}>
+            <h2 style={{ fontSize:'1rem', fontWeight:800, marginBottom:14 }}>📸 Carregar Vistoria de Exemplo</h2>
+            <div style={{ display:'flex', gap:12, flexWrap:'wrap' }}>
+              {SAMPLES.map(function(s) {
+                return (
+                  <button key={s.id} className='btn-ghost' onClick={function() { loadSample(s); }}
+                    style={{ display:'flex', flexDirection:'column', alignItems:'flex-start', gap:2, padding:'10px 14px', minWidth:180 }}>
+                    <span style={{ fontWeight:700, fontSize:'.85rem' }}>{s.label}</span>
+                    <span style={{ fontSize:'.72rem', color:'var(--dim)' }}>{s.sub}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <div className="card" style={{ padding:'24px', marginBottom:24 }}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20, flexWrap:'wrap', gap:12 }}>
+          {/* UPLOAD */}
+          <div className='card' style={{ padding:'22px 24px', marginBottom:22 }}>
+            <h2 style={{ fontSize:'1rem', fontWeight:800, marginBottom:14 }}>📷 Fotos da Vistoria</h2>
+            <div className='upload-zone' onClick={function() { fileRef.current.click(); }}
+              onDragOver={function(e) { e.preventDefault(); }}
+              onDrop={function(e) { e.preventDefault(); processFiles(e.dataTransfer.files); }}>
+              <div style={{ fontSize:'2rem', marginBottom:8 }}>📁</div>
+              <div style={{ fontWeight:700, marginBottom:4 }}>Arraste fotos aqui ou clique para selecionar</div>
+              <div style={{ fontSize:'.8rem', color:'var(--muted)' }}>JPG, PNG, WEBP — múltiplas fotos suportadas</div>
+              <input ref={fileRef} type='file' multiple accept='image/*' style={{ display:'none' }}
+                onChange={function(e) { processFiles(e.target.files); }} />
+            </div>
+            {images.length > 0 && (
+              <div style={{ display:'flex', gap:12, flexWrap:'wrap', marginTop:14 }}>
+                {images.map(function(img, idx) {
+                  return (
+                    <div key={idx} className='img-box-container' style={{ maxWidth:220 }}>
+                      <img src={img.blobUrl} style={{ width:'100%', display:'block' }} alt={'foto ' + (idx+1)} />
+                      {parts.filter(function(p) { return p.box; }).map(function(p, pi) {
+                        const [x1,y1,x2,y2] = p.box;
+                        return (
+                          <div key={p.id} className='bbox-overlay'
+                            style={{ left: x1+'%', top: y1+'%', width: (x2-x1)+'%', height: (y2-y1)+'%' }}>
+                            <span className='bbox-label'>{pi+1}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* VEHICLE FORM */}
+          <div className='card' style={{ padding:'22px 24px', marginBottom:22 }}>
+            <h2 style={{ fontSize:'1rem', fontWeight:800, marginBottom:16 }}>🚗 Dados do Veiculo</h2>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(170px, 1fr))', gap:14 }}>
+              {[['brand','Marca'],['model','Modelo'],['year','Ano'],['plate','Placa'],['color','Cor'],['clientName','Cliente']].map(function(pair) {
+                return (
+                  <div key={pair[0]}>
+                    <label>{pair[1]}</label>
+                    <input className='inp' value={vehicle[pair[0]] || ''}
+                      onChange={function(e) { setVField(pair[0], e.target.value); }}
+                      placeholder={pair[1]} />
+                  </div>
+                );
+              })}
               <div>
-                <h2 style={{ fontSize:'1.15rem', fontWeight:800 }}>🛒 4. Cotação Mercado Livre (Links Diretos para Anúncios)</h2>
-                <p style={{ fontSize:'.84rem', color:'var(--muted)' }}>Links exatos para o produto selecionado no Mercado Livre Brasil:</p>
+                <label>Valor FIPE (R$)</label>
+                <input type='number' className='inp' value={vehicle.fipeValue || 68500}
+                  onChange={function(e) { setVField('fipeValue', parseFloat(e.target.value) || 0); }}
+                  placeholder='68500' />
               </div>
             </div>
+            <div style={{ marginTop:16, display:'flex', gap:10, flexWrap:'wrap', alignItems:'center' }}>
+              <button className='btn-gold' disabled={!images.length || !vehicle.brand || loading} onClick={analyze}>
+                {loading ? loadingMsg || 'Analisando...' : '🤖 Analisar com Gemini AI'}
+              </button>
+              {analysis && <span className='badge badge-ai'>{analysis.aiPowered ? '✨ Analise IA' : '📂 Exemplo Carregado'}</span>}
+            </div>
+          </div>
 
-            <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
-              {parts.map(p => {
-                const isRepair = p.selectedChoice === 'repair' || p.actionRequired === 'Recuperação' || p.actionRequired === 'Pintura';
-                const np = p.newPrice?.price || 0;
-                const up = p.usedPrice?.price || 0;
-
+          {/* PARTS with operations */}
+          {parts.length > 0 && (
+            <div className='card' style={{ padding:'22px 24px', marginBottom:22 }}>
+              <h2 style={{ fontSize:'1rem', fontWeight:800, marginBottom:18 }}
+                >⚙️ Pecas & Horas por Operacao — <span style={{ color:'var(--gold)', fontSize:'.9rem' }}>R$ 80,00/h (taxa fixa)</span></h2>
+              {parts.map(function(part) {
+                const ops = part.ops || DEFAULT_OPS;
+                const totalH = partLaborHours(ops);
+                const totalMO = partLaborTotal(ops);
+                const selPrice = part.selectedChoice === 'new' ? (part.newPrice ? part.newPrice.price || 0 : 0) :
+                                 part.selectedChoice === 'used' ? (part.usedPrice ? part.usedPrice.price || 0 : 0) : 0;
+                const isRepair = part.actionRequired === 'Recuperacao' || part.selectedChoice === 'repair';
                 return (
-                  <div key={p.id} style={{ background:'rgba(10,14,24,.9)', padding:20, borderRadius:13, border:'1px solid var(--border)' }}>
-                    <h3 style={{ fontSize:'1rem', fontWeight:800, marginBottom:12 }}>{p.name}</h3>
-
-                    {isRepair ? (
-                      <div style={{ padding:'12px 16px', background:'rgba(245,158,11,.1)', border:'1px solid rgba(245,158,11,.3)', color:'#fbbf24', borderRadius:8, fontSize:'.86rem' }}>
-                        🛠️ Serviço de Funilaria — incluso no custo de mão de obra.
+                  <div key={part.id} style={{ marginBottom:22, padding:'18px 20px', background:'rgba(6,8,15,0.8)', borderRadius:12, border:'1px solid var(--border)' }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', marginBottom:14, gap:12, flexWrap:'wrap' }}>
+                      <div>
+                        <div style={{ fontWeight:800, fontSize:'.95rem' }}>
+                          {part.name}
+                          <span style={{ marginLeft:8, fontSize:'.75rem', color:'var(--dim)' }}>({part.category})</span>
+                        </div>
+                        {part.notes && <div style={{ fontSize:'.8rem', color:'var(--dim)', marginTop:3 }}>{part.notes}</div>}
+                        <span className={'badge badge-' + (isRepair ? 'repair' : 'replace')} style={{ marginTop:6 }}>
+                          {part.actionRequired}
+                        </span>
                       </div>
-                    ) : (
-                      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px, 1fr))', gap:13 }}>
-                        <div className="sel-card" onClick={() => toggleChoice(p.id, 'new')} style={{ padding:16, borderRadius:10, background: p.selectedChoice==='new' ? 'rgba(139,92,246,.18)' : 'rgba(20,28,46,.5)', border: p.selectedChoice==='new' ? '2px solid var(--violet)' : '1px solid var(--border)', cursor:'pointer' }}>
-                          <div style={{ display:'flex', justifyContent:'space-between', marginBottom:8 }}><span className="badge badge-new">Nova OEM</span></div>
-                          <div style={{ fontSize:'1.25rem', fontWeight:900, color:'#c084fc' }}>{fmt(np)}</div>
-                          <div style={{ fontSize:'.81rem', color:'#cbd5e1', marginTop:5 }}>{p.newPrice?.brandName}</div>
-                          {p.newPrice?.link && (
-                            <a href={p.newPrice.link} target="_blank" onClick={e => e.stopPropagation()} style={{ fontSize:'.77rem', color:'#c084fc', marginTop:8, display:'inline-block', fontWeight:700 }}>
-                              Ver Anúncio no Mercado Livre ↗
-                            </a>
-                          )}
-                        </div>
+                      <div style={{ textAlign:'right' }}>
+                        <div style={{ fontSize:'.7rem', color:'var(--muted)' }}>MO desta peca</div>
+                        <div style={{ fontSize:'1.2rem', fontWeight:900, color:'var(--violet)' }}>{fmt(totalMO)}</div>
+                        <div style={{ fontSize:'.7rem', color:'var(--dim)' }}>{totalH.toFixed(1)}h x R$ 80</div>
+                        {selPrice > 0 && <div style={{ fontSize:'.8rem', color:'var(--gold)', fontWeight:700, marginTop:3 }}>Peca: {fmt(selPrice)}</div>}
+                      </div>
+                    </div>
 
-                        <div className="sel-card" onClick={() => toggleChoice(p.id, 'used')} style={{ padding:16, borderRadius:10, background: p.selectedChoice==='used' ? 'rgba(16,185,129,.18)' : 'rgba(20,28,46,.5)', border: p.selectedChoice==='used' ? '2px solid var(--emerald)' : '1px solid var(--border)', cursor:'pointer' }}>
-                          <div style={{ display:'flex', justifyContent:'space-between', marginBottom:8 }}><span className="badge badge-used">Usada DETRAN</span></div>
-                          <div style={{ fontSize:'1.25rem', fontWeight:900, color:'#34d399' }}>{fmt(up)}</div>
-                          <div style={{ fontSize:'.81rem', color:'#cbd5e1', marginTop:5 }}>{p.usedPrice?.brandName}</div>
-                          {p.usedPrice?.link && (
-                            <a href={p.usedPrice.link} target="_blank" onClick={e => e.stopPropagation()} style={{ fontSize:'.77rem', color:'#34d399', marginTop:8, display:'inline-block', fontWeight:700 }}>
-                              Ver Anúncio no Mercado Livre ↗
+                    {/* Operation hours grid */}
+                    <div className='op-grid' style={{ marginBottom:14 }}>
+                      {OPS.map(function(op) {
+                        const h = parseFloat(ops[op]) || 0;
+                        const cost = h * LABOR_RATE;
+                        return (
+                          <div key={op} className='op-cell'>
+                            <div style={{ fontSize:'.68rem', color:'var(--muted)', fontWeight:700, textTransform:'uppercase', letterSpacing:'.04em' }}>
+                              {OP_LABEL[op]}
+                            </div>
+                            <input type='number' step='0.5' min='0' max='99'
+                              value={ops[op] || 0}
+                              onChange={function(e) { setPartOp(part.id, op, e.target.value); }}
+                              className='inp' style={{ textAlign:'center', fontWeight:800, fontSize:'1rem', color:'var(--gold-hi)', background:'transparent', border:'none', padding:'4px 0', width:'100%' }} />
+                            <div style={{ fontSize:'.68rem', color:'var(--dim)' }}>h</div>
+                            {h > 0 && <div className='op-cost'>{fmt(cost)}</div>}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* ML price cards — only if not pure repair */}
+                    {(part.newPrice && part.newPrice.price > 0) && (
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+                        <div onClick={function() { toggleChoice(part.id, 'new'); }}
+                          style={{ padding:'12px 14px', borderRadius:10, cursor:'pointer', transition:'all .2s',
+                            background: part.selectedChoice === 'new' ? 'rgba(139,92,246,.18)' : 'rgba(255,255,255,.04)',
+                            border: part.selectedChoice === 'new' ? '2px solid var(--violet)' : '1px solid var(--border)' }}>
+                          <span className='badge badge-new' style={{ marginBottom:6, display:'inline-flex' }}>Nova OEM</span>
+                          <div style={{ fontWeight:900, fontSize:'1.05rem', color:'var(--text)' }}>{fmt(part.newPrice.price)}</div>
+                          <div style={{ fontSize:'.73rem', color:'var(--dim)', marginTop:2 }}>{part.newPrice.brandName}</div>
+                          {part.newPrice.link && part.newPrice.link !== '#' && (
+                            <a href={part.newPrice.link} target='_blank'
+                              onClick={function(e) { e.stopPropagation(); }}
+                              style={{ fontSize:'.72rem', color:'var(--violet)', display:'block', marginTop:6, textDecoration:'none' }}>
+                              Ver no Mercado Livre ↗
                             </a>
                           )}
                         </div>
+                        <div onClick={function() { toggleChoice(part.id, 'used'); }}
+                          style={{ padding:'12px 14px', borderRadius:10, cursor:'pointer', transition:'all .2s',
+                            background: part.selectedChoice === 'used' ? 'rgba(16,185,129,.18)' : 'rgba(255,255,255,.04)',
+                            border: part.selectedChoice === 'used' ? '2px solid var(--emerald)' : '1px solid var(--border)' }}>
+                          <span className='badge badge-used' style={{ marginBottom:6, display:'inline-flex' }}>Usada DETRAN</span>
+                          <div style={{ fontWeight:900, fontSize:'1.05rem', color:'var(--text)' }}>{fmt(part.usedPrice ? part.usedPrice.price : 0)}</div>
+                          <div style={{ fontSize:'.73rem', color:'var(--dim)', marginTop:2 }}>{part.usedPrice ? part.usedPrice.brandName : ''}</div>
+                          {part.usedPrice && part.usedPrice.link && part.usedPrice.link !== '#' && (
+                            <a href={part.usedPrice.link} target='_blank'
+                              onClick={function(e) { e.stopPropagation(); }}
+                              style={{ fontSize:'.72rem', color:'var(--emerald)', display:'block', marginTop:6, textDecoration:'none' }}>
+                              Ver no Mercado Livre ↗
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {isRepair && (!part.newPrice || part.newPrice.price === 0) && (
+                      <div style={{ textAlign:'center', color:'var(--dim)', fontSize:'.82rem', padding:'8px', background:'rgba(245,158,11,.05)', borderRadius:8, border:'1px dashed var(--border)' }}>
+                        🔧 Servico de recuperacao — sem substituicao de peca
                       </div>
                     )}
                   </div>
                 );
               })}
             </div>
-          </div>
+          )}
 
-          <div className="card" style={{ padding:'24px', marginBottom:24 }}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:18, flexWrap:'wrap', gap:10 }}>
-              <h2 style={{ fontSize:'1.1rem', fontWeight:800, color:'var(--gold)' }}>🔧 5. Mão de Obra e Status da Ordem de Serviço (OS)</h2>
-              <div>
-                <label style={{ display:'inline', marginRight:8 }}>Status OS:</label>
-                <select className="inp" style={{ width:'auto', display:'inline-block' }} value={osStatus} onChange={e => setOsStatus(e.target.value)}>
-                  <option value="📋 Em Vistoria">📋 Em Vistoria</option>
-                  <option value="📦 Aguardando Peças">📦 Aguardando Peças</option>
-                  <option value="🛠️ Em Funilaria">🛠️ Em Funilaria</option>
-                  <option value="✅ Concluído">✅ Concluído</option>
-                </select>
+          {/* THIRD PARTY SERVICES */}
+          {parts.length > 0 && (
+            <div className='card' style={{ padding:'22px 24px', marginBottom:22 }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
+                <h2 style={{ fontSize:'1rem', fontWeight:800 }}>🔗 Servicos de Terceiros</h2>
+                <button className='btn-ghost' style={{ fontSize:'.8rem' }} onClick={addThirdParty}>+ Adicionar</button>
               </div>
-            </div>
-
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:14, marginBottom:16 }}>
-              {[['bodyworkHours','Horas Funilaria'],['bodyworkRate','Taxa/hora (R$)'],['paintPanels','Painéis Pintura'],['paintRatePerPanel','Pintura/Peça (R$)'],['mechanicMontage','Montagem (R$)']].map(([k,lbl]) => (
-                <div key={k}>
-                  <label>{lbl}:</label>
-                  <input type="number" className="inp" value={labor[k]||0} onChange={e => setLabor(prev => ({ ...prev, [k]: parseFloat(e.target.value)||0 }))} />
+              {thirdParty.length === 0 && (
+                <p style={{ color:'var(--dim)', fontSize:'.85rem', textAlign:'center', padding:'16px 0' }}>Nenhum servico de terceiros. Clique em + Adicionar.</p>
+              )}
+              {thirdParty.map(function(tp) {
+                return (
+                  <div key={tp.id} style={{ display:'flex', gap:10, marginBottom:10, alignItems:'center' }}>
+                    <input className='inp' placeholder='Descricao (ex: Alinhamento, Funilaria externa...)'
+                      value={tp.name} style={{ flex:3 }}
+                      onChange={function(e) { setTPField(tp.id, 'name', e.target.value); }} />
+                    <input type='number' className='inp' placeholder='Valor R$'
+                      value={tp.value || ''} style={{ flex:1, minWidth:100 }}
+                      onChange={function(e) { setTPField(tp.id, 'value', e.target.value); }} />
+                    <button className='btn-ghost' style={{ padding:'8px 12px', color:'var(--rose)', borderColor:'rgba(244,63,94,.3)', flexShrink:0 }}
+                      onClick={function() { removeThirdParty(tp.id); }}>✕</button>
+                  </div>
+                );
+              })}
+              {thirdParty.length > 0 && (
+                <div style={{ textAlign:'right', marginTop:12, fontWeight:700, color:'var(--violet)' }}>
+                  Total Terceiros: {fmt(totalThirdPartyVal)}
                 </div>
-              ))}
+              )}
             </div>
+          )}
 
-            <button className="btn-ghost" onClick={saveOS}>💾 Salvar Ordem de Serviço no Histórico</button>
-          </div>
-
-          <div className="card" style={{ padding:'28px', marginBottom:32, border:'2px solid var(--gold)', boxShadow:'var(--shadow-gold)' }}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:22, flexWrap:'wrap', gap:14 }}>
-              <div>
-                <h2 style={{ fontSize:'1.35rem', fontWeight:900 }}>💰 Resumo Total do Orçamento</h2>
-                <p style={{ fontSize:'.84rem', color:'var(--muted)' }}>Valor final com opção de exportação em PDF e compartilhamento por WhatsApp.</p>
-              </div>
-              <div style={{ display:'flex', gap:12, flexWrap:'wrap' }}>
-                <button className="btn-whatsapp" onClick={shareWhatsApp}>📲 Enviar por WhatsApp</button>
-                <button className="btn-emerald" onClick={() => setShowPdf(true)}>📄 Imprimir / Salvar PDF</button>
-              </div>
-            </div>
-
-            {saving > 0 && (
-              <div style={{ background:'var(--grad-emerald)', padding:'14px 20px', borderRadius:10, marginBottom:20, color:'#fff', fontWeight:800, fontSize:'1rem' }}>
-                🎉 Economia de {fmt(saving)} ({savingPct}% OFF) com peças usadas credenciadas!
-              </div>
-            )}
-
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(240px, 1fr))', gap:16, marginBottom:20 }}>
-              <div style={{ padding:18, background:'rgba(10,14,24,.85)', borderRadius:11, border:'1px solid var(--border)' }}>
-                <div style={{ fontSize:'.77rem', color:'var(--muted)', fontWeight:700 }}>100% PEÇAS NOVAS OEM</div>
-                <div style={{ fontSize:'1.4rem', fontWeight:900, color:'#c084fc', marginTop:4 }}>{fmt(budgetNew)}</div>
-              </div>
-              <div style={{ padding:18, background:'rgba(245,158,11,.1)', borderRadius:11, border:'2px solid var(--gold)' }}>
-                <div style={{ fontSize:'.77rem', color:'var(--gold)', fontWeight:800 }}>ORÇAMENTO SELECIONADO</div>
-                <div style={{ fontSize:'1.7rem', fontWeight:900, color:'#fff', marginTop:4 }}>{fmt(budgetSel)}</div>
-              </div>
-            </div>
-          </div>
-
-          {osList.length > 0 && (
-            <div className="card" style={{ padding:'24px', marginBottom:32 }}>
-              <h2 style={{ fontSize:'1.1rem', fontWeight:800, color:'var(--gold)', marginBottom:16 }}>📂 Histórico de Ordens de Serviço Salvas</h2>
+          {/* LABOR SUMMARY TABLE */}
+          {parts.length > 0 && (
+            <div className='card' style={{ padding:'22px 24px', marginBottom:22 }}>
+              <h2 style={{ fontSize:'1rem', fontWeight:800, marginBottom:16 }}
+                >📊 Resumo de Mao de Obra — <span style={{ color:'var(--gold)', fontSize:'.9rem' }}>R$ 80,00/h (todas as operacoes)</span></h2>
               <div style={{ overflowX:'auto' }}>
-                <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'.85rem' }}>
+                <table className='tbl'>
                   <thead>
-                    <tr style={{ borderBottom:'1px solid var(--border)', color:'var(--muted)', textAlign:'left' }}>
-                      <th style={{ padding:8 }}>Nº OS</th><th style={{ padding:8 }}>Data</th><th style={{ padding:8 }}>Veículo</th><th style={{ padding:8 }}>Cliente</th><th style={{ padding:8 }}>Status</th><th style={{ padding:8, textAlign:'right' }}>Total</th>
+                    <tr>
+                      <th>Peca / Item</th>
+                      <th>Funilaria</th>
+                      <th>Pintura</th>
+                      <th>Tapec./Vidrac.</th>
+                      <th>Mecanica</th>
+                      <th>Recuperacao</th>
+                      <th style={{ color:'var(--violet)', textAlign:'right' }}>Total MO</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {osList.map(os => (
-                      <tr key={os.id} style={{ borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
-                        <td style={{ padding:8, fontWeight:700, color:'var(--gold)' }}>{os.id}</td>
-                        <td style={{ padding:8 }}>{os.date}</td>
-                        <td style={{ padding:8 }}>{os.vehicle} ({os.plate})</td>
-                        <td style={{ padding:8 }}>{os.client}</td>
-                        <td style={{ padding:8 }}><span className="badge badge-used">{os.status}</span></td>
-                        <td style={{ padding:8, textAlign:'right', fontWeight:700 }}>{fmt(os.total)}</td>
+                    {parts.map(function(p) {
+                      const ops = p.ops || DEFAULT_OPS;
+                      const total = partLaborTotal(ops);
+                      return (
+                        <tr key={p.id}>
+                          <td style={{ fontWeight:600 }}>{p.name}</td>
+                          {OPS.map(function(op) {
+                            const h = parseFloat(ops[op]) || 0;
+                            return (
+                              <td key={op} style={{ color: h > 0 ? 'var(--text)' : 'var(--dim)' }}>
+                                {h > 0 ? h + 'h = ' + fmt(h * LABOR_RATE) : '—'}
+                              </td>
+                            );
+                          })}
+                          <td style={{ fontWeight:800, color:'var(--violet)', textAlign:'right' }}>{fmt(total)}</td>
+                        </tr>
+                      );
+                    })}
+                    <tr style={{ borderTop:'2px solid var(--border)' }}>
+                      <td style={{ fontWeight:800 }}>SUBTOTAL MO</td>
+                      {OPS.map(function(op) {
+                        const colTotal = parts.reduce(function(s, p) { return s + (parseFloat((p.ops || {})[op]) || 0); }, 0) * LABOR_RATE;
+                        return <td key={op} style={{ fontWeight:700, color: colTotal > 0 ? 'var(--gold)' : 'var(--dim)' }}>{colTotal > 0 ? fmt(colTotal) : '—'}</td>;
+                      })}
+                      <td style={{ fontWeight:800, color:'var(--violet)', textAlign:'right' }}>{fmt(totalLaborParts)}</td>
+                    </tr>
+                    {totalThirdPartyVal > 0 && (
+                      <tr>
+                        <td style={{ fontWeight:700, color:'var(--rose)' }}>Servicos de Terceiros</td>
+                        <td colSpan={5} style={{ color:'var(--dim)', fontSize:'.82rem' }}>
+                          {thirdParty.filter(function(t) { return t.name; }).map(function(t) { return t.name + ': ' + fmt(t.value); }).join(' | ')}
+                        </td>
+                        <td style={{ fontWeight:800, color:'var(--rose)', textAlign:'right' }}>{fmt(totalThirdPartyVal)}</td>
                       </tr>
-                    ))}
+                    )}
+                    <tr style={{ borderTop:'2px solid var(--gold)', background:'rgba(245,158,11,.06)' }}>
+                      <td colSpan={6} style={{ fontWeight:900, fontSize:'.95rem' }}>TOTAL GERAL MO + TERCEIROS</td>
+                      <td style={{ fontWeight:900, fontSize:'1.05rem', color:'var(--gold)', textAlign:'right' }}>{fmt(totalLabor)}</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
             </div>
           )}
-        </div>
-      )}
 
-      {showPdf && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.88)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
-          <div style={{ background:'#fff', color:'#0f172a', width:'100%', maxWidth:820, maxHeight:'90vh', overflowY:'auto', borderRadius:14, padding:36 }}>
-            <div className="no-print" style={{ display:'flex', gap:10, marginBottom:22 }}>
-              <button className="btn-gold" onClick={() => window.print()}>🖨️ Imprimir / Salvar PDF</button>
-              <button className="btn-ghost" style={{ color:'#334155' }} onClick={() => setShowPdf(false)}>✕ Fechar</button>
-            </div>
-            <div id="pdf-area">
-              <div style={{ borderBottom:'2px solid #e2e8f0', paddingBottom:16, marginBottom:20, display:'flex', justifyContent:'space-between' }}>
-                <div>
-                  <h1 style={{ fontSize:'1.3rem', color:'#0f172a', fontWeight:900 }}>LAUDO & ORÇAMENTO DE REPAROS AUTOMOTIVOS</h1>
-                  <p style={{ fontSize:'.83rem', color:'#64748b' }}>AutoBudget AI v2.5 • Visão Computacional com Tabela FIPE</p>
+          {/* BUDGET SUMMARY CARD */}
+          {parts.length > 0 && (
+            <div className='card' id='pdf-area' style={{ padding:'26px 28px', marginBottom:28, border:'2px solid var(--gold)', boxShadow:'var(--shadow-gold)' }}>
+              <h2 style={{ fontSize:'1.1rem', fontWeight:900, marginBottom:20 }}>💰 Resumo do Orcamento Final</h2>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(160px, 1fr))', gap:16, marginBottom:20 }}>
+                <div style={{ background:'rgba(255,255,255,.04)', borderRadius:10, padding:'14px 16px', border:'1px solid var(--border)' }}>
+                  <div style={{ fontSize:'.72rem', color:'var(--muted)', fontWeight:700, marginBottom:6 }}>PECAS (c/ usadas)</div>
+                  <div style={{ fontSize:'1.4rem', fontWeight:900 }}>{fmt(totSelected)}</div>
+                  <div style={{ fontSize:'.72rem', color:'var(--dim)' }}>Nova OEM: {fmt(totNew)}</div>
                 </div>
-                <div style={{ textAlign:'right', fontSize:'.83rem', color:'#64748b' }}>
-                  <div>Data: {new Date().toLocaleDateString('pt-BR')}</div>
-                  <div>Nº OS: #{Math.floor(100000 + Math.random()*900000)}</div>
+                <div style={{ background:'rgba(139,92,246,.08)', borderRadius:10, padding:'14px 16px', border:'1px solid rgba(139,92,246,.3)' }}>
+                  <div style={{ fontSize:'.72rem', color:'var(--muted)', fontWeight:700, marginBottom:6 }}>MAO DE OBRA</div>
+                  <div style={{ fontSize:'1.4rem', fontWeight:900, color:'var(--violet)' }}>{fmt(totalLaborParts)}</div>
+                  <div style={{ fontSize:'.72rem', color:'var(--dim)' }}>R$ 80,00/h — todas operacoes</div>
+                </div>
+                {totalThirdPartyVal > 0 && (
+                  <div style={{ background:'rgba(244,63,94,.06)', borderRadius:10, padding:'14px 16px', border:'1px solid rgba(244,63,94,.25)' }}>
+                    <div style={{ fontSize:'.72rem', color:'var(--muted)', fontWeight:700, marginBottom:6 }}>TERCEIROS</div>
+                    <div style={{ fontSize:'1.4rem', fontWeight:900, color:'var(--rose)' }}>{fmt(totalThirdPartyVal)}</div>
+                    <div style={{ fontSize:'.72rem', color:'var(--dim)' }}>{thirdParty.filter(function(t){return t.name;}).length} servico(s)</div>
+                  </div>
+                )}
+                <div style={{ background:'rgba(245,158,11,.1)', borderRadius:10, padding:'14px 16px', border:'2px solid var(--gold)' }}>
+                  <div style={{ fontSize:'.72rem', color:'var(--muted)', fontWeight:700, marginBottom:6 }}>TOTAL GERAL</div>
+                  <div style={{ fontSize:'1.7rem', fontWeight:900, color:'var(--gold)' }}>{fmt(budgetSel)}</div>
+                  <div style={{ fontSize:'.72rem', color:'var(--emerald)', fontWeight:700 }}>Economia: {fmt(saving)} ({savingPct}% OFF)</div>
+                </div>
+                <div style={{ background: isTotalLoss ? 'rgba(244,63,94,.1)' : 'rgba(16,185,129,.08)', borderRadius:10, padding:'14px 16px', border:'1px solid ' + (isTotalLoss ? 'rgba(244,63,94,.4)' : 'rgba(16,185,129,.3)') }}>
+                  <div style={{ fontSize:'.72rem', color:'var(--muted)', fontWeight:700, marginBottom:6 }}>% TABELA FIPE</div>
+                  <div style={{ fontSize:'1.7rem', fontWeight:900, color: isTotalLoss ? 'var(--rose)' : 'var(--emerald)' }}>{fipePct}%</div>
+                  <div style={{ fontSize:'.72rem', color:'var(--dim)' }}>FIPE: {fmt(fipeVal)}</div>
                 </div>
               </div>
 
               {isTotalLoss && (
-                <div style={{ background:'#fef2f2', border:'2px solid #ef4444', color:'#991b1b', padding:'12px 16px', borderRadius:8, fontWeight:800, marginBottom:16, fontSize:'.9rem' }}>
-                  🚨 ALERTA PERDA TOTAL: Custo do Reparo ({fmt(budgetSel)}) atinge {fipePct}% da Tabela FIPE ({fmt(fipeVal)}).
+                <div style={{ background:'rgba(244,63,94,.12)', border:'1px solid rgba(244,63,94,.5)', borderRadius:10, padding:'14px 18px', marginBottom:18, display:'flex', alignItems:'center', gap:12 }}>
+                  <span style={{ fontSize:'1.4rem' }}>🚨</span>
+                  <div>
+                    <div style={{ fontWeight:800, color:'var(--rose)' }}>ALERTA DE PERDA TOTAL</div>
+                    <div style={{ fontSize:'.83rem', color:'var(--muted)', marginTop:2 }}>Custo de reparo ({fmt(budgetSel)}) atinge {fipePct}% da Tabela FIPE ({fmt(fipeVal)}). Verifique com a seguradora.</div>
+                  </div>
                 </div>
               )}
 
-              <div style={{ background:'#f8fafc', padding:'12px 16px', borderRadius:7, marginBottom:18, fontSize:'.88rem' }}>
-                <strong>Veículo:</strong> {vehicle.brand} {vehicle.model} ({vehicle.year}) &nbsp;•&nbsp;
-                <strong>Placa:</strong> {vehicle.plate||'N/I'} &nbsp;•&nbsp;
-                <strong>FIPE:</strong> {fmt(fipeVal)} ({fipePct}%)
-              </div>
-
-              <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'.84rem', marginBottom:22 }}>
-                <thead>
-                  <tr style={{ background:'#f1f5f9', textAlign:'left' }}>
-                    <th style={{ padding:'9px 10px' }}>Item</th><th style={{ padding:'9px 10px' }}>Diagnóstico</th><th style={{ padding:'9px 10px', textAlign:'right' }}>Valor R$</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {parts.map(p => {
-                    const v = p.selectedChoice==='new' ? p.newPrice?.price : p.selectedChoice==='used' ? p.usedPrice?.price : 0;
-                    return (
-                      <tr key={p.id} style={{ borderBottom:'1px solid #e2e8f0' }}>
-                        <td style={{ padding:'9px 10px', fontWeight:600 }}>{p.name}</td>
-                        <td style={{ padding:'9px 10px' }}>{p.actionRequired}</td>
-                        <td style={{ padding:'9px 10px', textAlign:'right', fontWeight:700 }}>{fmt(v)}</td>
-                      </tr>
-                    );
-                  })}
-                  <tr style={{ background:'#fafafa' }}>
-                    <td colSpan={2} style={{ padding:'9px 10px', fontWeight:600 }}>Mão de Obra Funilaria, Pintura & Montagem</td>
-                    <td style={{ padding:'9px 10px', textAlign:'right', fontWeight:700 }}>{fmt(totalLabor)}</td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <div style={{ textAlign:'right', fontSize:'1.4rem', fontWeight:900, borderTop:'2px solid #cbd5e1', paddingTop:12 }}>
-                TOTAL: {fmt(budgetSel)}
+              <div style={{ display:'flex', gap:10, flexWrap:'wrap', alignItems:'center' }}>
+                <button className='btn-whatsapp' onClick={shareWhatsApp}>💬 Enviar WhatsApp</button>
+                <button className='btn-gold' onClick={function() { setShowPdf(true); }}>📄 Gerar PDF</button>
+                <div style={{ marginLeft:'auto', display:'flex', gap:10, alignItems:'center', flexWrap:'wrap' }}>
+                  <select value={osStatus} onChange={function(e) { setOsStatus(e.target.value); }}
+                    className='inp' style={{ maxWidth:180, padding:'8px 12px' }}>
+                    {['Em Vistoria','Aguardando Pecas','Em Execucao','Concluido','Cancelado'].map(function(s) {
+                      return <option key={s} value={s}>{s}</option>;
+                    })}
+                  </select>
+                  <button className='btn-emerald' onClick={saveOS}>💾 Salvar OS</button>
+                </div>
               </div>
             </div>
+          )}
+
+        </div>
+      )}
+
+      {/* PDF MODAL */}
+      {showPdf && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.8)', zIndex:999, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }} onClick={function() { setShowPdf(false); }}>
+          <div style={{ background:'#fff', color:'#111', borderRadius:14, padding:'32px 36px', maxWidth:800, width:'100%', maxHeight:'90vh', overflowY:'auto' }} onClick={function(e) { e.stopPropagation(); }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:18 }}>
+              <h2 style={{ fontFamily:"'Outfit',sans-serif", color:'#1a1a2e', fontSize:'1.2rem', fontWeight:900 }}>AutoBudget AI — Orcamento de Reparos</h2>
+              <button onClick={function() { window.print(); }} style={{ background:'#f59e0b', color:'#000', border:'none', padding:'8px 16px', borderRadius:8, cursor:'pointer', fontWeight:700 }}>🖨️ Imprimir</button>
+            </div>
+            <p style={{ fontSize:'.88rem', color:'#555', marginBottom:4 }}><strong>Veiculo:</strong> {vehicle.brand} {vehicle.model} {vehicle.year} | <strong>Placa:</strong> {vehicle.plate} | <strong>Cor:</strong> {vehicle.color}</p>
+            <p style={{ fontSize:'.88rem', color:'#555', marginBottom:4 }}><strong>Cliente:</strong> {vehicle.clientName || 'N/I'} | <strong>Data:</strong> {new Date().toLocaleDateString('pt-BR')}</p>
+            <p style={{ fontSize:'.88rem', color:'#555', marginBottom:16 }}><strong>FIPE:</strong> {fmt(fipeVal)} | <strong>Comprometimento:</strong> {fipePct}% {isTotalLoss ? '— RISCO PERDA TOTAL' : ''}</p>
+            <hr style={{ borderColor:'#eee', marginBottom:16 }} />
+            <h3 style={{ fontSize:'.95rem', fontWeight:800, marginBottom:10 }}>Pecas e Servicos:</h3>
+            <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'.82rem', marginBottom:16 }}>
+              <thead>
+                <tr style={{ background:'#f3f4f6' }}>
+                  <th style={{ padding:'7px 10px', textAlign:'left' }}>Peca</th>
+                  <th style={{ padding:'7px 10px', textAlign:'left' }}>Fun.</th>
+                  <th style={{ padding:'7px 10px', textAlign:'left' }}>Pin.</th>
+                  <th style={{ padding:'7px 10px', textAlign:'left' }}>Tap./Vid.</th>
+                  <th style={{ padding:'7px 10px', textAlign:'left' }}>Mec.</th>
+                  <th style={{ padding:'7px 10px', textAlign:'left' }}>Rec.</th>
+                  <th style={{ padding:'7px 10px', textAlign:'left' }}>MO</th>
+                  <th style={{ padding:'7px 10px', textAlign:'left' }}>Peca</th>
+                  <th style={{ padding:'7px 10px', textAlign:'left' }}>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {parts.map(function(p) {
+                  const ops = p.ops || DEFAULT_OPS;
+                  const mo = partLaborTotal(ops);
+                  const pc = p.selectedChoice === 'new' ? (p.newPrice ? p.newPrice.price || 0 : 0) : p.selectedChoice === 'used' ? (p.usedPrice ? p.usedPrice.price || 0 : 0) : 0;
+                  return (
+                    <tr key={p.id} style={{ borderBottom:'1px solid #f0f0f0' }}>
+                      <td style={{ padding:'7px 10px', fontWeight:600 }}>{p.name}</td>
+                      {OPS.map(function(op) {
+                        const h = parseFloat(ops[op]) || 0;
+                        return <td key={op} style={{ padding:'7px 10px', color: h > 0 ? '#1a1a2e' : '#ccc' }}>{h > 0 ? h + 'h' : '—'}</td>;
+                      })}
+                      <td style={{ padding:'7px 10px', fontWeight:700, color:'#7c3aed' }}>{fmt(mo)}</td>
+                      <td style={{ padding:'7px 10px' }}>{pc > 0 ? fmt(pc) : '—'}</td>
+                      <td style={{ padding:'7px 10px', fontWeight:800 }}>{fmt(mo + pc)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {thirdParty.filter(function(t){return t.name;}).length > 0 && (
+              <div style={{ marginBottom:16 }}>
+                <h3 style={{ fontSize:'.95rem', fontWeight:800, marginBottom:8 }}>Servicos de Terceiros:</h3>
+                {thirdParty.filter(function(t){return t.name;}).map(function(t) {
+                  return <div key={t.id} style={{ fontSize:'.85rem', display:'flex', justifyContent:'space-between', padding:'4px 0', borderBottom:'1px solid #f0f0f0' }}><span>{t.name}</span><span style={{ fontWeight:700 }}>{fmt(t.value)}</span></div>;
+                })}
+              </div>
+            )}
+            <div style={{ background:'#fef3c7', borderRadius:8, padding:'14px 16px' }}>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:12 }}>
+                <div><div style={{ fontSize:'.7rem', color:'#92400e', fontWeight:700 }}>PECAS</div><div style={{ fontWeight:900 }}>{fmt(totSelected)}</div></div>
+                <div><div style={{ fontSize:'.7rem', color:'#92400e', fontWeight:700 }}>MAO DE OBRA</div><div style={{ fontWeight:900, color:'#7c3aed' }}>{fmt(totalLaborParts)}</div></div>
+                {totalThirdPartyVal > 0 && <div><div style={{ fontSize:'.7rem', color:'#92400e', fontWeight:700 }}>TERCEIROS</div><div style={{ fontWeight:900, color:'#dc2626' }}>{fmt(totalThirdPartyVal)}</div></div>}
+                <div><div style={{ fontSize:'.7rem', color:'#92400e', fontWeight:700 }}>TOTAL GERAL</div><div style={{ fontWeight:900, fontSize:'1.1rem', color:'#d97706' }}>{fmt(budgetSel)}</div></div>
+              </div>
+            </div>
+            <p style={{ marginTop:12, fontSize:'.75rem', color:'#999', textAlign:'center' }}>Mao de obra: R$ 80,00/h (taxa fixa, todas as operacoes) | AutoBudget AI v3.0</p>
+            <button onClick={function() { setShowPdf(false); }} className='no-print'
+              style={{ marginTop:14, background:'#f1f5f9', border:'none', padding:'8px 18px', borderRadius:8, cursor:'pointer', fontWeight:700 }}>Fechar</button>
           </div>
         </div>
       )}
 
-      <footer style={{ textAlign:'center', padding:'30px 0 20px', fontSize:'.78rem', color:'var(--dim)' }}>
-        AutoBudget AI v2.5 © 2026 — Agente de Vistoria, Tabela FIPE e Orçamento Automotivo
-      </footer>
     </div>
   );
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+
 </script>
 </body>
 </html>
