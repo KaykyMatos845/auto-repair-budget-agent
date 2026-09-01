@@ -380,7 +380,7 @@ function App() {
     const newOs = {
       id: OS-,
       date: new Date().toLocaleDateString('pt-BR'),
-      vehicle: ${vehicle.brand}  (),
+      vehicle: vehicle.brand + " " + vehicle.model + " (" + vehicle.year + ")",
       plate: vehicle.plate || 'Sem placa',
       client: vehicle.clientName || 'Cliente',
       status: osStatus,
@@ -396,7 +396,7 @@ function App() {
   const shareWhatsApp = () => {
     const pList = parts.map((p,i) => {
       const v = p.selectedChoice==='new' ? p.newPrice?.price : p.selectedChoice==='used' ? p.usedPrice?.price : 0;
-      return ${i+1}.  -  ();
+      return (i + 1) + ". " + p.name + " - " + fmt(v) + " (" + (p.selectedChoice === "used" ? "Usada DETRAN" : "Nova OEM") + ")";
     }).join('
 ');
 
@@ -483,10 +483,10 @@ _AutoBudget AI v2.5 — Vistoria Computacional_;
                     const [ymin, xmin, ymax, xmax] = p.box;
                     return (
                       <div key={idx} className="bbox-overlay" style={{
-                        top: ${ymin}%,
-                        left: ${xmin}%,
-                        width: ${Math.max(18, xmax - xmin)}%,
-                        height: ${Math.max(18, ymax - ymin)}%,
+                        top: ymin + "%",
+                        left: xmin + "%",
+                        width: Math.max(18, xmax - xmin) + "%",
+                        height: Math.max(18, ymax - ymin) + "%",
                       }}>
                         <div className="bbox-label">{p.name.split(' ')[0]}</div>
                       </div>
