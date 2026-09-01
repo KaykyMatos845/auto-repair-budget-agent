@@ -321,7 +321,7 @@ function App() {
         body: JSON.stringify({ images: base64s, vehicleInfo: vehicle })
       });
 
-      if (!res.ok) throw new Error(Server error: );
+      if (!res.ok) throw new Error('Server error: ' + res.status);
       const data = await res.json();
 
       setVehicle(prev => ({
@@ -338,7 +338,7 @@ function App() {
       if (data.damageAnalysis?.laborCosts) setLabor(data.damageAnalysis.laborCosts);
 
     } catch(e) {
-      alert(Erro na análise: );
+      alert('Erro na análise: ' + e.message);
     } finally {
       setLoading(false);
       setLoadingMsg('');
@@ -378,7 +378,7 @@ function App() {
 
   const saveOS = () => {
     const newOs = {
-      id: OS-,
+      id: 'OS-' + Date.now().toString().slice(-6),
       date: new Date().toLocaleDateString('pt-BR'),
       vehicle: vehicle.brand + " " + vehicle.model + " (" + vehicle.year + ")",
       plate: vehicle.plate || 'Sem placa',
@@ -390,33 +390,35 @@ function App() {
     const updated = [newOs, ...osList.slice(0, 19)];
     setOsList(updated);
     localStorage.setItem('autobudget_os_list', JSON.stringify(updated));
-    alert(✅ Ordem de Serviço  salva no histórico!);
+    alert('✅ Ordem de Serviço ' + newOs.id + ' salva no histórico!');
   };
 
   const shareWhatsApp = () => {
     const pList = parts.map((p,i) => {
       const v = p.selectedChoice==='new' ? p.newPrice?.price : p.selectedChoice==='used' ? p.usedPrice?.price : 0;
-      return (i + 1) + ". " + p.name + " - " + fmt(v) + " (" + (p.selectedChoice === "used" ? "Usada DETRAN" : "Nova OEM") + ")";
-    }).join('
-');
+      return (i + 1) + '. ' + p.name + ' - ' + fmt(v) + ' (' + (p.selectedChoice==='used' ? 'Usada DETRAN' : 'Nova OEM') + ')';
+    }).join('\n');
 
-    const msg = 🏎️ *ORÇAMENTO DE REPAROS AUTOMOTIVOS*
-📅 Data: 
-🚘 Veículo:   ()
-🏷️ Placa:  | Cliente: 
-📊 Valor FIPE:  | Compromisso: % da FIPE 
+    const lines = [
+      '\ud83c\udfce\ufe0f *OR\u00c7AMENTO DE REPAROS AUTOMOTIVOS*',
+      '\ud83d\udcc5 Data: ' + new Date().toLocaleDateString('pt-BR'),
+      '\ud83d\ude97 Ve\u00edculo: ' + vehicle.brand + ' ' + vehicle.model + ' (' + vehicle.year + ')',
+      '\ud83c\udff7\ufe0f Placa: ' + (vehicle.plate || 'N/I') + ' | Cliente: ' + (vehicle.clientName || 'Cliente'),
+      '\ud83d\udcca FIPE: ' + fmt(fipeVal) + ' | ' + fipePct + '% ' + (isTotalLoss ? '\ud83d\udea8 RISCO PERDA TOTAL' : ''),
+      '',
+      '\ud83d\udccb *PE\u00c7AS & COMPONENTES:*',
+      pList,
+      '',
+      '\ud83d\udd27 *M\u00c3O DE OBRA & PINTURA:* ' + fmt(totalLabor),
+      '\ud83c\udf89 Economia: ' + fmt(saving) + ' (' + savingPct + '% OFF)',
+      '\ud83d\udcb0 *TOTAL DO OR\u00c7AMENTO:* *' + fmt(budgetSel) + '*',
+      '',
+      'Status OS: ' + osStatus,
+      '_AutoBudget AI v2.5_'
+    ];
 
-📋 *PEÇAS & COMPONENTES:*
-
-
-🔧 *MÃO DE OBRA & PINTURA:* 
-🎉 *Economia peças usadas:*  (% OFF)
-💰 *TOTAL DO ORÇAMENTO:* **
-
-Status OS: 
-_AutoBudget AI v2.5 — Vistoria Computacional_;
-
-    window.open(https://wa.me/?text=, '_blank');
+    const msg = lines.join('\n');
+    window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
   };
 
   return (
