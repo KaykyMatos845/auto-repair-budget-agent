@@ -429,7 +429,7 @@ function App() {
           <div style={{ background:'var(--grad-gold)', width:48, height:48, borderRadius:13, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.5rem', boxShadow:'0 0 20px rgba(245,158,11,0.4)' }}>🏎️</div>
           <div>
             <h1 style={{ fontSize:'1.45rem', fontWeight:900 }}>AutoBudget <span className="grad-text">AI v2.5</span></h1>
-            <p style={{ color:'var(--muted)', fontSize:'.83rem' }}>Vistoria Computacional • FIPE • Perda Total (>75%) • Links Diretos Mercado Livre</p>
+            <p style={{ color:'var(--muted)', fontSize:'.83rem' }}>Vistoria Computacional • FIPE • Perda Total ({'>'+'75%'}) • Links Diretos Mercado Livre</p>
           </div>
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
@@ -538,7 +538,7 @@ function App() {
                 <div style={{ fontSize:'2.8rem' }}>🚨</div>
                 <div>
                   <h2 style={{ fontSize:'1.35rem', fontWeight:900, textTransform:'uppercase', letterSpacing:'.03em' }}>
-                    ALERTA DE PERDA TOTAL (Sinistro > 75% da Tabela FIPE)
+                    ALERTA DE PERDA TOTAL (Sinistro {'>'} 75% da Tabela FIPE)
                   </h2>
                   <p style={{ fontSize:'.9rem', opacity:0.95, marginTop:4, lineHeight:1.5 }}>
                     O orçamento atual de <strong>{fmt(budgetSel)}</strong> atinge <strong>{fipePct}%</strong> da Tabela FIPE do veículo ({fmt(fipeVal)}).
