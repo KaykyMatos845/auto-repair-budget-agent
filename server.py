@@ -82,35 +82,46 @@ def get_fipe_value(brand, model, year):
 REAL_MARKET_PRICES = {
     'geral': {
         'farol': {'new': 980, 'used': 480, 'supplier': 'CDV Desmanche Credenciado DETRAN', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/farol-dianteiro-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/farol-dianteiro-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
-        'lanterna': {'new': 700, 'used': 340, 'supplier': 'Desmanche Credenciado DETRAN', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/lanterna-traseira-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/lanterna-traseira-usada-original_OrderId_PRICE_ASC_NoIndex_True'},
-        'para-choque': {'new': 650, 'used': 320, 'supplier': 'Recuperadora Credenciada BR', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
-        'parachoque': {'new': 650, 'used': 320, 'supplier': 'Recuperadora Credenciada BR', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'lanterna': {'new': 780, 'used': 390, 'supplier': 'Desmanche Credenciado DETRAN', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/lanterna-traseira-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/lanterna-traseira-usada-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'para-choque': {'new': 680, 'used': 380, 'supplier': 'Recuperadora Credenciada BR', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'parachoque': {'new': 680, 'used': 380, 'supplier': 'Recuperadora Credenciada BR', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'eixo': {'new': 1850, 'used': 850, 'supplier': 'CDV Especializado em Suspensão & Eixos', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/eixo-traseiro-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/eixo-traseiro-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'amortecedor': {'new': 420, 'used': 220, 'supplier': 'Auto Peças Suspensão Brasil', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/amortecedor-traseiro-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/amortecedor-traseiro-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'parabarro': {'new': 160, 'used': 85, 'supplier': 'Distribuidora Plásticos Automotivos', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/parabarro-traseiro-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/parabarro-traseiro-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'para-barro': {'new': 160, 'used': 85, 'supplier': 'Distribuidora Plásticos Automotivos', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/parabarro-traseiro-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/parabarro-traseiro-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'grade de respiro': {'new': 120, 'used': 60, 'supplier': 'CDV Peças Originais', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/grade-respiro-traseira-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/grade-respiro-traseira-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'extrator': {'new': 120, 'used': 60, 'supplier': 'CDV Peças Originais', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/extrator-ar-traseiro-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/extrator-ar-traseiro-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'lateral': {'new': 2400, 'used': 1200, 'supplier': 'CDV Lataria & Carroceria', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/lateral-traseira-nova_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/lateral-traseira-usada-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'caixa de roda': {'new': 950, 'used': 480, 'supplier': 'CDV Lataria SP', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/caixa-de-roda-traseira-nova_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/caixa-de-roda-traseira-usada-original_OrderId_PRICE_ASC_NoIndex_True'},
         'porta': {'new': 1500, 'used': 720, 'supplier': 'CDV Leilão & Peças SP', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/porta-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/porta-usada-original_OrderId_PRICE_ASC_NoIndex_True'},
         'retrovisor': {'new': 620, 'used': 300, 'supplier': 'Desmanche Credenciado DETRAN', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/retrovisor-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/retrovisor-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
         'capô': {'new': 1400, 'used': 650, 'supplier': 'CDV Peças Originais', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/capo-dianteiro-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/capo-dianteiro-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
         'capo': {'new': 1400, 'used': 650, 'supplier': 'CDV Peças Originais', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/capo-dianteiro-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/capo-dianteiro-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
     },
     'onix': {
-        'farol': {'new': 890, 'used': 499, 'supplier': 'CDV Desmanche Credenciado DETRAN SP', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/farol-onix-2020-2021-2022-2023-esquerdo-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/farol-onix-2020-2021-2022-2023-esquerdo-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
         'lanterna': {'new': 780, 'used': 390, 'supplier': 'Auto Peças Desmanche Autorizado GM', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/lanterna-traseira-onix-hatch-2020-2021-2022-esquerda-nova_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/lanterna-traseira-onix-hatch-2020-2021-2022-esquerda-usada-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'eixo': {'new': 1750, 'used': 820, 'supplier': 'CDV Especializado GM DETRAN SP', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/eixo-traseiro-onix-2020-2021-2022-2023-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/eixo-traseiro-onix-2020-2021-2022-2023-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'amortecedor': {'new': 380, 'used': 190, 'supplier': 'Suspensão & Peças GM Oficial', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/amortecedor-traseiro-onix-turbo-2020-2021-2022-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/amortecedor-traseiro-onix-turbo-2020-2021-2022-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'parabarro': {'new': 150, 'used': 80, 'supplier': 'Distribuidora Auto Peças GM', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/parabarro-traseiro-onix-2020-2021-2022-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/parabarro-traseiro-onix-2020-2021-2022-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
         'para-choque': {'new': 680, 'used': 380, 'supplier': 'Recuperadora Sucatas BR', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-traseiro-onix-hatch-2020-2021-2022-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-traseiro-onix-hatch-2020-2021-2022-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
-        'parachoque': {'new': 680, 'used': 380, 'supplier': 'Recuperadora Sucatas BR', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-traseiro-onix-hatch-2020-2021-2022-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-traseiro-onix-hatch-2020-2021-2022-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'lateral': {'new': 2300, 'used': 1150, 'supplier': 'CDV Peças Originais GM', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/lateral-traseira-esquerda-onix-hatch-2020-2021-2022-nova_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/lateral-traseira-esquerda-onix-hatch-2020-2021-2022-usada-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'farol': {'new': 890, 'used': 499, 'supplier': 'CDV Desmanche Credenciado DETRAN SP', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/farol-onix-2020-2021-2022-2023-esquerdo-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/farol-onix-2020-2021-2022-2023-esquerdo-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
         'porta': {'new': 1450, 'used': 680, 'supplier': 'CDV Leilão & Peças SP', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/porta-dianteira-esquerda-onix-2020-2021-2022-nova_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/porta-dianteira-esquerda-onix-2020-2021-2022-usada-original_OrderId_PRICE_ASC_NoIndex_True'},
         'retrovisor': {'new': 550, 'used': 280, 'supplier': 'Desmanche Credenciado DETRAN', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/retrovisor-eletrico-esquerdo-onix-2020-2021-2022-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/retrovisor-eletrico-esquerdo-onix-2020-2021-2022-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
-        'capô': {'new': 1250, 'used': 590, 'supplier': 'CDV Peças Originais GM', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/capo-onix-2020-2021-2022-2023-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/capo-onix-2020-2021-2022-2023-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
-        'capo': {'new': 1250, 'used': 590, 'supplier': 'CDV Peças Originais GM', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/capo-onix-2020-2021-2022-2023-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/capo-onix-2020-2021-2022-2023-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
     },
     'civic': {
         'farol': {'new': 2850, 'used': 1250, 'supplier': 'CDV Sucatas Autorizadas DETRAN SP', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/farol-dianteiro-esquerdo-honda-civic-g10-full-led-2020-2021-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/farol-dianteiro-esquerdo-honda-civic-g10-full-led-2020-2021-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
         'para-choque': {'new': 750, 'used': 420, 'supplier': 'Recuperadora AutoSul', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-dianteiro-honda-civic-g10-2020-2021-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-dianteiro-honda-civic-g10-2020-2021-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
-        'parachoque': {'new': 750, 'used': 420, 'supplier': 'Recuperadora AutoSul', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-dianteiro-honda-civic-g10-2020-2021-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-dianteiro-honda-civic-g10-2020-2021-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'eixo': {'new': 2200, 'used': 1100, 'supplier': 'CDV Honda Peças', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/eixo-traseiro-civic-g10-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/eixo-traseiro-civic-g10-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
     },
     'corolla': {
         'retrovisor': {'new': 1350, 'used': 650, 'supplier': 'CDV Sucatas RS', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/retrovisor-eletrico-direito-toyota-corolla-2020-2021-2022-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/retrovisor-eletrico-direito-toyota-corolla-2020-2021-2022-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
         'porta': {'new': 1850, 'used': 890, 'supplier': 'Mega Desmanche SP', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/porta-dianteira-direita-toyota-corolla-2020-2021-2022-nova_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/porta-dianteira-direita-toyota-corolla-2020-2021-2022-usada-original_OrderId_PRICE_ASC_NoIndex_True'},
         'farol': {'new': 1950, 'used': 880, 'supplier': 'CDV Toyota Peças', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/farol-dianteiro-toyota-corolla-xei-2020-2021-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/farol-dianteiro-toyota-corolla-xei-2020-2021-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'eixo': {'new': 2100, 'used': 980, 'supplier': 'CDV Toyota Suspensão', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/eixo-traseiro-corolla-2020-2021-2022-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/eixo-traseiro-corolla-2020-2021-2022-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
     }
 }
+
 
 def detect_part_attributes(part_name):
     p_lower = part_name.lower()
@@ -226,37 +237,45 @@ def call_gemini_vision(base64_images, vehicle_hint=None):
         if parts:
             hint_text = f"\n\nHint do usuário: {' '.join(parts)}"
 
-    prompt = f"""Você é um perito automotivo especialista em avaliação de sinistros e vistoria de veículos.
-Analise CUIDADOSAMENTE a(s) foto(s) do veículo e identifique:
-1. A MARCA, MODELO e ANO EXATO do veículo na imagem
-2. TODOS os danos visíveis com precisão técnica
-3. As COORDENADAS REAIS do retângulo que envolve cada avaria na foto (box 0-100 em porcentagem: ymin, xmin, ymax, xmax)
+    prompt = f"""Você é um Perito Regulador Sênior e Especialista em Sinistros e Vistoria Automotiva.
+Analise CUIDADOSAMENTE TODAS as fotos fornecidas do veículo avariado.
 
-ATENÇÃO: Base sua análise exclusivamente no que você VÊ na foto.{hint_text}
+INSTRUÇÕES RIGOROSAS DE IDENTIFICAÇÃO:
+1. IDENTIFICAÇÃO DO VEÍCULO:
+   - Identifique Marca, Modelo Exato, Faixa de Ano e Cor.
 
-Responda APENAS com JSON válido neste formato (sem markdown):
+2. AVALIAÇÃO DE DANOS ESTRUTURAIS, MECÂNICOS E ÓPTICOS:
+   - MECÂNICA & SUSPENSÃO: Inspecione se há eixo traseiro torto/empenado, amortecedores estourados/danificados, molas, bandejas ou rodas/estepe montado indicando impacto na suspensão.
+   - ILUMINAÇÃO & ÓPTICA: Qualquer lanterna ou farol com acrílico quebrado, lente trincada ou carcaça fraturada DEVE OBRIGATORIAMENTE ser classificado como "actionRequired": "Substituição".
+   - LATARIA E CARROCERIA INTERNA: Identifique painel traseiro, lateral/paralama, caixa de roda, assoalho porta-malas, parabarro plástico rasgado e grade de respiro/extrator de ar.
+   - Posição e Lado: Especifique claramente "Esquerdo" (Motorista) vs "Direito" (Passageiro) vs "Traseiro" vs "Dianteiro".
+
+3. COORDENADAS REAIS DOS DANOS (Bounding Box):
+   - Forneça a caixa envolvente de cada avaria em coordenadas percentuais [ymin, xmin, ymax, xmax] (0 a 100).{hint_text}
+
+Responda ESTRITAMENTE em formato JSON (sem markdown):
 {{
   "vehicle": {{
-    "brand": "Marca exata (ex: Volkswagen, Hyundai, Chevrolet, Ford, Fiat)",
-    "model": "Modelo completo (ex: HB20 Comfort, Gol Trend, Ka Hatch)",
-    "year": "Ano estimado ou faixa (ex: 2018-2020)",
-    "color": "Cor do veículo",
-    "bodyType": "Hatch | Sedan | SUV | Pickup | Van",
-    "confidenceScore": 0.92
+    "brand": "Marca (ex: Chevrolet, Volkswagen, Honda, Toyota, Hyundai)",
+    "model": "Modelo completo (ex: Onix Hatch LTZ 1.0 Turbo)",
+    "year": "Ano (ex: 2021)",
+    "color": "Cor do veículo (ex: Prata, Branco, Preto)",
+    "bodyType": "Hatch | Sedan | SUV | Pickup",
+    "confidenceScore": 0.95
   }},
   "damageAnalysis": {{
-    "overallSeverity": "Leve | Média | Alta | Muito Alta | Perda Total",
-    "impactZone": "Frontal | Lateral Esquerda | Lateral Direita | Traseira | Múltiplas Zonas",
-    "summary": "Resumo técnico completo das avarias",
+    "overallSeverity": "Leve | Média | Alta | Gravíssima",
+    "impactZone": "Traseira Esquerda | Traseira | Frontal | Lateral",
+    "summary": "Descrição pericial completa dos danos de lataria, mecânica/suspensão e iluminação.",
     "parts": [
       {{
-        "name": "Nome técnico da peça (ex: Farol Dianteiro Esquerdo)",
-        "category": "Lataria | Iluminação | Carroceria | Vidros | Mecânica | Elétrica",
+        "name": "Nome técnico exato (ex: Lanterna Traseira Esquerda, Eixo Traseiro com Suspensão, Lateral Traseira Esquerda, Parabarro Traseiro Esquerdo)",
+        "category": "Mecânica / Suspensão | Iluminação | Lataria / Carroceria | Acabamento / Plásticos",
         "actionRequired": "Substituição | Recuperação | Pintura | Alinhamento",
-        "severity": "Leve | Médio | Alto | Crítico",
+        "severity": "Alta | Média | Crítica",
         "confidence": 0.95,
-        "notes": "Descrição técnica detalhada do dano",
-        "box": [20, 15, 55, 60]
+        "notes": "Diagnóstico do dano (ex: Lente quebrada / Eixo empenado pelo impacto / Painel amassado)",
+        "box": [25, 65, 55, 92]
       }}
     ]
   }}

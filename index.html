@@ -596,9 +596,9 @@ const SAMPLES = [
   {
     id: 'onix',
     label: 'Chevrolet Onix 2021',
-    sub: 'Batida Traseira • Lanterna & Tampa',
+    sub: 'Sinistro Completo • Eixo Torto + Lanterna + Lataria',
     img: '/samples/onix_rear.jpg',
-    vehicle: { brand: 'Chevrolet', model: 'Onix LTZ 1.0 Turbo', year: '2021', color: 'Prata', plate: 'ONX-2021', clientName: 'Lucas Oliveira', fipeValue: 0 },
+    vehicle: { brand: 'Chevrolet', model: 'Onix Hatch LTZ 1.0 Turbo', year: '2021', color: 'Prata', plate: 'ONX-2021', clientName: 'Lucas Oliveira', fipeValue: 0 },
     parts: [
       {
         id: 's1',
@@ -607,7 +607,7 @@ const SAMPLES = [
         actionRequired: 'Substituição',
         side: 'Esquerdo',
         position: 'Traseiro',
-        notes: 'Lente acrílica quebrada e máscara interna com fissura no lado esquerdo.',
+        notes: 'Lente acrílica e carcaça plástica quebradas no impacto. Substituição obrigatória.',
         box: [25, 68, 55, 92],
         selectedChoice: 'used',
         ops: { fun: 0, pin: 0.5, tap: 0, mec: 0.5, rec: 0 },
@@ -626,29 +626,101 @@ const SAMPLES = [
       },
       {
         id: 's2',
-        name: 'Tampa Traseira (Porta-Malas)',
+        name: 'Eixo Traseiro com Suspensão & Barra de Torção',
+        category: 'Mecânica / Suspensão',
+        actionRequired: 'Substituição',
+        side: 'Central / Esquerdo',
+        position: 'Traseiro',
+        notes: 'Eixo traseiro empenado/torto com desvio grave de geometria e cambagem.',
+        box: [60, 45, 90, 85],
+        selectedChoice: 'used',
+        ops: { fun: 0.5, pin: 0, tap: 0, mec: 3.5, rec: 0 },
+        newPrice: {
+          brandName: 'Eixo Traseiro Original GM Novo',
+          price: 1750,
+          link: 'https://lista.mercadolivre.com.br/pecas-carros/eixo-traseiro-onix-2020-2021-2022-2023-novo_OrderId_PRICE_ASC_NoIndex_True',
+          compatibility: 'Eixo Traseiro Completo • Em Estoque • 100% Compatível Onix'
+        },
+        usedPrice: {
+          brandName: 'Eixo Traseiro Usado Certificado DETRAN',
+          price: 820,
+          link: 'https://lista.mercadolivre.com.br/pecas-carros/eixo-traseiro-onix-2020-2021-2022-2023-usado-original_OrderId_PRICE_ASC_NoIndex_True',
+          compatibility: 'Eixo Traseiro com Laudo de Alinhamento • DETRAN'
+        }
+      },
+      {
+        id: 's3',
+        name: 'Lateral Traseira Esquerda (Painel & Caixa de Roda)',
         category: 'Lataria / Carroceria',
         actionRequired: 'Recuperação',
-        side: 'Central',
-        position: 'Traseiro',
-        notes: 'Amassado profundo no vinco inferior com repuxo e pintura.',
-        box: [30, 25, 75, 75],
+        side: 'Esquerdo',
+        position: 'Lateral Traseira',
+        notes: 'Amassado estrutural profundo na folha lateral com repuxo e alinhamento do vinco.',
+        box: [30, 20, 75, 80],
         selectedChoice: 'repair',
-        ops: { fun: 2, pin: 5, tap: 0.5, mec: 0, rec: 0 },
+        ops: { fun: 5, pin: 4.5, tap: 1, mec: 0, rec: 0 },
         newPrice: { brandName: 'Serviço de Recuperação', price: 0, link: '#' },
         usedPrice: { brandName: 'Serviço de Recuperação', price: 0, link: '#' }
       },
       {
-        id: 's3',
+        id: 's4',
+        name: 'Parabarro Traseiro Esquerdo (Protetor de Caixa de Roda)',
+        category: 'Acabamento / Plásticos',
+        actionRequired: 'Substituição',
+        side: 'Esquerdo',
+        position: 'Traseiro',
+        notes: 'Protetor plástico rasgado e presilhas de fixação destruídas.',
+        box: [45, 55, 78, 85],
+        selectedChoice: 'used',
+        ops: { fun: 0, pin: 0, tap: 0, mec: 0.5, rec: 0 },
+        newPrice: {
+          brandName: 'Parabarro Original GM Novo',
+          price: 150,
+          link: 'https://lista.mercadolivre.com.br/pecas-carros/parabarro-traseiro-onix-2020-2021-2022-novo_OrderId_PRICE_ASC_NoIndex_True',
+          compatibility: 'Lado Esquerdo • Em Estoque • 100% Compatível'
+        },
+        usedPrice: {
+          brandName: 'Parabarro Semiusado DETRAN',
+          price: 80,
+          link: 'https://lista.mercadolivre.com.br/pecas-carros/parabarro-traseiro-onix-2020-2021-2022-usado-original_OrderId_PRICE_ASC_NoIndex_True',
+          compatibility: 'Lado Esquerdo • CDV DETRAN • Em Estoque'
+        }
+      },
+      {
+        id: 's5',
+        name: 'Grade Extratora de Ar Traseira (Válvula de Respiro)',
+        category: 'Acabamento / Plásticos',
+        actionRequired: 'Substituição',
+        side: 'Esquerdo',
+        position: 'Traseiro',
+        notes: 'Grade plástica com membranas de borracha esmagadas na deformação do painel.',
+        box: [35, 30, 60, 65],
+        selectedChoice: 'used',
+        ops: { fun: 0, pin: 0, tap: 0, mec: 0.5, rec: 0 },
+        newPrice: {
+          brandName: 'Grade de Respiro Original GM',
+          price: 120,
+          link: 'https://lista.mercadolivre.com.br/pecas-carros/grade-respiro-traseira-onix-novo_OrderId_PRICE_ASC_NoIndex_True',
+          compatibility: 'Extrator Traseiro • Em Estoque'
+        },
+        usedPrice: {
+          brandName: 'Grade de Respiro Semiusada DETRAN',
+          price: 60,
+          link: 'https://lista.mercadolivre.com.br/pecas-carros/grade-respiro-traseira-onix-usado-original_OrderId_PRICE_ASC_NoIndex_True',
+          compatibility: 'Extrator Traseiro • CDV DETRAN'
+        }
+      },
+      {
+        id: 's6',
         name: 'Para-choque Traseiro',
         category: 'Carroceria',
         actionRequired: 'Substituição',
         side: 'Central',
         position: 'Traseiro',
-        notes: 'Travas laterais rompidas e fissura estrutural na capa traseira.',
+        notes: 'Travas laterais rompidas e fissura na capa plástica.',
         box: [65, 15, 92, 85],
         selectedChoice: 'used',
-        ops: { fun: 0, pin: 1, tap: 0, mec: 0, rec: 0 },
+        ops: { fun: 0.5, pin: 2.0, tap: 0, mec: 0.5, rec: 0 },
         newPrice: {
           brandName: 'Original GM Traseiro',
           price: 680,
@@ -664,7 +736,7 @@ const SAMPLES = [
       }
     ],
     thirdParty: [
-      { id: 'tp1', name: 'Alinhamento de monobloco / chassi', value: 250 }
+      { id: 'tp1', name: 'Alinhamento Técnico de Chassi e Geometria 3D', value: 350 }
     ]
   },
   {
@@ -787,6 +859,17 @@ function App() {
   const [loadingMsg, setLoadingMsg] = useState('');
   const [apiKey, setApiKey] = useState(null);
   const [showPdf, setShowPdf] = useState(false);
+  const [showAddPart, setShowAddPart] = useState(false);
+  const [newPart, setNewPart] = useState({
+    name: '',
+    category: 'Mecânica / Suspensão',
+    actionRequired: 'Substituição',
+    side: 'Esquerdo',
+    notes: '',
+    priceNew: '',
+    priceUsed: '',
+    ops: { fun: 0, pin: 0, tap: 0, mec: 1.0, rec: 0 }
+  });
   const [activeTab, setActiveTab] = useState('budget');
   const [osStatus, setOsStatus] = useState('Em Vistoria');
   const [osList, setOsList] = useState(() => {
@@ -836,6 +919,60 @@ function App() {
       if (p.id !== partId) return p;
       return { ...p, selectedChoice: p.selectedChoice === choice ? 'repair' : choice };
     }));
+  };
+
+  const removePart = (partId) => {
+    setParts(prev => prev.filter(p => p.id !== partId));
+  };
+
+  const saveManualPart = () => {
+    if (!newPart.name.trim()) {
+      alert('Por favor informe o nome da peça.');
+      return;
+    }
+
+    const pNew = parseFloat(newPart.priceNew) || 0;
+    const pUsed = parseFloat(newPart.priceUsed) || (pNew > 0 ? Math.round(pNew * 0.5) : 0);
+    const slug = (newPart.name + ' ' + (vehicle.brand || '') + ' ' + (vehicle.model || '') + ' ' + (vehicle.year || '')).toLowerCase().replace(/\s+/g, '-');
+    const isRepair = newPart.actionRequired === 'Recuperação' || newPart.actionRequired === 'Pintura';
+
+    const item = {
+      id: 'p-man-' + Date.now().toString().slice(-6),
+      name: newPart.name.trim(),
+      category: newPart.category,
+      actionRequired: newPart.actionRequired,
+      side: newPart.side,
+      position: 'Manual',
+      notes: newPart.notes || 'Adicionado manualmente pelo perito.',
+      box: [25, 25, 65, 65],
+      selectedChoice: isRepair ? 'repair' : (pUsed > 0 ? 'used' : 'new'),
+      ops: { ...newPart.ops },
+      newPrice: {
+        brandName: (vehicle.brand || 'Veículo') + ' Original OEM',
+        price: pNew,
+        link: 'https://lista.mercadolivre.com.br/pecas-carros/' + slug + '-novo_OrderId_PRICE_ASC_NoIndex_True',
+        compatibility: 'Lado ' + newPart.side + ' • Em Estoque • Manual'
+      },
+      usedPrice: {
+        brandName: 'Usada Certificada DETRAN (' + newPart.category + ')',
+        price: pUsed,
+        link: 'https://lista.mercadolivre.com.br/pecas-carros/' + slug + '-usado-original_OrderId_PRICE_ASC_NoIndex_True',
+        compatibility: 'Lado ' + newPart.side + ' • Desmanche Credenciado DETRAN'
+      }
+    };
+
+    setParts(prev => [...prev, item]);
+    setShowAddPart(false);
+    setNewPart({
+      name: '',
+      category: 'Mecânica / Suspensão',
+      actionRequired: 'Substituição',
+      side: 'Esquerdo',
+      notes: '',
+      priceNew: '',
+      priceUsed: '',
+      ops: { fun: 0, pin: 0, tap: 0, mec: 1.0, rec: 0 }
+    });
   };
 
   const addThirdParty = () => {
@@ -890,7 +1027,7 @@ function App() {
   const analyze = async () => {
     if (!images.length) return;
     setLoading(true);
-    setLoadingMsg('Identificando veículo e mapeando avarias com IA...');
+    setLoadingMsg('Inspecionando lataria, mecânica/suspensão e iluminação com IA...');
     try {
       const resp = await fetch('/api/analyze', {
         method: 'POST',
@@ -917,8 +1054,8 @@ function App() {
       const enriched = rawParts.map((p, i) => ({
         ...p,
         id: p.id || ('p' + Date.now().toString().slice(-6) + i),
-        ops: p.ops || { fun: 0, pin: 0, tap: 0, mec: 0, rec: 0 },
-        selectedChoice: p.actionRequired === 'Recuperação' || p.actionRequired === 'Pintura' ? 'repair' : 'used'
+        ops: p.ops || { fun: 0, pin: 0, tap: 0, mec: (p.category && p.category.includes('Mecânica') ? 2.5 : 0), rec: 0 },
+        selectedChoice: (p.actionRequired === 'Recuperação' || p.actionRequired === 'Pintura') ? 'repair' : 'used'
       }));
       setParts(enriched);
       setThirdParty([]);
@@ -963,7 +1100,7 @@ function App() {
                 p.selectedChoice === 'used' ? (p.usedPrice ? p.usedPrice.price : 0) : 0;
       const opsDetail = OPS.filter(op => parseFloat((p.ops || {})[op.id]) > 0)
         .map(op => op.label + ': ' + p.ops[op.id] + 'h').join(', ');
-      return (i + 1) + '. ' + p.name + ' — ' + fmt(v) + (opsDetail ? ' | MO: ' + opsDetail : '');
+      return (i + 1) + '. ' + p.name + ' (' + p.actionRequired + ') — ' + fmt(v) + (opsDetail ? ' | MO: ' + opsDetail : '');
     }).join('\n');
 
     const tpList = thirdParty.filter(t => t.name)
@@ -1259,45 +1396,73 @@ function App() {
           </div>
 
           {/* 4. PARTS & LABOR BREAKDOWN */}
-          {parts.length > 0 && (
-            <div className="glass-panel" style={{ padding: '22px 24px', marginBottom: 20 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
-                <div>
-                  <h2 style={{ fontSize: '1.1rem', fontWeight: 800 }}>⚙️ Peças Avariadas & Operações de Mão de Obra</h2>
-                  <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                    Taxa fixa de mão de obra linear: <strong style={{ color: 'var(--gold-light)' }}>R$ 80,00/hora</strong> • Links com Validação de Lado e Estoque Ativo
-                  </p>
-                </div>
-                <div style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid var(--border-accent)', borderRadius: 'var(--radius-sm)', padding: '6px 14px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--gold-light)' }}>
-                  Total M.O. Peças: {fmt(totalLaborParts)}
-                </div>
+          <div className="glass-panel" style={{ padding: '22px 24px', marginBottom: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
+              <div>
+                <h2 style={{ fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span>⚙️</span> Peças Avariadas & Operações de Mão de Obra
+                  <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: 4, color: 'var(--text-dim)' }}>
+                    {parts.length} item(ns)
+                  </span>
+                </h2>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                  Taxa fixa de mão de obra linear: <strong style={{ color: 'var(--gold-light)' }}>R$ 80,00/hora</strong> • Mecânica, Iluminação, Lataria e Plásticos
+                </p>
               </div>
 
-              {parts.map((part, pIndex) => {
-                const ops = part.ops || DEFAULT_OPS;
-                const totalH = partLaborHours(ops);
-                const totalMO = partLaborTotal(ops);
-                const selPrice = part.selectedChoice === 'new' ? (part.newPrice ? part.newPrice.price || 0 : 0) :
-                                 part.selectedChoice === 'used' ? (part.usedPrice ? part.usedPrice.price || 0 : 0) : 0;
-                const isRepair = part.actionRequired === 'Recuperação' || part.selectedChoice === 'repair';
-                const totalItemCost = totalMO + selPrice;
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                <button
+                  className="btn btn-gold"
+                  style={{ padding: '7px 16px', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: 6 }}
+                  onClick={() => setShowAddPart(true)}
+                >
+                  <span>➕</span> Adicionar Peça / Item Manual
+                </button>
+                {parts.length > 0 && (
+                  <div style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid var(--border-accent)', borderRadius: 'var(--radius-sm)', padding: '6px 14px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--gold-light)' }}>
+                    Total M.O. Peças: {fmt(totalLaborParts)}
+                  </div>
+                )}
+              </div>
+            </div>
 
-                return (
-                  <div key={part.id} className="part-card">
-                    
-                    {/* Header: Part name + category + total badge */}
-                    <div className="part-header">
-                      <div>
-                        <div className="part-title">
-                          <span>#{pIndex + 1} {part.name}</span>
-                          <span className="part-category">• {part.category}</span>
-                          <span className={'badge badge-' + (isRepair ? 'repair' : 'replace')}>
-                            {part.actionRequired}
-                          </span>
-                        </div>
-                        {part.notes && <div className="part-notes">{part.notes}</div>}
+            {parts.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '36px 20px', color: 'var(--text-dim)', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)' }}>
+                <div style={{ fontSize: '2rem', marginBottom: 8 }}>📋</div>
+                <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-muted)', marginBottom: 4 }}>Nenhuma peça adicionada ainda</div>
+                <div style={{ fontSize: '0.8rem', marginBottom: 14 }}>Carregue um exemplo acima, analise fotos com a IA ou adicione peças manualmente.</div>
+                <button className="btn btn-gold" onClick={() => setShowAddPart(true)}>
+                  ➕ Adicionar Primeira Peça Manual
+                </button>
+              </div>
+            )}
+
+            {parts.map((part, pIndex) => {
+              const ops = part.ops || DEFAULT_OPS;
+              const totalH = partLaborHours(ops);
+              const totalMO = partLaborTotal(ops);
+              const selPrice = part.selectedChoice === 'new' ? (part.newPrice ? part.newPrice.price || 0 : 0) :
+                               part.selectedChoice === 'used' ? (part.usedPrice ? part.usedPrice.price || 0 : 0) : 0;
+              const isRepair = part.actionRequired === 'Recuperação' || part.selectedChoice === 'repair';
+              const totalItemCost = totalMO + selPrice;
+
+              return (
+                <div key={part.id} className="part-card">
+                  
+                  {/* Header: Part name + category + action badge + delete button */}
+                  <div className="part-header">
+                    <div>
+                      <div className="part-title" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <span>#{pIndex + 1} {part.name}</span>
+                        <span className="part-category">• {part.category}</span>
+                        <span className={'badge badge-' + (isRepair ? 'repair' : 'replace')}>
+                          {part.actionRequired}
+                        </span>
                       </div>
+                      {part.notes && <div className="part-notes">{part.notes}</div>}
+                    </div>
 
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                       <div className="part-summary-pill">
                         <div>
                           <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Mão de Obra</div>
@@ -1315,145 +1480,297 @@ function App() {
                           <div style={{ fontSize: '1.15rem', fontWeight: 900, color: 'var(--gold-light)' }}>{fmt(totalItemCost)}</div>
                         </div>
                       </div>
+
+                      <button
+                        className="btn btn-ghost"
+                        style={{ padding: '6px 10px', color: 'var(--rose-light)', borderColor: 'rgba(244,63,94,0.3)', fontSize: '0.78rem' }}
+                        title="Excluir esta peça do orçamento"
+                        onClick={() => removePart(part.id)}
+                      >
+                        🗑️ Excluir
+                      </button>
                     </div>
-
-                    {/* Operations Stepper Grid */}
-                    <div className="ops-section-title">
-                      <span>Horas por Especialidade (R$ 80,00/h):</span>
-                      <span style={{ color: 'var(--text-dim)', fontSize: '0.72rem' }}>Ajuste com + / − ou digite direto</span>
-                    </div>
-
-                    <div className="ops-grid">
-                      {OPS.map(op => {
-                        const h = parseFloat(ops[op.id]) || 0;
-                        const cost = h * LABOR_RATE;
-                        const hasHours = h > 0;
-
-                        return (
-                          <div key={op.id} className={'op-cell' + (hasHours ? ' has-hours' : '')}>
-                            <div className="op-header">
-                              <span>{op.icon}</span>
-                              <span>{op.label}</span>
-                            </div>
-
-                            <div className="op-stepper">
-                              <button
-                                className="op-btn"
-                                title="Diminuir 0.5h"
-                                onClick={() => stepPartOp(part.id, op.id, -0.5)}
-                              >−</button>
-                              
-                              <input
-                                type="number"
-                                step="0.5"
-                                min="0"
-                                className="op-num-input"
-                                value={ops[op.id] !== undefined ? ops[op.id] : 0}
-                                onChange={e => setPartOp(part.id, op.id, e.target.value)}
-                              />
-                              <span className="op-unit">h</span>
-
-                              <button
-                                className="op-btn"
-                                title="Aumentar 0.5h"
-                                onClick={() => stepPartOp(part.id, op.id, 0.5)}
-                              >+</button>
-                            </div>
-
-                            <div className={'op-subtotal' + (hasHours ? ' active' : ' zero')}>
-                              {hasHours ? fmt(cost) : 'R$ 0,00'}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Part replacement choices: Nova OEM vs Usada DETRAN */}
-                    {part.newPrice && part.newPrice.price > 0 && (
-                      <div className="pricing-grid">
-                        
-                        {/* Nova OEM */}
-                        <div
-                          className={'price-option-card' + (part.selectedChoice === 'new' ? ' selected-new' : '')}
-                          onClick={() => toggleChoice(part.id, 'new')}
-                        >
-                          <div className="price-option-header">
-                            <span className="badge badge-new">🟣 Nova Genuína OEM</span>
-                            <span style={{ fontSize: '0.78rem', color: 'var(--text-dim)', fontWeight: 700 }}>
-                              {part.selectedChoice === 'new' ? '✓ Selecionada' : 'Selecionar'}
-                            </span>
-                          </div>
-                          <div className="price-val">{fmt(part.newPrice.price)}</div>
-                          <div className="price-brand">{part.newPrice.brandName}</div>
-                          
-                          {/* Validation Badge */}
-                          <div style={{ marginTop: 6, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: 'var(--emerald-light)', background: 'rgba(16,185,129,0.08)', padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(16,185,129,0.25)' }}>
-                            <span>🛡️</span>
-                            <span>{part.newPrice.compatibility || 'Lado Validado • Em Estoque Ativo'}</span>
-                          </div>
-
-                          {part.newPrice.link && part.newPrice.link !== '#' && (
-                            <a
-                              href={part.newPrice.link}
-                              target="_blank"
-                              className="ml-link"
-                              style={{ color: 'var(--violet-light)' }}
-                              onClick={e => e.stopPropagation()}
-                            >
-                              🛒 Ver Peça Disponível no Mercado Livre ↗
-                            </a>
-                          )}
-                        </div>
-
-                        {/* Usada DETRAN */}
-                        <div
-                          className={'price-option-card' + (part.selectedChoice === 'used' ? ' selected-used' : '')}
-                          onClick={() => toggleChoice(part.id, 'used')}
-                        >
-                          <div className="price-option-header">
-                            <span className="badge badge-used">🟢 Usada Certificada DETRAN</span>
-                            {part.newPrice.price > part.usedPrice.price && (
-                              <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--emerald-light)', background: 'rgba(16,185,129,0.15)', padding: '2px 6px', borderRadius: 4 }}>
-                                −{(((part.newPrice.price - part.usedPrice.price) / part.newPrice.price) * 100).toFixed(0)}% OFF
-                              </span>
-                            )}
-                          </div>
-                          <div className="price-val" style={{ color: 'var(--emerald-light)' }}>
-                            {fmt(part.usedPrice ? part.usedPrice.price : 0)}
-                          </div>
-                          <div className="price-brand">{part.usedPrice ? part.usedPrice.brandName : 'Desmanche Credenciado'}</div>
-                          
-                          {/* Validation Badge */}
-                          <div style={{ marginTop: 6, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: 'var(--emerald-light)', background: 'rgba(16,185,129,0.08)', padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(16,185,129,0.25)' }}>
-                            <span>🛡️</span>
-                            <span>{part.usedPrice.compatibility || 'Lado Validado • Em Estoque Ativo'}</span>
-                          </div>
-
-                          {part.usedPrice && part.usedPrice.link && part.usedPrice.link !== '#' && (
-                            <a
-                              href={part.usedPrice.link}
-                              target="_blank"
-                              className="ml-link"
-                              style={{ color: 'var(--emerald-light)' }}
-                              onClick={e => e.stopPropagation()}
-                            >
-                              🛒 Ver Peça Disponível no Mercado Livre ↗
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Notice if recovery */}
-                    {isRepair && (!part.newPrice || part.newPrice.price === 0) && (
-                      <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.82rem', padding: '10px 14px', background: 'rgba(245,158,11,0.04)', borderRadius: 'var(--radius-sm)', border: '1px dashed var(--border-accent)', marginTop: 8 }}>
-                        🔧 <strong>Serviço de Recuperação</strong> — Sem necessidade de aquisição de peça de reposição.
-                      </div>
-                    )}
-
                   </div>
-                );
-              })}
+
+                  {/* Operations Stepper Grid */}
+                  <div className="ops-section-title">
+                    <span>Horas por Especialidade (R$ 80,00/h):</span>
+                    <span style={{ color: 'var(--text-dim)', fontSize: '0.72rem' }}>Ajuste com + / − ou digite direto</span>
+                  </div>
+
+                  <div className="ops-grid">
+                    {OPS.map(op => {
+                      const h = parseFloat(ops[op.id]) || 0;
+                      const cost = h * LABOR_RATE;
+                      const hasHours = h > 0;
+
+                      return (
+                        <div key={op.id} className={'op-cell' + (hasHours ? ' has-hours' : '')}>
+                          <div className="op-header">
+                            <span>{op.icon}</span>
+                            <span>{op.label}</span>
+                          </div>
+
+                          <div className="op-stepper">
+                            <button
+                              className="op-btn"
+                              title="Diminuir 0.5h"
+                              onClick={() => stepPartOp(part.id, op.id, -0.5)}
+                            >−</button>
+                            
+                            <input
+                              type="number"
+                              step="0.5"
+                              min="0"
+                              className="op-num-input"
+                              value={ops[op.id] !== undefined ? ops[op.id] : 0}
+                              onChange={e => setPartOp(part.id, op.id, e.target.value)}
+                            />
+                            <span className="op-unit">h</span>
+
+                            <button
+                              className="op-btn"
+                              title="Aumentar 0.5h"
+                              onClick={() => stepPartOp(part.id, op.id, 0.5)}
+                            >+</button>
+                          </div>
+
+                          <div className={'op-subtotal' + (hasHours ? ' active' : ' zero')}>
+                            {hasHours ? fmt(cost) : 'R$ 0,00'}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Part replacement choices: Nova OEM vs Usada DETRAN */}
+                  {part.newPrice && part.newPrice.price > 0 && (
+                    <div className="pricing-grid">
+                      
+                      {/* Nova OEM */}
+                      <div
+                        className={'price-option-card' + (part.selectedChoice === 'new' ? ' selected-new' : '')}
+                        onClick={() => toggleChoice(part.id, 'new')}
+                      >
+                        <div className="price-option-header">
+                          <span className="badge badge-new">🟣 Nova Genuína OEM</span>
+                          <span style={{ fontSize: '0.78rem', color: 'var(--text-dim)', fontWeight: 700 }}>
+                            {part.selectedChoice === 'new' ? '✓ Selecionada' : 'Selecionar'}
+                          </span>
+                        </div>
+                        <div className="price-val">{fmt(part.newPrice.price)}</div>
+                        <div className="price-brand">{part.newPrice.brandName}</div>
+                        
+                        {/* Validation Badge */}
+                        <div style={{ marginTop: 6, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: 'var(--emerald-light)', background: 'rgba(16,185,129,0.08)', padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(16,185,129,0.25)' }}>
+                          <span>🛡️</span>
+                          <span>{part.newPrice.compatibility || 'Lado Validado • Em Estoque Ativo'}</span>
+                        </div>
+
+                        {part.newPrice.link && part.newPrice.link !== '#' && (
+                          <a
+                            href={part.newPrice.link}
+                            target="_blank"
+                            className="ml-link"
+                            style={{ color: 'var(--violet-light)' }}
+                            onClick={e => e.stopPropagation()}
+                          >
+                            🛒 Ver Peça Disponível no Mercado Livre ↗
+                          </a>
+                        )}
+                      </div>
+
+                      {/* Usada DETRAN */}
+                      <div
+                        className={'price-option-card' + (part.selectedChoice === 'used' ? ' selected-used' : '')}
+                        onClick={() => toggleChoice(part.id, 'used')}
+                      >
+                        <div className="price-option-header">
+                          <span className="badge badge-used">🟢 Usada Certificada DETRAN</span>
+                          {part.newPrice.price > part.usedPrice.price && (
+                            <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--emerald-light)', background: 'rgba(16,185,129,0.15)', padding: '2px 6px', borderRadius: 4 }}>
+                              −{(((part.newPrice.price - part.usedPrice.price) / part.newPrice.price) * 100).toFixed(0)}% OFF
+                            </span>
+                          )}
+                        </div>
+                        <div className="price-val" style={{ color: 'var(--emerald-light)' }}>
+                          {fmt(part.usedPrice ? part.usedPrice.price : 0)}
+                        </div>
+                        <div className="price-brand">{part.usedPrice ? part.usedPrice.brandName : 'Desmanche Credenciado'}</div>
+                        
+                        {/* Validation Badge */}
+                        <div style={{ marginTop: 6, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: 'var(--emerald-light)', background: 'rgba(16,185,129,0.08)', padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(16,185,129,0.25)' }}>
+                          <span>🛡️</span>
+                          <span>{part.usedPrice.compatibility || 'Lado Validado • Em Estoque Ativo'}</span>
+                        </div>
+
+                        {part.usedPrice && part.usedPrice.link && part.usedPrice.link !== '#' && (
+                          <a
+                            href={part.usedPrice.link}
+                            target="_blank"
+                            className="ml-link"
+                            style={{ color: 'var(--emerald-light)' }}
+                            onClick={e => e.stopPropagation()}
+                          >
+                            🛒 Ver Peça Disponível no Mercado Livre ↗
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Notice if recovery */}
+                  {isRepair && (!part.newPrice || part.newPrice.price === 0) && (
+                    <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.82rem', padding: '10px 14px', background: 'rgba(245,158,11,0.04)', borderRadius: 'var(--radius-sm)', border: '1px dashed var(--border-accent)', marginTop: 8 }}>
+                      🔧 <strong>Serviço de Recuperação</strong> — Sem necessidade de aquisição de peça de reposição.
+                    </div>
+                  )}
+
+                </div>
+              );
+            })}
+          </div>
+
+          {/* MODAL: ADD MANUAL PART */}
+          {showAddPart && (
+            <div
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+              onClick={() => setShowAddPart(false)}
+            >
+              <div
+                style={{ background: '#111827', color: '#fff', borderRadius: 14, padding: '28px 32px', maxWidth: 640, width: '100%', maxHeight: '90vh', overflowY: 'auto', border: '1px solid var(--border-accent)', boxShadow: '0 20px 50px rgba(0,0,0,0.7)' }}
+                onClick={e => e.stopPropagation()}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--gold-light)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span>➕</span> Adicionar Peça / Item Manual ao Orçamento
+                  </h3>
+                  <button
+                    onClick={() => setShowAddPart(false)}
+                    style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}
+                  >✕</button>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <div>
+                    <label className="form-label">NOME DA PEÇA / COMPONENTE *</label>
+                    <input
+                      className="form-inp"
+                      placeholder="Ex: Eixo Traseiro, Lanterna Traseira Esquerda, Parabarro..."
+                      value={newPart.name}
+                      onChange={e => setNewPart({ ...newPart, name: e.target.value })}
+                      style={{ fontSize: '0.95rem' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div>
+                      <label className="form-label">CATEGORIA</label>
+                      <select
+                        className="form-inp"
+                        value={newPart.category}
+                        onChange={e => setNewPart({ ...newPart, category: e.target.value })}
+                      >
+                        <option value="Mecânica / Suspensão">⚙️ Mecânica / Suspensão</option>
+                        <option value="Iluminação">💡 Iluminação</option>
+                        <option value="Lataria / Carroceria">🚗 Lataria / Carroceria</option>
+                        <option value="Acabamento / Plásticos">🛡️ Acabamento / Plásticos</option>
+                        <option value="Vidros">🪟 Vidros</option>
+                        <option value="Elétrica">⚡ Elétrica</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="form-label">TIPO DE AÇÃO REQUERIDA</label>
+                      <select
+                        className="form-inp"
+                        value={newPart.actionRequired}
+                        onChange={e => setNewPart({ ...newPart, actionRequired: e.target.value })}
+                      >
+                        <option value="Substituição">Substituição (Troca de Peça)</option>
+                        <option value="Recuperação">Recuperação (Reparo / Desempeno)</option>
+                        <option value="Pintura">Apenas Pintura</option>
+                        <option value="Alinhamento">Alinhamento / Geometria</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div>
+                      <label className="form-label">LADO / POSIÇÃO</label>
+                      <select
+                        className="form-inp"
+                        value={newPart.side}
+                        onChange={e => setNewPart({ ...newPart, side: e.target.value })}
+                      >
+                        <option value="Esquerdo">Esquerdo (Motorista)</option>
+                        <option value="Direito">Direito (Passageiro)</option>
+                        <option value="Central">Central / Traseiro / Dianteiro</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="form-label">PREÇO ESTIMADO NOVA OEM (R$)</label>
+                      <input
+                        type="number"
+                        className="form-inp"
+                        placeholder="Ex: 850,00"
+                        value={newPart.priceNew}
+                        onChange={e => setNewPart({ ...newPart, priceNew: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="form-label">PREÇO ESTIMADO USADA DETRAN (R$ - Opcional)</label>
+                    <input
+                      type="number"
+                      className="form-inp"
+                      placeholder="Deixe em branco para 50% da nova"
+                      value={newPart.priceUsed}
+                      onChange={e => setNewPart({ ...newPart, priceUsed: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="form-label">OBSERVAÇÕES TÉCNICAS DO DANO</label>
+                    <input
+                      className="form-inp"
+                      placeholder="Ex: Eixo empenado no impacto / Lente quebrada..."
+                      value={newPart.notes}
+                      onChange={e => setNewPart({ ...newPart, notes: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="form-label">HORAS INICIAIS DE MÃO DE OBRA (R$ 80,00/h)</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginTop: 4 }}>
+                      {OPS.map(op => (
+                        <div key={op.id} style={{ background: 'rgba(255,255,255,0.04)', padding: 8, borderRadius: 6, textAlign: 'center' }}>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{op.label}</div>
+                          <input
+                            type="number"
+                            step="0.5"
+                            min="0"
+                            className="form-inp"
+                            style={{ textAlign: 'center', marginTop: 4, padding: '4px 6px', fontSize: '0.85rem' }}
+                            value={newPart.ops[op.id] || 0}
+                            onChange={e => setNewPart({
+                              ...newPart,
+                              ops: { ...newPart.ops, [op.id]: Math.max(0, parseFloat(e.target.value) || 0) }
+                            })}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 10 }}>
+                    <button className="btn btn-ghost" onClick={() => setShowAddPart(false)}>Cancelar</button>
+                    <button className="btn btn-gold" onClick={saveManualPart}>💾 Salvar Peça no Orçamento</button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
