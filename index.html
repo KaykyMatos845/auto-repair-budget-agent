@@ -3,214 +3,696 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AutoBudget AI v3.0 — Vistoria Automotiva Profissional</title>
-  <meta name="description" content="Sistema de orcamento automotivo com analise IA, calculo por operacao (R$80/h), alerta de perda total FIPE e links diretos Mercado Livre." />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>AutoBudget AI v3.0 — Sistema Especialista de Vistoria Automotiva</title>
+  <meta name="description" content="Sistema profissional de orçamentos automotivos com IA, cálculo por operação (R$80/h fixo), alerta FIPE de perda total e peças Mercado Livre." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
 
-:root {
-  --fh: 'Outfit', sans-serif;
-  --fb: 'Plus Jakarta Sans', sans-serif;
-  --bg: #06080f;
-  --card: rgba(14, 20, 34, 0.92);
-  --border: rgba(245, 158, 11, 0.22);
-  --border-hi: rgba(245, 158, 11, 0.55);
-  --text: #f1f5f9;
-  --muted: #94a3b8;
-  --dim: #64748b;
-  --gold: #f59e0b;
-  --gold-hi: #fbbf24;
-  --violet: #8b5cf6;
-  --emerald: #10b981;
-  --rose: #f43f5e;
-  --grad-gold: linear-gradient(135deg, #fbbf24, #d97706);
-  --grad-brand: linear-gradient(135deg, #fbbf24 0%, #f43f5e 50%, #8b5cf6 100%);
-  --grad-emerald: linear-gradient(135deg, #10b981, #059669);
-  --grad-danger: linear-gradient(135deg, #f43f5e, #be123c);
-  --shadow-gold: 0 0 28px rgba(245,158,11,0.25);
-  --shadow-md: 0 10px 30px rgba(0,0,0,0.55);
-  --r: 14px; --rs: 8px; --rfull: 9999px;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: var(--fb); background: var(--bg); color: var(--text); min-height: 100vh;
-  background-image:
-    radial-gradient(circle at 8% 8%, rgba(245,158,11,0.12) 0%, transparent 38%),
-    radial-gradient(circle at 92% 15%, rgba(139,92,246,0.14) 0%, transparent 42%),
-    radial-gradient(circle at 50% 88%, rgba(16,185,129,0.08) 0%, transparent 50%);
-  background-attachment: fixed;
-}
-h1,h2,h3,h4 { font-family: var(--fh); letter-spacing: -0.025em; }
-.wrap { max-width: 1260px; margin: 0 auto; padding: 28px 18px; }
-.card {
-  background: var(--card); backdrop-filter: blur(22px);
-  border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow-md); transition: border-color .25s;
-}
-.card:hover { border-color: var(--border-hi); }
-.btn-gold {
-  background: var(--grad-gold); color: #0a0c14; font-weight: 800;
-  padding: 11px 22px; border-radius: var(--rs); border: none; cursor: pointer;
-  display: inline-flex; align-items: center; gap: 8px; transition: all .22s;
-  font-size: .86rem; text-transform: uppercase; box-shadow: var(--shadow-gold);
-}
-.btn-gold:hover { transform: translateY(-2px); filter: brightness(1.12); }
-.btn-gold:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
-.btn-whatsapp {
-  background: linear-gradient(135deg, #25D366, #128C7E); color: #fff; font-weight: 800;
-  padding: 11px 22px; border-radius: var(--rs); border: none; cursor: pointer;
-  display: inline-flex; align-items: center; gap: 8px; transition: all .22s;
-  font-size: .86rem; text-transform: uppercase; box-shadow: 0 0 20px rgba(37,211,102,0.35);
-}
-.btn-whatsapp:hover { transform: translateY(-2px); filter: brightness(1.1); }
-.btn-ghost {
-  background: rgba(255,255,255,0.05); color: var(--text); font-weight: 600;
-  padding: 9px 16px; border-radius: var(--rs); border: 1px solid var(--border);
-  cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all .2s; font-size: .85rem;
-}
-.btn-ghost:hover { background: rgba(245,158,11,0.12); border-color: var(--gold); color: var(--gold-hi); }
-.btn-emerald {
-  background: var(--grad-emerald); color: #fff; font-weight: 800;
-  padding: 11px 22px; border-radius: var(--rs); border: none; cursor: pointer;
-  display: inline-flex; align-items: center; gap: 8px; transition: all .22s;
-  font-size: .86rem; text-transform: uppercase; box-shadow: 0 0 22px rgba(16,185,129,0.3);
-}
-.btn-emerald:hover { transform: translateY(-2px); filter: brightness(1.12); }
-.badge {
-  display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px;
-  border-radius: var(--rfull); font-size: .7rem; font-weight: 800;
-  text-transform: uppercase; letter-spacing: .06em;
-}
-.badge-replace { background: rgba(244,63,94,.18); color: #ff6b81; border: 1px solid rgba(244,63,94,.4); }
-.badge-repair  { background: rgba(245,158,11,.18); color: #fbbf24; border: 1px solid rgba(245,158,11,.4); }
-.badge-new     { background: rgba(139,92,246,.18); color: #c084fc; border: 1px solid rgba(139,92,246,.4); }
-.badge-used    { background: rgba(16,185,129,.18); color: #34d399; border: 1px solid rgba(16,185,129,.4); }
-.badge-ai      { background: rgba(6,182,212,.18); color: #22d3ee; border: 1px solid rgba(6,182,212,.4); }
-.grad-text { background: var(--grad-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.inp {
-  width: 100%; padding: 9px 13px; background: rgba(10,14,24,0.9);
-  border: 1px solid var(--border); border-radius: var(--rs); color: var(--text);
-  font-size: .88rem; outline: none; transition: border-color .2s; font-family: var(--fb);
-}
-.inp:focus { border-color: var(--gold); }
-label { font-size: .75rem; color: var(--muted); font-weight: 700; display: block; margin-bottom: 4px; }
-.upload-zone {
-  border: 2px dashed rgba(245,158,11,.35); border-radius: var(--r); padding: 32px 24px;
-  text-align: center; background: rgba(10,14,24,.5); cursor: pointer; transition: all .25s;
-}
-.upload-zone:hover { border-color: var(--gold-hi); background: rgba(245,158,11,.07); }
-.img-box-container { position: relative; display: inline-block; overflow: hidden; border-radius: 12px; border: 2px solid var(--border-hi); }
-.bbox-overlay {
-  position: absolute; border: 3px solid #f43f5e; background: rgba(244,63,94,0.25);
-  border-radius: 6px; box-shadow: 0 0 14px rgba(244,63,94,0.7); pointer-events: none;
-}
-.bbox-label {
-  position: absolute; top: -24px; left: -2px; background: #f43f5e; color: #fff;
-  font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px 4px 4px 0;
-  white-space: nowrap; text-transform: uppercase;
-}
-.op-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-@media (max-width: 700px) { .op-grid { grid-template-columns: repeat(3, 1fr); } }
-.op-cell {
-  background: rgba(6,8,15,.7); border: 1px solid var(--border);
-  border-radius: 8px; padding: 10px 8px; text-align: center;
-  transition: border-color .2s;
-}
-.op-cell:hover { border-color: var(--gold); }
-.op-cell .op-val { font-size: 1rem; font-weight: 800; color: var(--gold-hi); margin-top: 4px; }
-.op-cell .op-cost { font-size: .7rem; color: var(--emerald); margin-top: 2px; }
-.tbl { width: 100%; border-collapse: collapse; font-size: .83rem; }
-.tbl th { padding: 9px 10px; text-align: left; color: var(--muted); font-weight: 700; border-bottom: 1px solid var(--border); }
-.tbl td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.tbl tr:hover td { background: rgba(245,158,11,0.04); }
-@media print {
-  body * { visibility: hidden; }
-  #pdf-area, #pdf-area * { visibility: visible; }
-  #pdf-area { position: absolute; left: 0; top: 0; width: 100%; color: #000; }
-  .no-print { display: none !important; }
-}
+    :root {
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      
+      --bg-dark: #070913;
+      --card-bg: rgba(14, 20, 36, 0.88);
+      --card-bg-hover: rgba(18, 26, 46, 0.95);
+      --card-inner: rgba(8, 12, 22, 0.75);
+      
+      --border: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(245, 158, 11, 0.35);
+      --border-accent-hi: #f59e0b;
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --gold: #f59e0b;
+      --gold-light: #fbbf24;
+      --gold-glow: rgba(245, 158, 11, 0.15);
+      
+      --violet: #8b5cf6;
+      --violet-light: #a78bfa;
+      --violet-glow: rgba(139, 92, 246, 0.15);
+      
+      --emerald: #10b981;
+      --emerald-light: #34d399;
+      --emerald-glow: rgba(16, 185, 129, 0.15);
+      
+      --rose: #f43f5e;
+      --rose-light: #fb7185;
+      --rose-glow: rgba(244, 63, 94, 0.15);
+      
+      --cyan: #06b6d4;
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-full: 9999px;
+      
+      --shadow-card: 0 12px 36px -4px rgba(0, 0, 0, 0.6);
+      --shadow-glow: 0 0 30px rgba(245, 158, 11, 0.18);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.5;
+      background-image:
+        radial-gradient(circle at 10% 10%, rgba(245, 158, 11, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 15%, rgba(139, 92, 246, 0.1) 0%, transparent 45%),
+        radial-gradient(circle at 50% 90%, rgba(16, 185, 129, 0.06) 0%, transparent 50%);
+      background-attachment: fixed;
+    }
+
+    h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
+    
+    .wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px 20px 80px;
+    }
+
+    /* Cards */
+    .glass-panel {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      transition: all 0.25s ease;
+    }
+    .glass-panel:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    /* Buttons */
+    .btn {
+      font-family: var(--font-body);
+      font-weight: 700;
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      font-size: 0.86rem;
+      text-decoration: none;
+    }
+    .btn:active { transform: scale(0.98); }
+    
+    .btn-gold {
+      background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+      color: #090d16;
+      box-shadow: 0 4px 18px rgba(245, 158, 11, 0.3);
+    }
+    .btn-gold:hover { filter: brightness(1.12); transform: translateY(-1px); }
+    .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-whatsapp {
+      background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(37, 211, 102, 0.3);
+    }
+    .btn-whatsapp:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+    .btn-emerald {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(16, 185, 129, 0.25);
+    }
+    .btn-emerald:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: var(--border-accent);
+      color: var(--gold-light);
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .badge-replace { background: var(--rose-glow); color: var(--rose-light); border: 1px solid rgba(244,63,94,0.35); }
+    .badge-repair  { background: var(--gold-glow); color: var(--gold-light); border: 1px solid rgba(245,158,11,0.35); }
+    .badge-new     { background: var(--violet-glow); color: var(--violet-light); border: 1px solid rgba(139,92,246,0.35); }
+    .badge-used    { background: var(--emerald-glow); color: var(--emerald-light); border: 1px solid rgba(16,185,129,0.35); }
+    .badge-ai      { background: rgba(6,182,212,0.15); color: var(--cyan); border: 1px solid rgba(6,182,212,0.35); }
+
+    /* Inputs */
+    .form-inp {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--card-inner);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      font-size: 0.9rem;
+      font-family: var(--font-body);
+      outline: none;
+      transition: all 0.2s;
+    }
+    .form-inp:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+    }
+    .form-label {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      display: block;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* FIPE & Loss Bar */
+    .fipe-card {
+      background: linear-gradient(135deg, rgba(14,20,36,0.95) 0%, rgba(20,28,52,0.95) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 26px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+    }
+    .fipe-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; bottom: 0;
+      width: 5px;
+      background: var(--gold);
+    }
+    .fipe-card.total-loss::before {
+      background: var(--rose);
+    }
+
+    /* Part Card Design */
+    .part-card {
+      background: var(--card-inner);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px 22px;
+      margin-bottom: 18px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .part-card:hover {
+      border-color: rgba(245, 158, 11, 0.25);
+    }
+
+    .part-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .part-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .part-category {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+    .part-notes {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .part-summary-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      text-align: right;
+    }
+
+    /* Operations Grid */
+    .ops-section-title {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .ops-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 900px) {
+      .ops-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 580px) {
+      .ops-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .op-cell {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius-sm);
+      padding: 10px 10px 8px;
+      text-align: center;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .op-cell.has-hours {
+      background: rgba(245, 158, 11, 0.06);
+      border-color: rgba(245, 158, 11, 0.35);
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.08);
+    }
+
+    .op-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      white-space: nowrap;
+    }
+    .op-cell.has-hours .op-header {
+      color: var(--gold-light);
+    }
+
+    .op-stepper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 4px;
+    }
+    .op-cell.has-hours .op-stepper {
+      border-color: rgba(245, 158, 11, 0.4);
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .op-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: all 0.15s;
+    }
+    .op-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+    }
+
+    .op-num-input {
+      width: 38px;
+      text-align: center;
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: 700;
+      outline: none;
+      -moz-appearance: textfield;
+    }
+    .op-num-input::-webkit-outer-spin-button,
+    .op-num-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .op-cell.has-hours .op-num-input {
+      color: var(--gold-light);
+    }
+
+    .op-unit {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      font-weight: 600;
+      padding-right: 2px;
+    }
+
+    .op-subtotal {
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-top: 6px;
+      font-family: var(--font-mono);
+    }
+    .op-subtotal.zero {
+      color: var(--text-dim);
+      font-weight: 400;
+    }
+    .op-subtotal.active {
+      color: var(--emerald-light);
+    }
+
+    /* Price choices (Nova vs Usada) */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    @media (max-width: 650px) {
+      .pricing-grid { grid-template-columns: 1fr; }
+    }
+
+    .price-option-card {
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      position: relative;
+    }
+    .price-option-card:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+    .price-option-card.selected-new {
+      background: rgba(139, 92, 246, 0.12);
+      border: 2px solid var(--violet);
+      box-shadow: 0 0 16px rgba(139, 92, 246, 0.2);
+    }
+    .price-option-card.selected-used {
+      background: rgba(16, 185, 129, 0.12);
+      border: 2px solid var(--emerald);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
+    }
+
+    .price-option-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .price-val {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: var(--text-main);
+    }
+    .price-brand {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .ml-link {
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 8px;
+      transition: opacity 0.2s;
+    }
+    .ml-link:hover { text-decoration: underline; opacity: 0.85; }
+
+    /* Tables */
+    .tbl-custom {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .tbl-custom th {
+      padding: 10px 12px;
+      text-align: left;
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--border);
+    }
+    .tbl-custom td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: middle;
+    }
+    .tbl-custom tr:hover td {
+      background: rgba(245, 158, 11, 0.03);
+    }
+
+    /* Upload & Image Box */
+    .upload-box {
+      border: 2px dashed rgba(245, 158, 11, 0.3);
+      border-radius: var(--radius-md);
+      padding: 32px 20px;
+      text-align: center;
+      background: rgba(10, 14, 26, 0.4);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .upload-box:hover {
+      border-color: var(--gold);
+      background: rgba(245, 158, 11, 0.05);
+    }
+    .img-box-container {
+      position: relative;
+      display: inline-block;
+      overflow: hidden;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-accent);
+    }
+    .bbox-overlay {
+      position: absolute;
+      border: 2px solid #f43f5e;
+      background: rgba(244, 63, 94, 0.25);
+      border-radius: 4px;
+      box-shadow: 0 0 12px rgba(244, 63, 94, 0.7);
+      pointer-events: none;
+    }
+    .bbox-label {
+      position: absolute;
+      top: -22px; left: -2px;
+      background: #f43f5e;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 4px 4px 4px 0;
+      white-space: nowrap;
+    }
+
+    /* Print / PDF Mode */
+    @media print {
+      body * { visibility: hidden; }
+      #pdf-area, #pdf-area * { visibility: visible; }
+      #pdf-area {
+        position: absolute; left: 0; top: 0; width: 100%;
+        background: #fff !important; color: #111 !important;
+      }
+      .no-print { display: none !important; }
+    }
 
   </style>
 </head>
 <body>
 <div id="root"></div>
+
 <script type="text/babel">
+
 const { useState, useRef, useEffect } = React;
+
 const LABOR_RATE = 80;
-const OPS = ['fun', 'pin', 'tap', 'mec', 'rec'];
-const OP_LABEL = { fun: 'Funilaria', pin: 'Pintura', tap: 'Tapec./Vidrac.', mec: 'Mecanica', rec: 'Recuperacao' };
+const OPS = [
+  { id: 'fun', label: 'Funilaria', icon: '🔨' },
+  { id: 'pin', label: 'Pintura', icon: '🎨' },
+  { id: 'tap', label: 'Tapeçaria/Vid.', icon: '🪟' },
+  { id: 'mec', label: 'Mecânica', icon: '⚙️' },
+  { id: 'rec', label: 'Recuperação', icon: '🔄' }
+];
 const DEFAULT_OPS = { fun: 0, pin: 0, tap: 0, mec: 0, rec: 0 };
 
 function fmt(v) {
   if (typeof v !== 'number' || isNaN(v)) return 'R$ 0,00';
   return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
+
 function partLaborTotal(ops) {
-  return OPS.reduce(function(s, k) { return s + (parseFloat((ops || {})[k]) || 0); }, 0) * LABOR_RATE;
+  return OPS.reduce((s, op) => s + (parseFloat((ops || {})[op.id]) || 0), 0) * LABOR_RATE;
 }
+
 function partLaborHours(ops) {
-  return OPS.reduce(function(s, k) { return s + (parseFloat((ops || {})[k]) || 0); }, 0);
+  return OPS.reduce((s, op) => s + (parseFloat((ops || {})[op.id]) || 0), 0);
 }
 
 const SAMPLES = [
   {
-    id: 'onix', label: 'Chevrolet Onix 2021', sub: 'Batida traseira — Tampa e Farol', img: '/samples/onix_rear.jpg',
+    id: 'onix',
+    label: 'Chevrolet Onix 2021',
+    sub: 'Batida Traseira • Tampa & Farol',
+    img: '/samples/onix_rear.jpg',
     vehicle: { brand: 'Chevrolet', model: 'Onix LTZ 1.0 Turbo', year: '2021', color: 'Prata', plate: 'ONX-2021', clientName: 'Lucas Oliveira', fipeValue: 68500 },
     parts: [
-      { id: 's1', name: 'Farol Dianteiro Esquerdo', category: 'Iluminacao', actionRequired: 'Substituicao',
-        notes: 'Carcaca fraturada e lente quebrada.', box: [20,15,55,55], selectedChoice: 'used',
+      {
+        id: 's1',
+        name: 'Farol Traseiro Esquerdo',
+        category: 'Iluminação',
+        actionRequired: 'Substituição',
+        notes: 'Carcaça fraturada e lente de acrílico quebrada no impacto.',
+        box: [20, 15, 55, 55],
+        selectedChoice: 'used',
         ops: { fun: 0, pin: 0.5, tap: 0, mec: 0.5, rec: 0 },
         newPrice: { brandName: 'Original GM Arteb', price: 890, link: 'https://produto.mercadolivre.com.br/MLB-5501296624-farol-led-chevrolet-onix-2020-2021-2022-2023-2024-_JM' },
-        usedPrice: { brandName: 'Seminova GM DETRAN', price: 499, link: 'https://produto.mercadolivre.com.br/MLB-5405547970-farol-onix-2020-2021-2022-2023-2024-2025-direito-original-_JM' } },
-      { id: 's2', name: 'Tampa Traseira', category: 'Lataria', actionRequired: 'Recuperacao',
-        notes: 'Amassado profundo e risco na pintura.', box: [40,25,80,82], selectedChoice: 'repair',
+        usedPrice: { brandName: 'Seminova GM DETRAN', price: 499, link: 'https://produto.mercadolivre.com.br/MLB-5405547970-farol-onix-2020-2021-2022-2023-2024-2025-direito-original-_JM' }
+      },
+      {
+        id: 's2',
+        name: 'Tampa Traseira',
+        category: 'Lataria / Carroceria',
+        actionRequired: 'Recuperação',
+        notes: 'Amassado profundo no vinco inferior com necessidade de repuxo e pintura.',
+        box: [40, 25, 80, 82],
+        selectedChoice: 'repair',
         ops: { fun: 2, pin: 5, tap: 0.5, mec: 0, rec: 0 },
-        newPrice: { brandName: 'Servico', price: 0, link: '#' },
-        usedPrice: { brandName: 'Servico', price: 0, link: '#' } },
-      { id: 's3', name: 'Para-choque Traseiro', category: 'Carroceria', actionRequired: 'Substituicao',
-        notes: 'Fissura estrutural — substituicao necessaria.', box: [60,20,90,85], selectedChoice: 'used',
+        newPrice: { brandName: 'Serviço de Recuperação', price: 0, link: '#' },
+        usedPrice: { brandName: 'Serviço de Recuperação', price: 0, link: '#' }
+      },
+      {
+        id: 's3',
+        name: 'Para-choque Traseiro',
+        category: 'Carroceria',
+        actionRequired: 'Substituição',
+        notes: 'Travas laterais rompidas e fissura estrutural.',
+        box: [60, 20, 90, 85],
+        selectedChoice: 'used',
         ops: { fun: 0, pin: 1, tap: 0, mec: 0, rec: 0 },
         newPrice: { brandName: 'Original GM', price: 680, link: 'https://produto.mercadolivre.com.br/MLB-3610996841-parachoque-dianteiro-onix-premier-turbo-2020-2021-2022-2023-_JM' },
-        usedPrice: { brandName: 'Seminova DETRAN', price: 380, link: 'https://produto.mercadolivre.com.br/MLB-3482701449-parachoque-dianteiro-chevrolet-onix-2020-2021-2022-original-_JM' } },
+        usedPrice: { brandName: 'Seminova DETRAN', price: 380, link: 'https://produto.mercadolivre.com.br/MLB-3482701449-parachoque-dianteiro-chevrolet-onix-2020-2021-2022-original-_JM' }
+      }
     ],
-    thirdParty: [{ id: 'tp1', name: 'Alinhamento e balanceamento', value: 180 }]
+    thirdParty: [
+      { id: 'tp1', name: 'Alinhamento de monobloco / chassi', value: 250 }
+    ]
   },
   {
-    id: 'civic', label: 'Honda Civic Touring 2021', sub: 'Colisao frontal — Farol e Para-choque', img: '/samples/civic_front.jpg',
+    id: 'civic',
+    label: 'Honda Civic Touring 2021',
+    sub: 'Colisão Frontal • Farol & Para-choque',
+    img: '/samples/civic_front.jpg',
     vehicle: { brand: 'Honda', model: 'Civic Touring 1.5 Turbo', year: '2021', color: 'Prata', plate: 'BRA-2021', clientName: 'Ricardo Silva', fipeValue: 128000 },
     parts: [
-      { id: 'c1', name: 'Farol Dianteiro Esquerdo Full LED', category: 'Iluminacao', actionRequired: 'Substituicao',
-        notes: 'Lente acrilica e mascara interna destruidas.', box: [15,10,50,45], selectedChoice: 'used',
+      {
+        id: 'c1',
+        name: 'Farol Dianteiro Esquerdo Full LED',
+        category: 'Iluminação',
+        actionRequired: 'Substituição',
+        notes: 'Lente acrílica e máscara interna destruídas.',
+        box: [15, 10, 50, 45],
+        selectedChoice: 'used',
         ops: { fun: 0, pin: 0.5, tap: 0, mec: 1, rec: 0 },
         newPrice: { brandName: 'Original Honda OEM', price: 2850, link: 'https://produto.mercadolivre.com.br/MLB-3388190019-farol-dianteiro-esquerdo-honda-civic-g10-full-led-2020-2021-_JM' },
-        usedPrice: { brandName: 'Seminova Honda DETRAN', price: 1250, link: 'https://produto.mercadolivre.com.br/MLB-3518290112-farol-full-led-honda-civic-g10-2019-2020-2021-original-usado-_JM' } },
-      { id: 'c2', name: 'Para-choque Dianteiro', category: 'Carroceria', actionRequired: 'Substituicao',
-        notes: 'Rachadura nos encaixes do paralama.', box: [40,20,85,90], selectedChoice: 'used',
+        usedPrice: { brandName: 'Seminova Honda DETRAN', price: 1250, link: 'https://produto.mercadolivre.com.br/MLB-3518290112-farol-full-led-honda-civic-g10-2019-2020-2021-original-usado-_JM' }
+      },
+      {
+        id: 'c2',
+        name: 'Para-choque Dianteiro',
+        category: 'Carroceria',
+        actionRequired: 'Substituição',
+        notes: 'Rachadura nos encaixes do paralama.',
+        box: [40, 20, 85, 90],
+        selectedChoice: 'used',
         ops: { fun: 0.5, pin: 2, tap: 0, mec: 0, rec: 0 },
-        newPrice: { brandName: 'DTS 1a Linha', price: 750, link: 'https://produto.mercadolivre.com.br/MLB-2109820012-parachoque-dianteiro-honda-civic-g10-2020-2021-original-_JM' },
-        usedPrice: { brandName: 'Alinhada DETRAN', price: 420, link: 'https://produto.mercadolivre.com.br/MLB-3418290912-parachoque-dianteiro-honda-civic-g10-2021-usado-original-_JM' } },
+        newPrice: { brandName: 'DTS Paralela 1ª Linha', price: 750, link: 'https://produto.mercadolivre.com.br/MLB-2109820012-parachoque-dianteiro-honda-civic-g10-2020-2021-original-_JM' },
+        usedPrice: { brandName: 'Original Alinhada DETRAN', price: 420, link: 'https://produto.mercadolivre.com.br/MLB-3418290912-parachoque-dianteiro-honda-civic-g10-2021-usado-original-_JM' }
+      }
     ],
-    thirdParty: [{ id: 'tp2', name: 'Geometria da direcao', value: 220 }]
+    thirdParty: [
+      { id: 'tp2', name: 'Geometria e Alinhamento 3D', value: 220 }
+    ]
   },
   {
-    id: 'corolla', label: 'Toyota Corolla XEi 2020', sub: 'Impacto lateral — Porta e Retrovisor', img: '/samples/corolla_side.jpg',
-    vehicle: { brand: 'Toyota', model: 'Corolla XEi 2.0 Flex', year: '2020', color: 'Branco Perola', plate: 'TOY-2020', clientName: 'Juliana Costa', fipeValue: 135000 },
+    id: 'corolla',
+    label: 'Toyota Corolla XEi 2020',
+    sub: 'Impacto Lateral • Porta & Retrovisor',
+    img: '/samples/corolla_side.jpg',
+    vehicle: { brand: 'Toyota', model: 'Corolla XEi 2.0 Flex', year: '2020', color: 'Branco Pérola', plate: 'TOY-2020', clientName: 'Juliana Costa', fipeValue: 135000 },
     parts: [
-      { id: 't1', name: 'Retrovisor Eletrico Direito', category: 'Eletrica', actionRequired: 'Substituicao',
-        notes: 'Mecanismo de rebatimento destruido.', box: [25,65,55,90], selectedChoice: 'used',
+      {
+        id: 't1',
+        name: 'Retrovisor Elétrico Direito',
+        category: 'Elétrica / Carroceria',
+        actionRequired: 'Substituição',
+        notes: 'Mecanismo de rebatimento destruído.',
+        box: [25, 65, 55, 90],
+        selectedChoice: 'used',
         ops: { fun: 0, pin: 0.5, tap: 0, mec: 1, rec: 0 },
         newPrice: { brandName: 'Original Toyota OEM', price: 1350, link: 'https://produto.mercadolivre.com.br/MLB-3219080112-retrovisor-eletrico-toyota-corolla-2020-2021-2022-original-_JM' },
-        usedPrice: { brandName: 'Seminova Toyota RS', price: 650, link: 'https://produto.mercadolivre.com.br/MLB-3489102911-retrovisor-direito-corolla-2020-2021-original-usado-_JM' } },
-      { id: 't2', name: 'Porta Dianteira Direita', category: 'Lataria / Porta', actionRequired: 'Recuperacao',
-        notes: 'Amassado profundo e dobracas danificadas.', box: [30,15,80,70], selectedChoice: 'repair',
+        usedPrice: { brandName: 'Seminova Toyota RS', price: 650, link: 'https://produto.mercadolivre.com.br/MLB-3489102911-retrovisor-direito-corolla-2020-2021-original-usado-_JM' }
+      },
+      {
+        id: 't2',
+        name: 'Porta Dianteira Direita',
+        category: 'Lataria / Porta',
+        actionRequired: 'Recuperação',
+        notes: 'Amassado na folha externa e recuperação de dobradiça.',
+        box: [30, 15, 80, 70],
+        selectedChoice: 'repair',
         ops: { fun: 3, pin: 4, tap: 1, mec: 0.5, rec: 0 },
-        newPrice: { brandName: 'Servico', price: 0, link: '#' },
-        usedPrice: { brandName: 'Servico', price: 0, link: '#' } },
+        newPrice: { brandName: 'Serviço de Recuperação', price: 0, link: '#' },
+        usedPrice: { brandName: 'Serviço de Recuperação', price: 0, link: '#' }
+      }
     ],
     thirdParty: []
-  },
+  }
 ];
 
 function App() {
@@ -225,47 +707,66 @@ function App() {
   const [showPdf, setShowPdf] = useState(false);
   const [activeTab, setActiveTab] = useState('budget');
   const [osStatus, setOsStatus] = useState('Em Vistoria');
-  const [osList, setOsList] = useState(function() {
+  const [osList, setOsList] = useState(() => {
     try { return JSON.parse(localStorage.getItem('autobudget_os_list') || '[]'); } catch(e) { return []; }
   });
   const fileRef = useRef();
 
-  useEffect(function() {
-    fetch('/api/health').then(function(r) { return r.json(); }).then(function(d) { setApiKey(d.geminiKeyConfigured); }).catch(function() { setApiKey(false); });
+  useEffect(() => {
+    fetch('/api/health')
+      .then(r => r.json())
+      .then(d => setApiKey(d.geminiKeyConfigured))
+      .catch(() => setApiKey(false));
   }, []);
 
-  const setVField = function(f, v) { setVehicle(function(prev) { return { ...prev, [f]: v }; }); };
-
-  const setPartOp = function(partId, op, val) {
-    setParts(function(prev) {
-      return prev.map(function(p) {
-        if (p.id !== partId) return p;
-        return { ...p, ops: { ...(p.ops || DEFAULT_OPS), [op]: parseFloat(val) || 0 } };
-      });
-    });
+  const setVField = (field, value) => {
+    setVehicle(prev => ({ ...prev, [field]: value }));
   };
 
-  const toggleChoice = function(id, choice) {
-    setParts(function(prev) { return prev.map(function(p) { return p.id === id ? { ...p, selectedChoice: p.selectedChoice === choice ? 'repair' : choice } : p; }); });
+  const setPartOp = (partId, opId, val) => {
+    const num = Math.max(0, parseFloat(val) || 0);
+    setParts(prev => prev.map(p => {
+      if (p.id !== partId) return p;
+      return { ...p, ops: { ...(p.ops || DEFAULT_OPS), [opId]: num } };
+    }));
   };
 
-  const addThirdParty = function() { setThirdParty(function(prev) { return [...prev, { id: 'tp' + Date.now(), name: '', value: 0 }]; }); };
-  const removeThirdParty = function(id) { setThirdParty(function(prev) { return prev.filter(function(t) { return t.id !== id; }); }); };
-  const setTPField = function(id, field, val) {
-    setThirdParty(function(prev) {
-      return prev.map(function(t) {
-        if (t.id !== id) return t;
-        return { ...t, [field]: field === 'value' ? (parseFloat(val) || 0) : val };
-      });
-    });
+  const stepPartOp = (partId, opId, delta) => {
+    setParts(prev => prev.map(p => {
+      if (p.id !== partId) return p;
+      const current = parseFloat((p.ops || {})[opId]) || 0;
+      const next = Math.max(0, parseFloat((current + delta).toFixed(1)));
+      return { ...p, ops: { ...(p.ops || DEFAULT_OPS), [opId]: next } };
+    }));
   };
 
-  const totalLaborParts = parts.reduce(function(sum, p) { return sum + partLaborTotal(p.ops || DEFAULT_OPS); }, 0);
-  const totalThirdPartyVal = thirdParty.reduce(function(sum, t) { return sum + (parseFloat(t.value) || 0); }, 0);
+  const toggleChoice = (partId, choice) => {
+    setParts(prev => prev.map(p => {
+      if (p.id !== partId) return p;
+      return { ...p, selectedChoice: p.selectedChoice === choice ? 'repair' : choice };
+    }));
+  };
+
+  const addThirdParty = () => {
+    setThirdParty(prev => [...prev, { id: 'tp' + Date.now(), name: '', value: 0 }]);
+  };
+  const removeThirdParty = (id) => {
+    setThirdParty(prev => prev.filter(t => t.id !== id));
+  };
+  const setTPField = (id, field, val) => {
+    setThirdParty(prev => prev.map(t => {
+      if (t.id !== id) return t;
+      return { ...t, [field]: field === 'value' ? (Math.max(0, parseFloat(val) || 0)) : val };
+    }));
+  };
+
+  const totalLaborParts = parts.reduce((sum, p) => sum + partLaborTotal(p.ops || DEFAULT_OPS), 0);
+  const totalThirdPartyVal = thirdParty.reduce((sum, t) => sum + (parseFloat(t.value) || 0), 0);
   const totalLabor = totalLaborParts + totalThirdPartyVal;
 
-  let totNew = 0; let totSelected = 0;
-  parts.forEach(function(p) {
+  let totNew = 0;
+  let totSelected = 0;
+  parts.forEach(p => {
     totNew += p.newPrice ? (p.newPrice.price || 0) : 0;
     const sp = p.selectedChoice === 'new' ? (p.newPrice ? p.newPrice.price || 0 : 0) :
                p.selectedChoice === 'used' ? (p.usedPrice ? p.usedPrice.price || 0 : 0) : 0;
@@ -280,13 +781,13 @@ function App() {
   const fipePct = ((budgetSel / fipeVal) * 100).toFixed(1);
   const isTotalLoss = parseFloat(fipePct) >= 75.0;
 
-  const processFiles = async function(files) {
+  const processFiles = async (files) => {
     const imgs = [];
     for (const f of Array.from(files)) {
       const blobUrl = URL.createObjectURL(f);
-      const b64 = await new Promise(function(resolve) {
+      const b64 = await new Promise(resolve => {
         const reader = new FileReader();
-        reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
+        reader.onload = e => resolve(e.target.result.split(',')[1]);
         reader.readAsDataURL(f);
       });
       imgs.push({ blobUrl, base64: b64, name: f.name });
@@ -294,40 +795,45 @@ function App() {
     setImages(imgs);
   };
 
-  const analyze = async function() {
+  const analyze = async () => {
     if (!images.length || !vehicle.brand) return;
-    setLoading(true); setLoadingMsg('Analisando imagens com Gemini AI...');
+    setLoading(true);
+    setLoadingMsg('Analisando imagens e precificando peças via IA...');
     try {
       const resp = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images: images.map(function(i) { return i.base64; }), vehicle })
+        body: JSON.stringify({ images: images.map(i => i.base64), vehicle })
       });
-      if (!resp.ok) throw new Error('Server error: ' + resp.status);
+      if (!resp.ok) throw new Error('Falha no servidor: ' + resp.status);
       const data = await resp.json();
       if (data.error) throw new Error(data.error);
-      const enriched = (data.parts || []).map(function(p, i) {
-        return { ...p, id: 'p' + Date.now().toString().slice(-6) + i, ops: DEFAULT_OPS, selectedChoice: p.actionRequired === 'Substituicao' ? 'used' : 'repair' };
-      });
+      const enriched = (data.parts || []).map((p, i) => ({
+        ...p,
+        id: 'p' + Date.now().toString().slice(-6) + i,
+        ops: { fun: 0, pin: 0, tap: 0, mec: 0, rec: 0 },
+        selectedChoice: p.actionRequired === 'Substituição' ? 'used' : 'repair'
+      }));
       setParts(enriched);
       setThirdParty([]);
       setAnalysis({ aiPowered: true });
     } catch(e) {
-      alert('Erro na analise: ' + e.message);
+      alert('Erro na análise: ' + e.message);
     } finally {
-      setLoading(false); setLoadingMsg('');
+      setLoading(false);
+      setLoadingMsg('');
     }
   };
 
-  const loadSample = function(s) {
+  const loadSample = (s) => {
     setImages([{ blobUrl: s.img, base64: '', name: 'sample.jpg' }]);
     setVehicle({ ...s.vehicle });
-    setParts(s.parts.map(function(p) { return { ...p, ops: p.ops || { ...DEFAULT_OPS } }; }));
+    setParts(s.parts.map(p => ({ ...p, ops: p.ops || { ...DEFAULT_OPS } })));
     setThirdParty(s.thirdParty || []);
     setAnalysis({ aiPowered: false });
   };
 
-  const saveOS = function() {
+  const saveOS = () => {
     const newOs = {
       id: 'OS-' + Date.now().toString().slice(-6),
       date: new Date().toLocaleDateString('pt-BR'),
@@ -342,131 +848,161 @@ function App() {
     const updated = [newOs, ...osList].slice(0, 50);
     setOsList(updated);
     localStorage.setItem('autobudget_os_list', JSON.stringify(updated));
-    alert('OS ' + newOs.id + ' salva no historico!');
+    alert('✅ Ordem de Serviço ' + newOs.id + ' salva com sucesso!');
   };
 
-  const shareWhatsApp = function() {
-    const pList = parts.map(function(p, i) {
+  const shareWhatsApp = () => {
+    const pList = parts.map((p, i) => {
       const v = p.selectedChoice === 'new' ? (p.newPrice ? p.newPrice.price : 0) :
                 p.selectedChoice === 'used' ? (p.usedPrice ? p.usedPrice.price : 0) : 0;
-      const opsDetail = OPS.filter(function(op) { return parseFloat((p.ops || {})[op]) > 0; })
-        .map(function(op) { return OP_LABEL[op] + ': ' + (p.ops[op]) + 'h'; }).join(', ');
+      const opsDetail = OPS.filter(op => parseFloat((p.ops || {})[op.id]) > 0)
+        .map(op => op.label + ': ' + p.ops[op.id] + 'h').join(', ');
       return (i + 1) + '. ' + p.name + ' — ' + fmt(v) + (opsDetail ? ' | MO: ' + opsDetail : '');
     }).join('\n');
-    const tpList = thirdParty.filter(function(t) { return t.name; })
-      .map(function(t) { return '  • ' + t.name + ': ' + fmt(t.value); }).join('\n');
+
+    const tpList = thirdParty.filter(t => t.name)
+      .map(t => '  • ' + t.name + ': ' + fmt(t.value)).join('\n');
+
     const lines = [
-      '*ORCAMENTO DE REPAROS AUTOMOTIVOS*',
-      'Data: ' + new Date().toLocaleDateString('pt-BR'),
-      'Veiculo: ' + vehicle.brand + ' ' + vehicle.model + ' (' + vehicle.year + ')',
-      'Placa: ' + (vehicle.plate || 'N/I') + ' | Cliente: ' + (vehicle.clientName || 'Cliente'),
-      'FIPE: ' + fmt(fipeVal) + ' | Comprometimento: ' + fipePct + '% ' + (isTotalLoss ? '— RISCO PERDA TOTAL' : ''),
+      '🏎️ *ORÇAMENTO DE REPAROS AUTOMOTIVOS*',
+      '📅 Data: ' + new Date().toLocaleDateString('pt-BR'),
+      '🚗 Veículo: ' + vehicle.brand + ' ' + vehicle.model + ' (' + vehicle.year + ')',
+      '🏷️ Placa: ' + (vehicle.plate || 'N/I') + ' | Cliente: ' + (vehicle.clientName || 'Cliente'),
+      '📊 FIPE: ' + fmt(fipeVal) + ' | Comprometimento: ' + fipePct + '% ' + (isTotalLoss ? '🚨 RISCO PERDA TOTAL' : ''),
       '',
-      '*PECAS & COMPONENTES:*',
+      '📋 *PEÇAS & COMPONENTES:*',
       pList,
       '',
-      '*MAO DE OBRA (R$ 80,00/h)*',
-      '  Funilaria + Pintura + Tapec./Vidrac. + Mec. + Rec.: ' + fmt(totalLaborParts),
-      (tpList ? '*SERVICOS DE TERCEIROS:*\n' + tpList + '\n  Subtotal: ' + fmt(totalThirdPartyVal) : ''),
+      '🔧 *MÃO DE OBRA (Taxa linear R$ 80,00/h):*',
+      '  Subtotal Operações: ' + fmt(totalLaborParts),
+      (tpList ? '\n🔗 *SERVIÇOS DE TERCEIROS:*\n' + tpList + '\n  Subtotal: ' + fmt(totalThirdPartyVal) : ''),
       '',
-      '*TOTAL DO ORCAMENTO: ' + fmt(budgetSel) + '*',
-      'Economia com usadas: ' + fmt(saving) + ' (' + savingPct + '% OFF)',
+      '💰 *TOTAL GERAL: ' + fmt(budgetSel) + '*',
+      '🎉 Economia estimada: ' + fmt(saving) + ' (' + savingPct + '% OFF)',
       '',
       'Status: ' + osStatus,
       '_AutoBudget AI v3.0 — Vistoria Computacional_'
-    ].filter(function(l) { return l !== undefined; });
+    ].filter(l => l !== undefined);
+
     const msg = lines.join('\n');
     window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
   };
 
   return (
-    <div className='wrap'>
-
+    <div className="wrap">
+      
       {/* HEADER */}
-      <header className='card' style={{ padding:'18px 26px', marginBottom:22, borderTop:'3px solid var(--gold)', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:14 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:14 }}>
-          <div style={{ width:42, height:42, borderRadius:'50%', background:'var(--grad-gold)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.3rem', boxShadow:'var(--shadow-gold)' }}>🏎️</div>
+      <header className="glass-panel" style={{ padding: '18px 24px', marginBottom: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', boxShadow: '0 4px 16px rgba(245, 158, 11, 0.3)' }}>🏎️</div>
           <div>
-            <h1 style={{ fontSize:'1.2rem', fontWeight:900 }}><span className='grad-text'>AutoBudget AI</span> <span style={{ fontWeight:400, color:'var(--dim)', fontSize:'.9rem' }}>v3.0</span></h1>
-            <p style={{ color:'var(--muted)', fontSize:'.75rem' }}>Vistoria Computacional • R$ 80,00/h fixo • FIPE + Perda Total + Links ML</p>
+            <h1 style={{ fontSize: '1.25rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ background: 'linear-gradient(135deg, #fbbf24, #f43f5e, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>AutoBudget AI</span>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: 4 }}>v3.0 PRO</span>
+            </h1>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+              Vistoria Computacional • Mão de Obra R$ 80,00/h fixo • FIPE Integrada • Peças Mercado Livre
+            </p>
           </div>
         </div>
-        <div style={{ display:'flex', gap:10 }}>
-          <button className='btn-ghost' onClick={function() { setActiveTab(activeTab === 'history' ? 'budget' : 'history'); }}>
-            📋 Historico ({osList.length})
+        
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <button className="btn btn-ghost" onClick={() => setActiveTab(activeTab === 'history' ? 'budget' : 'history')}>
+            📋 Histórico ({osList.length})
           </button>
-          {apiKey === false && <span style={{ fontSize:'.75rem', color:'var(--rose)', background:'rgba(244,63,94,.12)', padding:'6px 12px', borderRadius:6 }}>⚠️ API Key nao configurada</span>}
-          {apiKey === true && <span style={{ fontSize:'.75rem', color:'var(--emerald)', background:'rgba(16,185,129,.12)', padding:'6px 12px', borderRadius:6 }}>✅ Gemini AI Ativo</span>}
+          {apiKey === false && <span className="badge" style={{ background: 'rgba(244,63,94,0.12)', color: 'var(--rose-light)', border: '1px solid rgba(244,63,94,0.3)' }}>⚠️ Sem API Key</span>}
+          {apiKey === true && <span className="badge badge-ai">✨ Gemini AI Ativo</span>}
         </div>
       </header>
 
-      {/* FIPE + BUDGET QUICK VIEW */}
+      {/* FIPE & BUDGET SUMMARY BAR */}
       {parts.length > 0 && (
-        <div className='card' style={{ marginBottom:22, padding:'18px 24px', borderLeft:'4px solid ' + (isTotalLoss ? 'var(--rose)' : 'var(--gold)') }}>
-          <div style={{ display:'flex', flexWrap:'wrap', gap:22, alignItems:'center' }}>
-            <div style={{ minWidth:200 }}>
-              <label style={{ fontSize:'.7rem', color:'var(--muted)', fontWeight:700 }}>VALOR TABELA FIPE (manual)</label>
-              <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:4 }}>
-                <span style={{ color:'var(--dim)', fontWeight:700 }}>R$</span>
-                <input type='number' className='inp' value={vehicle.fipeValue || 68500}
-                  onChange={function(e) { setVField('fipeValue', parseFloat(e.target.value) || 0); }}
-                  style={{ maxWidth:150, fontWeight:700, fontSize:'1.05rem' }} />
+        <div className={'fipe-card' + (isTotalLoss ? ' total-loss' : '')}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
+              <div>
+                <label className="form-label" style={{ color: 'var(--gold-light)' }}>VALOR TABELA FIPE (MANUAL)</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.9rem' }}>R$</span>
+                  <input
+                    type="number"
+                    className="form-inp"
+                    value={vehicle.fipeValue || 68500}
+                    onChange={e => setVField('fipeValue', parseFloat(e.target.value) || 0)}
+                    style={{ width: 140, fontWeight: 800, fontSize: '1.05rem', color: '#fff', padding: '6px 12px' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: 20 }}>
+                <div className="form-label">Peças Selecionadas</div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>{fmt(totSelected)}</div>
+              </div>
+
+              <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: 20 }}>
+                <div className="form-label">M.O. + Terceiros</div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--violet-light)' }}>{fmt(totalLabor)}</div>
+              </div>
+
+              <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: 20 }}>
+                <div className="form-label">Total Orçamento</div>
+                <div style={{ fontSize: '1.45rem', fontWeight: 900, color: 'var(--gold-light)' }}>{fmt(budgetSel)}</div>
+              </div>
+
+              <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: 20 }}>
+                <div className="form-label">% da FIPE</div>
+                <div style={{ fontSize: '1.45rem', fontWeight: 900, color: isTotalLoss ? 'var(--rose-light)' : 'var(--emerald-light)' }}>
+                  {fipePct}%
+                </div>
               </div>
             </div>
-            <div style={{ display:'flex', gap:26, flexWrap:'wrap' }}>
-              <div>
-                <div style={{ fontSize:'.7rem', color:'var(--muted)' }}>Pecas Selecionadas</div>
-                <div style={{ fontSize:'1.3rem', fontWeight:900, color:'var(--text)' }}>{fmt(totSelected)}</div>
-              </div>
-              <div>
-                <div style={{ fontSize:'.7rem', color:'var(--muted)' }}>MO + Terceiros</div>
-                <div style={{ fontSize:'1.3rem', fontWeight:900, color:'var(--violet)' }}>{fmt(totalLabor)}</div>
-              </div>
-              <div>
-                <div style={{ fontSize:'.7rem', color:'var(--muted)' }}>TOTAL</div>
-                <div style={{ fontSize:'1.5rem', fontWeight:900, color:'var(--gold)' }}>{fmt(budgetSel)}</div>
-              </div>
-              <div style={{ paddingLeft:18, borderLeft:'1px solid var(--border)' }}>
-                <div style={{ fontSize:'.7rem', color:'var(--muted)' }}>% da FIPE</div>
-                <div style={{ fontSize:'1.5rem', fontWeight:900, color: isTotalLoss ? 'var(--rose)' : 'var(--emerald)' }}>{fipePct}%</div>
-              </div>
-            </div>
+
             {isTotalLoss && (
-              <div style={{ background:'rgba(244,63,94,.15)', border:'1px solid rgba(244,63,94,.5)', borderRadius:8, padding:'8px 16px', color:'var(--rose)', fontWeight:700, fontSize:'.85rem' }}>
-                🚨 ALERTA PERDA TOTAL — Custo supera 75% da FIPE
+              <div style={{ background: 'rgba(244,63,94,0.18)', border: '1px solid var(--rose)', borderRadius: 'var(--radius-sm)', padding: '8px 16px', color: 'var(--rose-light)', fontWeight: 800, fontSize: '0.84rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span>🚨</span> ALERTA DE PERDA TOTAL (Atinge {'>'} 75% da FIPE)
               </div>
             )}
           </div>
         </div>
       )}
 
+      {/* TAB: OS HISTORY */}
       {activeTab === 'history' && (
-        <div className='card' style={{ padding:'24px', marginBottom:24 }}>
-          <div style={{ display:'flex', justifyContent:'space-between', marginBottom:18, alignItems:'center' }}>
-            <h2 style={{ fontSize:'1.1rem', fontWeight:800 }}>📋 Historico de OS</h2>
-            <button className='btn-ghost' onClick={function() { setActiveTab('budget'); }}>← Voltar</button>
+        <div className="glass-panel" style={{ padding: 24, marginBottom: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 800 }}>📋 Histórico de Ordens de Serviço</h2>
+            <button className="btn btn-ghost" onClick={() => setActiveTab('budget')}>← Voltar ao Orçamento</button>
           </div>
           {osList.length === 0 ? (
-            <p style={{ color:'var(--dim)', textAlign:'center', padding:32 }}>Nenhuma OS salva ainda.</p>
+            <p style={{ color: 'var(--text-dim)', textAlign: 'center', padding: 40 }}>Nenhuma OS salva ainda.</p>
           ) : (
-            <div style={{ overflowX:'auto' }}>
-              <table className='tbl'>
-                <thead><tr><th>OS</th><th>Data</th><th>Veiculo</th><th>Placa</th><th>Cliente</th><th>Total</th><th>% FIPE</th><th>Status</th></tr></thead>
+            <div style={{ overflowX: 'auto' }}>
+              <table className="tbl-custom">
+                <thead>
+                  <tr>
+                    <th>Nº OS</th>
+                    <th>Data</th>
+                    <th>Veículo</th>
+                    <th>Placa</th>
+                    <th>Cliente</th>
+                    <th>Total</th>
+                    <th>% FIPE</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
                 <tbody>
-                  {osList.map(function(os) {
-                    return (
-                      <tr key={os.id}>
-                        <td style={{ fontWeight:700 }}>{os.id}</td>
-                        <td>{os.date}</td>
-                        <td>{os.vehicle}</td>
-                        <td><code style={{ background:'rgba(255,255,255,0.08)', padding:'2px 6px', borderRadius:4 }}>{os.plate}</code></td>
-                        <td>{os.client}</td>
-                        <td style={{ fontWeight:700, color:'var(--gold)' }}>{fmt(os.total)}</td>
-                        <td style={{ fontWeight:700, color: parseFloat(os.fipePct) >= 75 ? 'var(--rose)' : 'var(--emerald)' }}>{os.fipePct}%</td>
-                        <td><span className='badge badge-repair'>{os.status}</span></td>
-                      </tr>
-                    );
-                  })}
+                  {osList.map(os => (
+                    <tr key={os.id}>
+                      <td style={{ fontWeight: 800, color: 'var(--gold-light)' }}>{os.id}</td>
+                      <td>{os.date}</td>
+                      <td>{os.vehicle}</td>
+                      <td><code style={{ background: 'rgba(255,255,255,0.06)', padding: '2px 6px', borderRadius: 4 }}>{os.plate}</code></td>
+                      <td>{os.client || '—'}</td>
+                      <td style={{ fontWeight: 800 }}>{fmt(os.total)}</td>
+                      <td style={{ fontWeight: 800, color: parseFloat(os.fipePct) >= 75 ? 'var(--rose-light)' : 'var(--emerald-light)' }}>{os.fipePct}%</td>
+                      <td><span className="badge badge-repair">{os.status}</span></td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -474,277 +1010,444 @@ function App() {
         </div>
       )}
 
+      {/* TAB: MAIN BUDGET VIEW */}
       {activeTab === 'budget' && (
         <div>
 
-          {/* SAMPLES */}
-          <div className='card' style={{ padding:'20px 24px', marginBottom:22 }}>
-            <h2 style={{ fontSize:'1rem', fontWeight:800, marginBottom:14 }}>📸 Carregar Vistoria de Exemplo</h2>
-            <div style={{ display:'flex', gap:12, flexWrap:'wrap' }}>
-              {SAMPLES.map(function(s) {
-                return (
-                  <button key={s.id} className='btn-ghost' onClick={function() { loadSample(s); }}
-                    style={{ display:'flex', flexDirection:'column', alignItems:'flex-start', gap:2, padding:'10px 14px', minWidth:180 }}>
-                    <span style={{ fontWeight:700, fontSize:'.85rem' }}>{s.label}</span>
-                    <span style={{ fontSize:'.72rem', color:'var(--dim)' }}>{s.sub}</span>
-                  </button>
-                );
-              })}
+          {/* 1. SAMPLES PRESETS */}
+          <div className="glass-panel" style={{ padding: '18px 22px', marginBottom: 20 }}>
+            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12 }}>
+              ⚡ Carregar Vistoria Rápida de Exemplo
+            </div>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              {SAMPLES.map(s => (
+                <button
+                  key={s.id}
+                  className="btn btn-ghost"
+                  onClick={() => loadSample(s)}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '10px 16px', gap: 2 }}
+                >
+                  <span style={{ fontWeight: 800, fontSize: '0.88rem', color: 'var(--text-main)' }}>{s.label}</span>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>{s.sub}</span>
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* UPLOAD */}
-          <div className='card' style={{ padding:'22px 24px', marginBottom:22 }}>
-            <h2 style={{ fontSize:'1rem', fontWeight:800, marginBottom:14 }}>📷 Fotos da Vistoria</h2>
-            <div className='upload-zone' onClick={function() { fileRef.current.click(); }}
-              onDragOver={function(e) { e.preventDefault(); }}
-              onDrop={function(e) { e.preventDefault(); processFiles(e.dataTransfer.files); }}>
-              <div style={{ fontSize:'2rem', marginBottom:8 }}>📁</div>
-              <div style={{ fontWeight:700, marginBottom:4 }}>Arraste fotos aqui ou clique para selecionar</div>
-              <div style={{ fontSize:'.8rem', color:'var(--muted)' }}>JPG, PNG, WEBP — múltiplas fotos suportadas</div>
-              <input ref={fileRef} type='file' multiple accept='image/*' style={{ display:'none' }}
-                onChange={function(e) { processFiles(e.target.files); }} />
+          {/* 2. PHOTOS UPLOAD */}
+          <div className="glass-panel" style={{ padding: '20px 24px', marginBottom: 20 }}>
+            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12 }}>
+              📷 Fotos da Avaria / Vistoria
             </div>
+            
+            <div
+              className="upload-box"
+              onClick={() => fileRef.current.click()}
+              onDragOver={e => e.preventDefault()}
+              onDrop={e => { e.preventDefault(); processFiles(e.dataTransfer.files); }}
+            >
+              <div style={{ fontSize: '2.2rem', marginBottom: 6 }}>📸</div>
+              <div style={{ fontWeight: 800, fontSize: '0.95rem', marginBottom: 4 }}>Arraste as fotos do veículo avariado aqui ou clique para selecionar</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Formatos suportados: JPG, PNG, WEBP (Várias fotos simultâneas)</div>
+              <input ref={fileRef} type="file" multiple accept="image/*" style={{ display: 'none' }} onChange={e => processFiles(e.target.files)} />
+            </div>
+
             {images.length > 0 && (
-              <div style={{ display:'flex', gap:12, flexWrap:'wrap', marginTop:14 }}>
-                {images.map(function(img, idx) {
-                  return (
-                    <div key={idx} className='img-box-container' style={{ maxWidth:220 }}>
-                      <img src={img.blobUrl} style={{ width:'100%', display:'block' }} alt={'foto ' + (idx+1)} />
-                      {parts.filter(function(p) { return p.box; }).map(function(p, pi) {
-                        const [x1,y1,x2,y2] = p.box;
-                        return (
-                          <div key={p.id} className='bbox-overlay'
-                            style={{ left: x1+'%', top: y1+'%', width: (x2-x1)+'%', height: (y2-y1)+'%' }}>
-                            <span className='bbox-label'>{pi+1}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })}
+              <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 16 }}>
+                {images.map((img, idx) => (
+                  <div key={idx} className="img-box-container" style={{ maxWidth: 220 }}>
+                    <img src={img.blobUrl} style={{ width: '100%', display: 'block' }} alt={'Foto ' + (idx + 1)} />
+                    {parts.filter(p => p.box).map((p, pi) => {
+                      const [x1, y1, x2, y2] = p.box;
+                      return (
+                        <div key={p.id} className="bbox-overlay" style={{ left: x1 + '%', top: y1 + '%', width: (x2 - x1) + '%', height: (y2 - y1) + '%' }}>
+                          <span className="bbox-label">#{pi + 1}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
             )}
           </div>
 
-          {/* VEHICLE FORM */}
-          <div className='card' style={{ padding:'22px 24px', marginBottom:22 }}>
-            <h2 style={{ fontSize:'1rem', fontWeight:800, marginBottom:16 }}>🚗 Dados do Veiculo</h2>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(170px, 1fr))', gap:14 }}>
-              {[['brand','Marca'],['model','Modelo'],['year','Ano'],['plate','Placa'],['color','Cor'],['clientName','Cliente']].map(function(pair) {
-                return (
-                  <div key={pair[0]}>
-                    <label>{pair[1]}</label>
-                    <input className='inp' value={vehicle[pair[0]] || ''}
-                      onChange={function(e) { setVField(pair[0], e.target.value); }}
-                      placeholder={pair[1]} />
-                  </div>
-                );
-              })}
+          {/* 3. VEHICLE DATA */}
+          <div className="glass-panel" style={{ padding: '20px 24px', marginBottom: 20 }}>
+            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 14 }}>
+              🚗 Dados do Veículo & Cliente
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+              {[
+                ['brand', 'Marca', 'Ex: Chevrolet'],
+                ['model', 'Modelo', 'Ex: Onix LTZ 1.0'],
+                ['year', 'Ano', 'Ex: 2021'],
+                ['plate', 'Placa', 'Ex: ABC-1234'],
+                ['color', 'Cor', 'Ex: Prata'],
+                ['clientName', 'Cliente', 'Ex: Lucas Oliveira']
+              ].map(([key, label, placeholder]) => (
+                <div key={key}>
+                  <label className="form-label">{label}</label>
+                  <input
+                    className="form-inp"
+                    placeholder={placeholder}
+                    value={vehicle[key] || ''}
+                    onChange={e => setVField(key, e.target.value)}
+                  />
+                </div>
+              ))}
+              
               <div>
-                <label>Valor FIPE (R$)</label>
-                <input type='number' className='inp' value={vehicle.fipeValue || 68500}
-                  onChange={function(e) { setVField('fipeValue', parseFloat(e.target.value) || 0); }}
-                  placeholder='68500' />
+                <label className="form-label" style={{ color: 'var(--gold-light)' }}>Valor FIPE (R$)</label>
+                <input
+                  type="number"
+                  className="form-inp"
+                  placeholder="68500"
+                  value={vehicle.fipeValue || 68500}
+                  onChange={e => setVField('fipeValue', parseFloat(e.target.value) || 0)}
+                  style={{ fontWeight: 800, color: 'var(--gold-light)' }}
+                />
               </div>
             </div>
-            <div style={{ marginTop:16, display:'flex', gap:10, flexWrap:'wrap', alignItems:'center' }}>
-              <button className='btn-gold' disabled={!images.length || !vehicle.brand || loading} onClick={analyze}>
-                {loading ? loadingMsg || 'Analisando...' : '🤖 Analisar com Gemini AI'}
+
+            <div style={{ marginTop: 16, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+              <button
+                className="btn btn-gold"
+                disabled={!images.length || !vehicle.brand || loading}
+                onClick={analyze}
+              >
+                {loading ? (loadingMsg || 'Analisando com IA...') : '🤖 Analisar Avarias com Gemini AI'}
               </button>
-              {analysis && <span className='badge badge-ai'>{analysis.aiPowered ? '✨ Analise IA' : '📂 Exemplo Carregado'}</span>}
+              {analysis && (
+                <span className="badge badge-ai">
+                  {analysis.aiPowered ? '✨ Laudo Gerado por IA' : '📂 Vistoria Carregada'}
+                </span>
+              )}
             </div>
           </div>
 
-          {/* PARTS with operations */}
+          {/* 4. PARTS & LABOR BREAKDOWN */}
           {parts.length > 0 && (
-            <div className='card' style={{ padding:'22px 24px', marginBottom:22 }}>
-              <h2 style={{ fontSize:'1rem', fontWeight:800, marginBottom:18 }}
-                >⚙️ Pecas & Horas por Operacao — <span style={{ color:'var(--gold)', fontSize:'.9rem' }}>R$ 80,00/h (taxa fixa)</span></h2>
-              {parts.map(function(part) {
+            <div className="glass-panel" style={{ padding: '22px 24px', marginBottom: 20 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
+                <div>
+                  <h2 style={{ fontSize: '1.1rem', fontWeight: 800 }}>⚙️ Peças Avariadas & Operações de Mão de Obra</h2>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                    Taxa fixa de mão de obra linear: <strong style={{ color: 'var(--gold-light)' }}>R$ 80,00/hora</strong> em todas as especialidades
+                  </p>
+                </div>
+                <div style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid var(--border-accent)', borderRadius: 'var(--radius-sm)', padding: '6px 14px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--gold-light)' }}>
+                  Total M.O. Peças: {fmt(totalLaborParts)}
+                </div>
+              </div>
+
+              {parts.map((part, pIndex) => {
                 const ops = part.ops || DEFAULT_OPS;
                 const totalH = partLaborHours(ops);
                 const totalMO = partLaborTotal(ops);
                 const selPrice = part.selectedChoice === 'new' ? (part.newPrice ? part.newPrice.price || 0 : 0) :
                                  part.selectedChoice === 'used' ? (part.usedPrice ? part.usedPrice.price || 0 : 0) : 0;
-                const isRepair = part.actionRequired === 'Recuperacao' || part.selectedChoice === 'repair';
+                const isRepair = part.actionRequired === 'Recuperação' || part.selectedChoice === 'repair';
+                const totalItemCost = totalMO + selPrice;
+
                 return (
-                  <div key={part.id} style={{ marginBottom:22, padding:'18px 20px', background:'rgba(6,8,15,0.8)', borderRadius:12, border:'1px solid var(--border)' }}>
-                    <div style={{ display:'flex', justifyContent:'space-between', marginBottom:14, gap:12, flexWrap:'wrap' }}>
+                  <div key={part.id} className="part-card">
+                    
+                    {/* Header: Part name + category + total badge */}
+                    <div className="part-header">
                       <div>
-                        <div style={{ fontWeight:800, fontSize:'.95rem' }}>
-                          {part.name}
-                          <span style={{ marginLeft:8, fontSize:'.75rem', color:'var(--dim)' }}>({part.category})</span>
+                        <div className="part-title">
+                          <span>#{pIndex + 1} {part.name}</span>
+                          <span className="part-category">• {part.category}</span>
+                          <span className={'badge badge-' + (isRepair ? 'repair' : 'replace')}>
+                            {part.actionRequired}
+                          </span>
                         </div>
-                        {part.notes && <div style={{ fontSize:'.8rem', color:'var(--dim)', marginTop:3 }}>{part.notes}</div>}
-                        <span className={'badge badge-' + (isRepair ? 'repair' : 'replace')} style={{ marginTop:6 }}>
-                          {part.actionRequired}
-                        </span>
+                        {part.notes && <div className="part-notes">{part.notes}</div>}
                       </div>
-                      <div style={{ textAlign:'right' }}>
-                        <div style={{ fontSize:'.7rem', color:'var(--muted)' }}>MO desta peca</div>
-                        <div style={{ fontSize:'1.2rem', fontWeight:900, color:'var(--violet)' }}>{fmt(totalMO)}</div>
-                        <div style={{ fontSize:'.7rem', color:'var(--dim)' }}>{totalH.toFixed(1)}h x R$ 80</div>
-                        {selPrice > 0 && <div style={{ fontSize:'.8rem', color:'var(--gold)', fontWeight:700, marginTop:3 }}>Peca: {fmt(selPrice)}</div>}
+
+                      <div className="part-summary-pill">
+                        <div>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Mão de Obra</div>
+                          <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--violet-light)' }}>{fmt(totalMO)}</div>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)' }}>{totalH.toFixed(1)}h</div>
+                        </div>
+                        {selPrice > 0 && (
+                          <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: 12 }}>
+                            <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Peça</div>
+                            <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-main)' }}>{fmt(selPrice)}</div>
+                          </div>
+                        )}
+                        <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: 12 }}>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--gold-light)', textTransform: 'uppercase', fontWeight: 700 }}>Total Item</div>
+                          <div style={{ fontSize: '1.15rem', fontWeight: 900, color: 'var(--gold-light)' }}>{fmt(totalItemCost)}</div>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Operation hours grid */}
-                    <div className='op-grid' style={{ marginBottom:14 }}>
-                      {OPS.map(function(op) {
-                        const h = parseFloat(ops[op]) || 0;
+                    {/* Operations Stepper Grid */}
+                    <div className="ops-section-title">
+                      <span>Horas por Especialidade (R$ 80,00/h):</span>
+                      <span style={{ color: 'var(--text-dim)', fontSize: '0.72rem' }}>Ajuste com + / − ou digite direto</span>
+                    </div>
+
+                    <div className="ops-grid">
+                      {OPS.map(op => {
+                        const h = parseFloat(ops[op.id]) || 0;
                         const cost = h * LABOR_RATE;
+                        const hasHours = h > 0;
+
                         return (
-                          <div key={op} className='op-cell'>
-                            <div style={{ fontSize:'.68rem', color:'var(--muted)', fontWeight:700, textTransform:'uppercase', letterSpacing:'.04em' }}>
-                              {OP_LABEL[op]}
+                          <div key={op.id} className={'op-cell' + (hasHours ? ' has-hours' : '')}>
+                            <div className="op-header">
+                              <span>{op.icon}</span>
+                              <span>{op.label}</span>
                             </div>
-                            <input type='number' step='0.5' min='0' max='99'
-                              value={ops[op] || 0}
-                              onChange={function(e) { setPartOp(part.id, op, e.target.value); }}
-                              className='inp' style={{ textAlign:'center', fontWeight:800, fontSize:'1rem', color:'var(--gold-hi)', background:'transparent', border:'none', padding:'4px 0', width:'100%' }} />
-                            <div style={{ fontSize:'.68rem', color:'var(--dim)' }}>h</div>
-                            {h > 0 && <div className='op-cost'>{fmt(cost)}</div>}
+
+                            <div className="op-stepper">
+                              <button
+                                className="op-btn"
+                                title="Diminuir 0.5h"
+                                onClick={() => stepPartOp(part.id, op.id, -0.5)}
+                              >−</button>
+                              
+                              <input
+                                type="number"
+                                step="0.5"
+                                min="0"
+                                className="op-num-input"
+                                value={ops[op.id] !== undefined ? ops[op.id] : 0}
+                                onChange={e => setPartOp(part.id, op.id, e.target.value)}
+                              />
+                              <span className="op-unit">h</span>
+
+                              <button
+                                className="op-btn"
+                                title="Aumentar 0.5h"
+                                onClick={() => stepPartOp(part.id, op.id, 0.5)}
+                              >+</button>
+                            </div>
+
+                            <div className={'op-subtotal' + (hasHours ? ' active' : ' zero')}>
+                              {hasHours ? fmt(cost) : 'R$ 0,00'}
+                            </div>
                           </div>
                         );
                       })}
                     </div>
 
-                    {/* ML price cards — only if not pure repair */}
-                    {(part.newPrice && part.newPrice.price > 0) && (
-                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
-                        <div onClick={function() { toggleChoice(part.id, 'new'); }}
-                          style={{ padding:'12px 14px', borderRadius:10, cursor:'pointer', transition:'all .2s',
-                            background: part.selectedChoice === 'new' ? 'rgba(139,92,246,.18)' : 'rgba(255,255,255,.04)',
-                            border: part.selectedChoice === 'new' ? '2px solid var(--violet)' : '1px solid var(--border)' }}>
-                          <span className='badge badge-new' style={{ marginBottom:6, display:'inline-flex' }}>Nova OEM</span>
-                          <div style={{ fontWeight:900, fontSize:'1.05rem', color:'var(--text)' }}>{fmt(part.newPrice.price)}</div>
-                          <div style={{ fontSize:'.73rem', color:'var(--dim)', marginTop:2 }}>{part.newPrice.brandName}</div>
+                    {/* Part replacement choices: Nova OEM vs Usada DETRAN */}
+                    {part.newPrice && part.newPrice.price > 0 && (
+                      <div className="pricing-grid">
+                        
+                        {/* Nova OEM */}
+                        <div
+                          className={'price-option-card' + (part.selectedChoice === 'new' ? ' selected-new' : '')}
+                          onClick={() => toggleChoice(part.id, 'new')}
+                        >
+                          <div className="price-option-header">
+                            <span className="badge badge-new">🟣 Nova Genuína OEM</span>
+                            <span style={{ fontSize: '0.78rem', color: 'var(--text-dim)', fontWeight: 700 }}>
+                              {part.selectedChoice === 'new' ? '✓ Selecionada' : 'Selecionar'}
+                            </span>
+                          </div>
+                          <div className="price-val">{fmt(part.newPrice.price)}</div>
+                          <div className="price-brand">{part.newPrice.brandName}</div>
                           {part.newPrice.link && part.newPrice.link !== '#' && (
-                            <a href={part.newPrice.link} target='_blank'
-                              onClick={function(e) { e.stopPropagation(); }}
-                              style={{ fontSize:'.72rem', color:'var(--violet)', display:'block', marginTop:6, textDecoration:'none' }}>
-                              Ver no Mercado Livre ↗
+                            <a
+                              href={part.newPrice.link}
+                              target="_blank"
+                              className="ml-link"
+                              style={{ color: 'var(--violet-light)' }}
+                              onClick={e => e.stopPropagation()}
+                            >
+                              Ver oferta no Mercado Livre ↗
                             </a>
                           )}
                         </div>
-                        <div onClick={function() { toggleChoice(part.id, 'used'); }}
-                          style={{ padding:'12px 14px', borderRadius:10, cursor:'pointer', transition:'all .2s',
-                            background: part.selectedChoice === 'used' ? 'rgba(16,185,129,.18)' : 'rgba(255,255,255,.04)',
-                            border: part.selectedChoice === 'used' ? '2px solid var(--emerald)' : '1px solid var(--border)' }}>
-                          <span className='badge badge-used' style={{ marginBottom:6, display:'inline-flex' }}>Usada DETRAN</span>
-                          <div style={{ fontWeight:900, fontSize:'1.05rem', color:'var(--text)' }}>{fmt(part.usedPrice ? part.usedPrice.price : 0)}</div>
-                          <div style={{ fontSize:'.73rem', color:'var(--dim)', marginTop:2 }}>{part.usedPrice ? part.usedPrice.brandName : ''}</div>
+
+                        {/* Usada DETRAN */}
+                        <div
+                          className={'price-option-card' + (part.selectedChoice === 'used' ? ' selected-used' : '')}
+                          onClick={() => toggleChoice(part.id, 'used')}
+                        >
+                          <div className="price-option-header">
+                            <span className="badge badge-used">🟢 Usada Certificada DETRAN</span>
+                            {part.newPrice.price > part.usedPrice.price && (
+                              <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--emerald-light)', background: 'rgba(16,185,129,0.15)', padding: '2px 6px', borderRadius: 4 }}>
+                                −{(((part.newPrice.price - part.usedPrice.price) / part.newPrice.price) * 100).toFixed(0)}% OFF
+                              </span>
+                            )}
+                          </div>
+                          <div className="price-val" style={{ color: 'var(--emerald-light)' }}>
+                            {fmt(part.usedPrice ? part.usedPrice.price : 0)}
+                          </div>
+                          <div className="price-brand">{part.usedPrice ? part.usedPrice.brandName : 'Desmanche Credenciado'}</div>
                           {part.usedPrice && part.usedPrice.link && part.usedPrice.link !== '#' && (
-                            <a href={part.usedPrice.link} target='_blank'
-                              onClick={function(e) { e.stopPropagation(); }}
-                              style={{ fontSize:'.72rem', color:'var(--emerald)', display:'block', marginTop:6, textDecoration:'none' }}>
-                              Ver no Mercado Livre ↗
+                            <a
+                              href={part.usedPrice.link}
+                              target="_blank"
+                              className="ml-link"
+                              style={{ color: 'var(--emerald-light)' }}
+                              onClick={e => e.stopPropagation()}
+                            >
+                              Ver oferta no Mercado Livre ↗
                             </a>
                           )}
                         </div>
                       </div>
                     )}
+
+                    {/* Notice if recovery */}
                     {isRepair && (!part.newPrice || part.newPrice.price === 0) && (
-                      <div style={{ textAlign:'center', color:'var(--dim)', fontSize:'.82rem', padding:'8px', background:'rgba(245,158,11,.05)', borderRadius:8, border:'1px dashed var(--border)' }}>
-                        🔧 Servico de recuperacao — sem substituicao de peca
+                      <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.82rem', padding: '10px 14px', background: 'rgba(245,158,11,0.04)', borderRadius: 'var(--radius-sm)', border: '1px dashed var(--border-accent)', marginTop: 8 }}>
+                        🔧 <strong>Serviço de Recuperação</strong> — Sem necessidade de aquisição de peça de reposição.
                       </div>
                     )}
+
                   </div>
                 );
               })}
             </div>
           )}
 
-          {/* THIRD PARTY SERVICES */}
+          {/* 5. THIRD PARTY SERVICES */}
           {parts.length > 0 && (
-            <div className='card' style={{ padding:'22px 24px', marginBottom:22 }}>
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
-                <h2 style={{ fontSize:'1rem', fontWeight:800 }}>🔗 Servicos de Terceiros</h2>
-                <button className='btn-ghost' style={{ fontSize:'.8rem' }} onClick={addThirdParty}>+ Adicionar</button>
+            <div className="glass-panel" style={{ padding: '20px 24px', marginBottom: 20 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                <div>
+                  <h2 style={{ fontSize: '1rem', fontWeight: 800 }}>🔗 Serviços de Terceiros</h2>
+                  <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>Alinhamento 3D, tapeçaria especializada, solda especial ou parceiros externos</p>
+                </div>
+                <button className="btn btn-ghost" style={{ padding: '6px 14px', fontSize: '0.78rem' }} onClick={addThirdParty}>
+                  + Adicionar Serviço
+                </button>
               </div>
-              {thirdParty.length === 0 && (
-                <p style={{ color:'var(--dim)', fontSize:'.85rem', textAlign:'center', padding:'16px 0' }}>Nenhum servico de terceiros. Clique em + Adicionar.</p>
-              )}
-              {thirdParty.map(function(tp) {
-                return (
-                  <div key={tp.id} style={{ display:'flex', gap:10, marginBottom:10, alignItems:'center' }}>
-                    <input className='inp' placeholder='Descricao (ex: Alinhamento, Funilaria externa...)'
-                      value={tp.name} style={{ flex:3 }}
-                      onChange={function(e) { setTPField(tp.id, 'name', e.target.value); }} />
-                    <input type='number' className='inp' placeholder='Valor R$'
-                      value={tp.value || ''} style={{ flex:1, minWidth:100 }}
-                      onChange={function(e) { setTPField(tp.id, 'value', e.target.value); }} />
-                    <button className='btn-ghost' style={{ padding:'8px 12px', color:'var(--rose)', borderColor:'rgba(244,63,94,.3)', flexShrink:0 }}
-                      onClick={function() { removeThirdParty(tp.id); }}>✕</button>
+
+              {thirdParty.length === 0 ? (
+                <div style={{ color: 'var(--text-dim)', fontSize: '0.84rem', textAlign: 'center', padding: '18px 0', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)' }}>
+                  Nenhum serviço de terceiros adicionado. Clique em <strong>+ Adicionar Serviço</strong> caso necessário.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {thirdParty.map(tp => (
+                    <div key={tp.id} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                      <input
+                        className="form-inp"
+                        placeholder="Descrição do serviço (ex: Alinhamento de chassi, Geometria...)"
+                        value={tp.name}
+                        style={{ flex: 3 }}
+                        onChange={e => setTPField(tp.id, 'name', e.target.value)}
+                      />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 120 }}>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)', fontWeight: 700 }}>R$</span>
+                        <input
+                          type="number"
+                          className="form-inp"
+                          placeholder="0,00"
+                          value={tp.value || ''}
+                          onChange={e => setTPField(tp.id, 'value', e.target.value)}
+                          style={{ fontWeight: 800, color: 'var(--text-main)' }}
+                        />
+                      </div>
+                      <button
+                        className="btn btn-ghost"
+                        style={{ padding: '9px 12px', color: 'var(--rose-light)', borderColor: 'rgba(244,63,94,0.3)' }}
+                        title="Remover serviço"
+                        onClick={() => removeThirdParty(tp.id)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                  <div style={{ textAlign: 'right', fontWeight: 800, color: 'var(--violet-light)', fontSize: '0.9rem', marginTop: 4 }}>
+                    Subtotal Terceiros: {fmt(totalThirdPartyVal)}
                   </div>
-                );
-              })}
-              {thirdParty.length > 0 && (
-                <div style={{ textAlign:'right', marginTop:12, fontWeight:700, color:'var(--violet)' }}>
-                  Total Terceiros: {fmt(totalThirdPartyVal)}
                 </div>
               )}
             </div>
           )}
 
-          {/* LABOR SUMMARY TABLE */}
+          {/* 6. LABOR SUMMARY TABLE */}
           {parts.length > 0 && (
-            <div className='card' style={{ padding:'22px 24px', marginBottom:22 }}>
-              <h2 style={{ fontSize:'1rem', fontWeight:800, marginBottom:16 }}
-                >📊 Resumo de Mao de Obra — <span style={{ color:'var(--gold)', fontSize:'.9rem' }}>R$ 80,00/h (todas as operacoes)</span></h2>
-              <div style={{ overflowX:'auto' }}>
-                <table className='tbl'>
+            <div className="glass-panel" style={{ padding: '22px 24px', marginBottom: 20 }}>
+              <div style={{ marginBottom: 16 }}>
+                <h2 style={{ fontSize: '1rem', fontWeight: 800 }}>📊 Matriz de Mão de Obra por Especialidade</h2>
+                <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>Demonstrativo consolidado de horas e valores por peça (R$ 80,00/h)</p>
+              </div>
+
+              <div style={{ overflowX: 'auto' }}>
+                <table className="tbl-custom">
                   <thead>
                     <tr>
-                      <th>Peca / Item</th>
-                      <th>Funilaria</th>
-                      <th>Pintura</th>
-                      <th>Tapec./Vidrac.</th>
-                      <th>Mecanica</th>
-                      <th>Recuperacao</th>
-                      <th style={{ color:'var(--violet)', textAlign:'right' }}>Total MO</th>
+                      <th>Item / Peça</th>
+                      <th>🔨 Funilaria</th>
+                      <th>🎨 Pintura</th>
+                      <th>🪟 Tapeç./Vid.</th>
+                      <th>⚙️ Mecânica</th>
+                      <th>🔄 Recuperação</th>
+                      <th style={{ color: 'var(--violet-light)', textAlign: 'right' }}>Total M.O.</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {parts.map(function(p) {
+                    {parts.map(p => {
                       const ops = p.ops || DEFAULT_OPS;
                       const total = partLaborTotal(ops);
                       return (
                         <tr key={p.id}>
-                          <td style={{ fontWeight:600 }}>{p.name}</td>
-                          {OPS.map(function(op) {
-                            const h = parseFloat(ops[op]) || 0;
+                          <td style={{ fontWeight: 700 }}>{p.name}</td>
+                          {OPS.map(op => {
+                            const h = parseFloat(ops[op.id]) || 0;
                             return (
-                              <td key={op} style={{ color: h > 0 ? 'var(--text)' : 'var(--dim)' }}>
-                                {h > 0 ? h + 'h = ' + fmt(h * LABOR_RATE) : '—'}
+                              <td key={op.id} style={{ color: h > 0 ? 'var(--text-main)' : 'var(--text-dim)' }}>
+                                {h > 0 ? (
+                                  <span>
+                                    <strong>{h}h</strong> <span style={{ color: 'var(--text-dim)', fontSize: '0.78rem' }}>({fmt(h * LABOR_RATE)})</span>
+                                  </span>
+                                ) : '—'}
                               </td>
                             );
                           })}
-                          <td style={{ fontWeight:800, color:'var(--violet)', textAlign:'right' }}>{fmt(total)}</td>
+                          <td style={{ fontWeight: 800, color: 'var(--violet-light)', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
+                            {fmt(total)}
+                          </td>
                         </tr>
                       );
                     })}
-                    <tr style={{ borderTop:'2px solid var(--border)' }}>
-                      <td style={{ fontWeight:800 }}>SUBTOTAL MO</td>
-                      {OPS.map(function(op) {
-                        const colTotal = parts.reduce(function(s, p) { return s + (parseFloat((p.ops || {})[op]) || 0); }, 0) * LABOR_RATE;
-                        return <td key={op} style={{ fontWeight:700, color: colTotal > 0 ? 'var(--gold)' : 'var(--dim)' }}>{colTotal > 0 ? fmt(colTotal) : '—'}</td>;
+
+                    <tr style={{ borderTop: '2px solid var(--border)', background: 'rgba(255,255,255,0.02)' }}>
+                      <td style={{ fontWeight: 800 }}>SUBTOTAL OPERAÇÕES</td>
+                      {OPS.map(op => {
+                        const colH = parts.reduce((s, p) => s + (parseFloat((p.ops || {})[op.id]) || 0), 0);
+                        const colTotal = colH * LABOR_RATE;
+                        return (
+                          <td key={op.id} style={{ fontWeight: 800, color: colTotal > 0 ? 'var(--gold-light)' : 'var(--text-dim)' }}>
+                            {colTotal > 0 ? (colH + 'h (' + fmt(colTotal) + ')') : '—'}
+                          </td>
+                        );
                       })}
-                      <td style={{ fontWeight:800, color:'var(--violet)', textAlign:'right' }}>{fmt(totalLaborParts)}</td>
+                      <td style={{ fontWeight: 900, color: 'var(--violet-light)', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
+                        {fmt(totalLaborParts)}
+                      </td>
                     </tr>
+
                     {totalThirdPartyVal > 0 && (
                       <tr>
-                        <td style={{ fontWeight:700, color:'var(--rose)' }}>Servicos de Terceiros</td>
-                        <td colSpan={5} style={{ color:'var(--dim)', fontSize:'.82rem' }}>
-                          {thirdParty.filter(function(t) { return t.name; }).map(function(t) { return t.name + ': ' + fmt(t.value); }).join(' | ')}
+                        <td style={{ fontWeight: 700, color: 'var(--rose-light)' }}>Serviços de Terceiros</td>
+                        <td colSpan={5} style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
+                          {thirdParty.filter(t => t.name).map(t => t.name + ': ' + fmt(t.value)).join(' • ')}
                         </td>
-                        <td style={{ fontWeight:800, color:'var(--rose)', textAlign:'right' }}>{fmt(totalThirdPartyVal)}</td>
+                        <td style={{ fontWeight: 800, color: 'var(--rose-light)', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
+                          {fmt(totalThirdPartyVal)}
+                        </td>
                       </tr>
                     )}
-                    <tr style={{ borderTop:'2px solid var(--gold)', background:'rgba(245,158,11,.06)' }}>
-                      <td colSpan={6} style={{ fontWeight:900, fontSize:'.95rem' }}>TOTAL GERAL MO + TERCEIROS</td>
-                      <td style={{ fontWeight:900, fontSize:'1.05rem', color:'var(--gold)', textAlign:'right' }}>{fmt(totalLabor)}</td>
+
+                    <tr style={{ borderTop: '2px solid var(--gold)', background: 'rgba(245,158,11,0.06)' }}>
+                      <td colSpan={6} style={{ fontWeight: 900, fontSize: '0.95rem' }}>TOTAL CONSOLIDADO MÃO DE OBRA + TERCEIROS</td>
+                      <td style={{ fontWeight: 900, fontSize: '1.15rem', color: 'var(--gold-light)', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
+                        {fmt(totalLabor)}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -752,61 +1455,97 @@ function App() {
             </div>
           )}
 
-          {/* BUDGET SUMMARY CARD */}
+          {/* 7. FINAL BUDGET CARD */}
           {parts.length > 0 && (
-            <div className='card' id='pdf-area' style={{ padding:'26px 28px', marginBottom:28, border:'2px solid var(--gold)', boxShadow:'var(--shadow-gold)' }}>
-              <h2 style={{ fontSize:'1.1rem', fontWeight:900, marginBottom:20 }}>💰 Resumo do Orcamento Final</h2>
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(160px, 1fr))', gap:16, marginBottom:20 }}>
-                <div style={{ background:'rgba(255,255,255,.04)', borderRadius:10, padding:'14px 16px', border:'1px solid var(--border)' }}>
-                  <div style={{ fontSize:'.72rem', color:'var(--muted)', fontWeight:700, marginBottom:6 }}>PECAS (c/ usadas)</div>
-                  <div style={{ fontSize:'1.4rem', fontWeight:900 }}>{fmt(totSelected)}</div>
-                  <div style={{ fontSize:'.72rem', color:'var(--dim)' }}>Nova OEM: {fmt(totNew)}</div>
+            <div className="glass-panel" id="pdf-area" style={{ padding: '26px 28px', marginBottom: 28, border: '2px solid var(--gold)', boxShadow: 'var(--shadow-glow)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+                <div>
+                  <h2 style={{ fontSize: '1.25rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span>💰</span> Resumo Executivo do Orçamento Final
+                  </h2>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    Veículo: {vehicle.brand} {vehicle.model} ({vehicle.year}) • Placa: {vehicle.plate || 'N/I'} • Cliente: {vehicle.clientName || 'Cliente'}
+                  </p>
                 </div>
-                <div style={{ background:'rgba(139,92,246,.08)', borderRadius:10, padding:'14px 16px', border:'1px solid rgba(139,92,246,.3)' }}>
-                  <div style={{ fontSize:'.72rem', color:'var(--muted)', fontWeight:700, marginBottom:6 }}>MAO DE OBRA</div>
-                  <div style={{ fontSize:'1.4rem', fontWeight:900, color:'var(--violet)' }}>{fmt(totalLaborParts)}</div>
-                  <div style={{ fontSize:'.72rem', color:'var(--dim)' }}>R$ 80,00/h — todas operacoes</div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <span className="badge" style={{ background: isTotalLoss ? 'rgba(244,63,94,0.2)' : 'rgba(16,185,129,0.2)', color: isTotalLoss ? 'var(--rose-light)' : 'var(--emerald-light)', border: '1px solid ' + (isTotalLoss ? 'var(--rose)' : 'var(--emerald)') }}>
+                    {isTotalLoss ? '🚨 RISCO PERDA TOTAL' : '✅ REPARO VIÁVEL'}
+                  </span>
                 </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 14, marginBottom: 22 }}>
+                <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-sm)', padding: '14px 16px', border: '1px solid var(--border)' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Peças Escolhidas</div>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--text-main)', marginTop: 4 }}>{fmt(totSelected)}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: 2 }}>Nova OEM Total: {fmt(totNew)}</div>
+                </div>
+
+                <div style={{ background: 'var(--violet-glow)', borderRadius: 'var(--radius-sm)', padding: '14px 16px', border: '1px solid rgba(139,92,246,0.3)' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--violet-light)', fontWeight: 700, textTransform: 'uppercase' }}>Mão de Obra Total</div>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--violet-light)', marginTop: 4 }}>{fmt(totalLaborParts)}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>Taxa R$ 80,00/h fixo</div>
+                </div>
+
                 {totalThirdPartyVal > 0 && (
-                  <div style={{ background:'rgba(244,63,94,.06)', borderRadius:10, padding:'14px 16px', border:'1px solid rgba(244,63,94,.25)' }}>
-                    <div style={{ fontSize:'.72rem', color:'var(--muted)', fontWeight:700, marginBottom:6 }}>TERCEIROS</div>
-                    <div style={{ fontSize:'1.4rem', fontWeight:900, color:'var(--rose)' }}>{fmt(totalThirdPartyVal)}</div>
-                    <div style={{ fontSize:'.72rem', color:'var(--dim)' }}>{thirdParty.filter(function(t){return t.name;}).length} servico(s)</div>
+                  <div style={{ background: 'var(--rose-glow)', borderRadius: 'var(--radius-sm)', padding: '14px 16px', border: '1px solid rgba(244,63,94,0.3)' }}>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--rose-light)', fontWeight: 700, textTransform: 'uppercase' }}>Terceiros</div>
+                    <div style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--rose-light)', marginTop: 4 }}>{fmt(totalThirdPartyVal)}</div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>{thirdParty.filter(t => t.name).length} serviço(s)</div>
                   </div>
                 )}
-                <div style={{ background:'rgba(245,158,11,.1)', borderRadius:10, padding:'14px 16px', border:'2px solid var(--gold)' }}>
-                  <div style={{ fontSize:'.72rem', color:'var(--muted)', fontWeight:700, marginBottom:6 }}>TOTAL GERAL</div>
-                  <div style={{ fontSize:'1.7rem', fontWeight:900, color:'var(--gold)' }}>{fmt(budgetSel)}</div>
-                  <div style={{ fontSize:'.72rem', color:'var(--emerald)', fontWeight:700 }}>Economia: {fmt(saving)} ({savingPct}% OFF)</div>
+
+                <div style={{ background: 'var(--gold-glow)', borderRadius: 'var(--radius-sm)', padding: '14px 16px', border: '2px solid var(--gold)' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--gold-light)', fontWeight: 700, textTransform: 'uppercase' }}>TOTAL FINAL</div>
+                  <div style={{ fontSize: '1.65rem', fontWeight: 900, color: 'var(--gold-light)', marginTop: 4 }}>{fmt(budgetSel)}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--emerald-light)', fontWeight: 700, marginTop: 2 }}>
+                    Economia: {fmt(saving)} ({savingPct}%)
+                  </div>
                 </div>
-                <div style={{ background: isTotalLoss ? 'rgba(244,63,94,.1)' : 'rgba(16,185,129,.08)', borderRadius:10, padding:'14px 16px', border:'1px solid ' + (isTotalLoss ? 'rgba(244,63,94,.4)' : 'rgba(16,185,129,.3)') }}>
-                  <div style={{ fontSize:'.72rem', color:'var(--muted)', fontWeight:700, marginBottom:6 }}>% TABELA FIPE</div>
-                  <div style={{ fontSize:'1.7rem', fontWeight:900, color: isTotalLoss ? 'var(--rose)' : 'var(--emerald)' }}>{fipePct}%</div>
-                  <div style={{ fontSize:'.72rem', color:'var(--dim)' }}>FIPE: {fmt(fipeVal)}</div>
+
+                <div style={{ background: isTotalLoss ? 'var(--rose-glow)' : 'var(--emerald-glow)', borderRadius: 'var(--radius-sm)', padding: '14px 16px', border: '1px solid ' + (isTotalLoss ? 'rgba(244,63,94,0.4)' : 'rgba(16,185,129,0.4)') }}>
+                  <div style={{ fontSize: '0.72rem', color: isTotalLoss ? 'var(--rose-light)' : 'var(--emerald-light)', fontWeight: 700, textTransform: 'uppercase' }}>% Tabela FIPE</div>
+                  <div style={{ fontSize: '1.65rem', fontWeight: 900, color: isTotalLoss ? 'var(--rose-light)' : 'var(--emerald-light)', marginTop: 4 }}>
+                    {fipePct}%
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>FIPE: {fmt(fipeVal)}</div>
                 </div>
               </div>
 
               {isTotalLoss && (
-                <div style={{ background:'rgba(244,63,94,.12)', border:'1px solid rgba(244,63,94,.5)', borderRadius:10, padding:'14px 18px', marginBottom:18, display:'flex', alignItems:'center', gap:12 }}>
-                  <span style={{ fontSize:'1.4rem' }}>🚨</span>
+                <div style={{ background: 'rgba(244,63,94,0.14)', border: '1px solid rgba(244,63,94,0.5)', borderRadius: 'var(--radius-sm)', padding: '14px 18px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <span style={{ fontSize: '1.8rem' }}>🚨</span>
                   <div>
-                    <div style={{ fontWeight:800, color:'var(--rose)' }}>ALERTA DE PERDA TOTAL</div>
-                    <div style={{ fontSize:'.83rem', color:'var(--muted)', marginTop:2 }}>Custo de reparo ({fmt(budgetSel)}) atinge {fipePct}% da Tabela FIPE ({fmt(fipeVal)}). Verifique com a seguradora.</div>
+                    <div style={{ fontWeight: 800, color: 'var(--rose-light)' }}>ALERTA DE PERDA TOTAL DETECTADA</div>
+                    <div style={{ fontSize: '0.84rem', color: 'var(--text-muted)', marginTop: 2 }}>
+                      O custo acumulado de reparos ({fmt(budgetSel)}) atinge <strong>{fipePct}%</strong> da Tabela FIPE ({fmt(fipeVal)}). Em casos acima de 75%, as seguradoras tipicamente indenizam integralmente o veículo.
+                    </div>
                   </div>
                 </div>
               )}
 
-              <div style={{ display:'flex', gap:10, flexWrap:'wrap', alignItems:'center' }}>
-                <button className='btn-whatsapp' onClick={shareWhatsApp}>💬 Enviar WhatsApp</button>
-                <button className='btn-gold' onClick={function() { setShowPdf(true); }}>📄 Gerar PDF</button>
-                <div style={{ marginLeft:'auto', display:'flex', gap:10, alignItems:'center', flexWrap:'wrap' }}>
-                  <select value={osStatus} onChange={function(e) { setOsStatus(e.target.value); }}
-                    className='inp' style={{ maxWidth:180, padding:'8px 12px' }}>
-                    {['Em Vistoria','Aguardando Pecas','Em Execucao','Concluido','Cancelado'].map(function(s) {
-                      return <option key={s} value={s}>{s}</option>;
-                    })}
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                <button className="btn btn-whatsapp" onClick={shareWhatsApp}>
+                  💬 Enviar Orçamento no WhatsApp
+                </button>
+                <button className="btn btn-gold" onClick={() => setShowPdf(true)}>
+                  📄 Imprimir / Exportar PDF
+                </button>
+                
+                <div style={{ marginLeft: 'auto', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <select
+                    value={osStatus}
+                    onChange={e => setOsStatus(e.target.value)}
+                    className="form-inp"
+                    style={{ width: 'auto', padding: '9px 14px' }}
+                  >
+                    {['Em Vistoria', 'Aguardando Peças', 'Em Execução', 'Concluído', 'Cancelado'].map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
                   </select>
-                  <button className='btn-emerald' onClick={saveOS}>💾 Salvar OS</button>
+                  <button className="btn btn-emerald" onClick={saveOS}>
+                    💾 Salvar OS
+                  </button>
                 </div>
               </div>
             </div>
@@ -815,72 +1554,127 @@ function App() {
         </div>
       )}
 
-      {/* PDF MODAL */}
+      {/* PDF PRINT MODAL */}
       {showPdf && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.8)', zIndex:999, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }} onClick={function() { setShowPdf(false); }}>
-          <div style={{ background:'#fff', color:'#111', borderRadius:14, padding:'32px 36px', maxWidth:800, width:'100%', maxHeight:'90vh', overflowY:'auto' }} onClick={function(e) { e.stopPropagation(); }}>
-            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:18 }}>
-              <h2 style={{ fontFamily:"'Outfit',sans-serif", color:'#1a1a2e', fontSize:'1.2rem', fontWeight:900 }}>AutoBudget AI — Orcamento de Reparos</h2>
-              <button onClick={function() { window.print(); }} style={{ background:'#f59e0b', color:'#000', border:'none', padding:'8px 16px', borderRadius:8, cursor:'pointer', fontWeight:700 }}>🖨️ Imprimir</button>
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+          onClick={() => setShowPdf(false)}
+        >
+          <div
+            style={{ background: '#fff', color: '#111', borderRadius: 14, padding: '32px 36px', maxWidth: 840, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div>
+                <h2 style={{ fontFamily: "'Outfit', sans-serif", color: '#0f172a', fontSize: '1.3rem', fontWeight: 900 }}>
+                  AutoBudget AI — Laudo & Orçamento de Reparos
+                </h2>
+                <p style={{ fontSize: '0.8rem', color: '#64748b' }}>Documento de Vistoria Técnica e Precificação</p>
+              </div>
+              <button
+                onClick={() => window.print()}
+                style={{ background: '#f59e0b', color: '#000', border: 'none', padding: '9px 18px', borderRadius: 8, cursor: 'pointer', fontWeight: 800 }}
+              >
+                🖨️ Imprimir Laudo
+              </button>
             </div>
-            <p style={{ fontSize:'.88rem', color:'#555', marginBottom:4 }}><strong>Veiculo:</strong> {vehicle.brand} {vehicle.model} {vehicle.year} | <strong>Placa:</strong> {vehicle.plate} | <strong>Cor:</strong> {vehicle.color}</p>
-            <p style={{ fontSize:'.88rem', color:'#555', marginBottom:4 }}><strong>Cliente:</strong> {vehicle.clientName || 'N/I'} | <strong>Data:</strong> {new Date().toLocaleDateString('pt-BR')}</p>
-            <p style={{ fontSize:'.88rem', color:'#555', marginBottom:16 }}><strong>FIPE:</strong> {fmt(fipeVal)} | <strong>Comprometimento:</strong> {fipePct}% {isTotalLoss ? '— RISCO PERDA TOTAL' : ''}</p>
-            <hr style={{ borderColor:'#eee', marginBottom:16 }} />
-            <h3 style={{ fontSize:'.95rem', fontWeight:800, marginBottom:10 }}>Pecas e Servicos:</h3>
-            <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'.82rem', marginBottom:16 }}>
+
+            <div style={{ background: '#f8fafc', padding: 14, borderRadius: 8, marginBottom: 18, fontSize: '0.86rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <div><strong>Veículo:</strong> {vehicle.brand} {vehicle.model} ({vehicle.year})</div>
+              <div><strong>Placa:</strong> {vehicle.plate || 'N/I'} • <strong>Cor:</strong> {vehicle.color || 'N/I'}</div>
+              <div><strong>Cliente:</strong> {vehicle.clientName || 'N/I'}</div>
+              <div><strong>Data:</strong> {new Date().toLocaleDateString('pt-BR')}</div>
+              <div><strong>Valor FIPE:</strong> {fmt(fipeVal)}</div>
+              <div><strong>Comprometimento:</strong> {fipePct}% {isTotalLoss ? '(🚨 RISCO PERDA TOTAL)' : ''}</div>
+            </div>
+
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: 10, color: '#0f172a' }}>Demonstrativo por Peça e Especialidade:</h3>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', marginBottom: 18 }}>
               <thead>
-                <tr style={{ background:'#f3f4f6' }}>
-                  <th style={{ padding:'7px 10px', textAlign:'left' }}>Peca</th>
-                  <th style={{ padding:'7px 10px', textAlign:'left' }}>Fun.</th>
-                  <th style={{ padding:'7px 10px', textAlign:'left' }}>Pin.</th>
-                  <th style={{ padding:'7px 10px', textAlign:'left' }}>Tap./Vid.</th>
-                  <th style={{ padding:'7px 10px', textAlign:'left' }}>Mec.</th>
-                  <th style={{ padding:'7px 10px', textAlign:'left' }}>Rec.</th>
-                  <th style={{ padding:'7px 10px', textAlign:'left' }}>MO</th>
-                  <th style={{ padding:'7px 10px', textAlign:'left' }}>Peca</th>
-                  <th style={{ padding:'7px 10px', textAlign:'left' }}>Total</th>
+                <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #cbd5e1' }}>
+                  <th style={{ padding: '8px 10px', textAlign: 'left' }}>Item</th>
+                  <th style={{ padding: '8px 10px', textAlign: 'left' }}>Funilaria</th>
+                  <th style={{ padding: '8px 10px', textAlign: 'left' }}>Pintura</th>
+                  <th style={{ padding: '8px 10px', textAlign: 'left' }}>Tapeç./Vid.</th>
+                  <th style={{ padding: '8px 10px', textAlign: 'left' }}>Mecânica</th>
+                  <th style={{ padding: '8px 10px', textAlign: 'left' }}>Recup.</th>
+                  <th style={{ padding: '8px 10px', textAlign: 'left' }}>M.O. Total</th>
+                  <th style={{ padding: '8px 10px', textAlign: 'left' }}>Peça</th>
+                  <th style={{ padding: '8px 10px', textAlign: 'right' }}>Total Item</th>
                 </tr>
               </thead>
               <tbody>
-                {parts.map(function(p) {
+                {parts.map(p => {
                   const ops = p.ops || DEFAULT_OPS;
                   const mo = partLaborTotal(ops);
-                  const pc = p.selectedChoice === 'new' ? (p.newPrice ? p.newPrice.price || 0 : 0) : p.selectedChoice === 'used' ? (p.usedPrice ? p.usedPrice.price || 0 : 0) : 0;
+                  const pc = p.selectedChoice === 'new' ? (p.newPrice ? p.newPrice.price || 0 : 0) :
+                             p.selectedChoice === 'used' ? (p.usedPrice ? p.usedPrice.price || 0 : 0) : 0;
                   return (
-                    <tr key={p.id} style={{ borderBottom:'1px solid #f0f0f0' }}>
-                      <td style={{ padding:'7px 10px', fontWeight:600 }}>{p.name}</td>
-                      {OPS.map(function(op) {
-                        const h = parseFloat(ops[op]) || 0;
-                        return <td key={op} style={{ padding:'7px 10px', color: h > 0 ? '#1a1a2e' : '#ccc' }}>{h > 0 ? h + 'h' : '—'}</td>;
+                    <tr key={p.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                      <td style={{ padding: '8px 10px', fontWeight: 700 }}>{p.name}</td>
+                      {OPS.map(op => {
+                        const h = parseFloat(ops[op.id]) || 0;
+                        return (
+                          <td key={op.id} style={{ padding: '8px 10px', color: h > 0 ? '#0f172a' : '#94a3b8' }}>
+                            {h > 0 ? (h + 'h') : '—'}
+                          </td>
+                        );
                       })}
-                      <td style={{ padding:'7px 10px', fontWeight:700, color:'#7c3aed' }}>{fmt(mo)}</td>
-                      <td style={{ padding:'7px 10px' }}>{pc > 0 ? fmt(pc) : '—'}</td>
-                      <td style={{ padding:'7px 10px', fontWeight:800 }}>{fmt(mo + pc)}</td>
+                      <td style={{ padding: '8px 10px', fontWeight: 700, color: '#7c3aed' }}>{fmt(mo)}</td>
+                      <td style={{ padding: '8px 10px' }}>{pc > 0 ? fmt(pc) : '—'}</td>
+                      <td style={{ padding: '8px 10px', fontWeight: 900, textAlign: 'right' }}>{fmt(mo + pc)}</td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
-            {thirdParty.filter(function(t){return t.name;}).length > 0 && (
-              <div style={{ marginBottom:16 }}>
-                <h3 style={{ fontSize:'.95rem', fontWeight:800, marginBottom:8 }}>Servicos de Terceiros:</h3>
-                {thirdParty.filter(function(t){return t.name;}).map(function(t) {
-                  return <div key={t.id} style={{ fontSize:'.85rem', display:'flex', justifyContent:'space-between', padding:'4px 0', borderBottom:'1px solid #f0f0f0' }}><span>{t.name}</span><span style={{ fontWeight:700 }}>{fmt(t.value)}</span></div>;
-                })}
+
+            {thirdParty.filter(t => t.name).length > 0 && (
+              <div style={{ marginBottom: 18 }}>
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: 8, color: '#0f172a' }}>Serviços de Terceiros:</h3>
+                {thirdParty.filter(t => t.name).map(t => (
+                  <div key={t.id} style={{ fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #f1f5f9' }}>
+                    <span>{t.name}</span>
+                    <strong style={{ color: '#dc2626' }}>{fmt(t.value)}</strong>
+                  </div>
+                ))}
               </div>
             )}
-            <div style={{ background:'#fef3c7', borderRadius:8, padding:'14px 16px' }}>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:12 }}>
-                <div><div style={{ fontSize:'.7rem', color:'#92400e', fontWeight:700 }}>PECAS</div><div style={{ fontWeight:900 }}>{fmt(totSelected)}</div></div>
-                <div><div style={{ fontSize:'.7rem', color:'#92400e', fontWeight:700 }}>MAO DE OBRA</div><div style={{ fontWeight:900, color:'#7c3aed' }}>{fmt(totalLaborParts)}</div></div>
-                {totalThirdPartyVal > 0 && <div><div style={{ fontSize:'.7rem', color:'#92400e', fontWeight:700 }}>TERCEIROS</div><div style={{ fontWeight:900, color:'#dc2626' }}>{fmt(totalThirdPartyVal)}</div></div>}
-                <div><div style={{ fontSize:'.7rem', color:'#92400e', fontWeight:700 }}>TOTAL GERAL</div><div style={{ fontWeight:900, fontSize:'1.1rem', color:'#d97706' }}>{fmt(budgetSel)}</div></div>
+
+            <div style={{ background: '#fef3c7', borderRadius: 8, padding: '16px 20px', border: '1px solid #fde68a' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+                <div>
+                  <div style={{ fontSize: '0.72rem', color: '#92400e', fontWeight: 700 }}>PEÇAS</div>
+                  <div style={{ fontWeight: 900, fontSize: '1.1rem', color: '#0f172a' }}>{fmt(totSelected)}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.72rem', color: '#92400e', fontWeight: 700 }}>MÃO DE OBRA</div>
+                  <div style={{ fontWeight: 900, fontSize: '1.1rem', color: '#7c3aed' }}>{fmt(totalLaborParts)}</div>
+                </div>
+                {totalThirdPartyVal > 0 && (
+                  <div>
+                    <div style={{ fontSize: '0.72rem', color: '#92400e', fontWeight: 700 }}>TERCEIROS</div>
+                    <div style={{ fontWeight: 900, fontSize: '1.1rem', color: '#dc2626' }}>{fmt(totalThirdPartyVal)}</div>
+                  </div>
+                )}
+                <div>
+                  <div style={{ fontSize: '0.72rem', color: '#92400e', fontWeight: 700 }}>TOTAL GERAL</div>
+                  <div style={{ fontWeight: 900, fontSize: '1.3rem', color: '#d97706' }}>{fmt(budgetSel)}</div>
+                </div>
               </div>
             </div>
-            <p style={{ marginTop:12, fontSize:'.75rem', color:'#999', textAlign:'center' }}>Mao de obra: R$ 80,00/h (taxa fixa, todas as operacoes) | AutoBudget AI v3.0</p>
-            <button onClick={function() { setShowPdf(false); }} className='no-print'
-              style={{ marginTop:14, background:'#f1f5f9', border:'none', padding:'8px 18px', borderRadius:8, cursor:'pointer', fontWeight:700 }}>Fechar</button>
+
+            <p style={{ marginTop: 16, fontSize: '0.75rem', color: '#94a3b8', textAlign: 'center' }}>
+              Mão de Obra tabelada: R$ 80,00/hora em todas as operações • AutoBudget AI v3.0
+            </p>
+
+            <button
+              onClick={() => setShowPdf(false)}
+              className="no-print"
+              style={{ marginTop: 14, background: '#f1f5f9', border: 'none', padding: '8px 20px', borderRadius: 8, cursor: 'pointer', fontWeight: 700 }}
+            >
+              Fechar
+            </button>
           </div>
         </div>
       )}
