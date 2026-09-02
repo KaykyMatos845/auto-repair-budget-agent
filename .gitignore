@@ -1,11 +1,16 @@
-﻿# Secrets and credentials (CRITICAL)
+﻿__pycache__/
+*.pyc
 .env
-
-# Dependencies and build output
-node_modules/
-dist/
-
-# Logs and OS files
-*.log
 .DS_Store
-Thumbs.db
+*.tmp
+scan*.py
+fix*.py
+make*.py
+test_*.py
+write_*.py
+ui_*.py
+gen_*.py
+assemble_*.py
+read_*.py
+update_*.py
+part*_v3.py
