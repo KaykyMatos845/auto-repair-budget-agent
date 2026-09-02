@@ -574,13 +574,31 @@ function partLaborHours(ops) {
   return OPS.reduce((s, op) => s + (parseFloat((ops || {})[op.id]) || 0), 0);
 }
 
+function getBoxStyle(box) {
+  if (!box || !Array.isArray(box) || box.length < 4) return null;
+  let [y1, x1, y2, x2] = box;
+  if (y1 > 100 || x1 > 100 || y2 > 100 || x2 > 100) {
+    y1 /= 10; x1 /= 10; y2 /= 10; x2 /= 10;
+  }
+  const top = Math.max(0, Math.min(95, y1));
+  const left = Math.max(0, Math.min(95, x1));
+  const height = Math.max(4, Math.min(100 - top, y2 - y1));
+  const width = Math.max(4, Math.min(100 - left, x2 - x1));
+  return {
+    top: top + '%',
+    left: left + '%',
+    width: width + '%',
+    height: height + '%'
+  };
+}
+
 const SAMPLES = [
   {
     id: 'onix',
     label: 'Chevrolet Onix 2021',
     sub: 'Batida Traseira • Lanterna & Tampa',
     img: '/samples/onix_rear.jpg',
-    vehicle: { brand: 'Chevrolet', model: 'Onix LTZ 1.0 Turbo', year: '2021', color: 'Prata', plate: 'ONX-2021', clientName: 'Lucas Oliveira', fipeValue: 68500 },
+    vehicle: { brand: 'Chevrolet', model: 'Onix LTZ 1.0 Turbo', year: '2021', color: 'Prata', plate: 'ONX-2021', clientName: 'Lucas Oliveira', fipeValue: 0 },
     parts: [
       {
         id: 's1',
@@ -590,7 +608,7 @@ const SAMPLES = [
         side: 'Esquerdo',
         position: 'Traseiro',
         notes: 'Lente acrílica quebrada e máscara interna com fissura no lado esquerdo.',
-        box: [20, 15, 55, 55],
+        box: [25, 68, 55, 92],
         selectedChoice: 'used',
         ops: { fun: 0, pin: 0.5, tap: 0, mec: 0.5, rec: 0 },
         newPrice: {
@@ -613,8 +631,8 @@ const SAMPLES = [
         actionRequired: 'Recuperação',
         side: 'Central',
         position: 'Traseiro',
-        notes: 'Amassado profundo no vinco inferior com necessidade de repuxo e pintura.',
-        box: [40, 25, 80, 82],
+        notes: 'Amassado profundo no vinco inferior com repuxo e pintura.',
+        box: [30, 25, 75, 75],
         selectedChoice: 'repair',
         ops: { fun: 2, pin: 5, tap: 0.5, mec: 0, rec: 0 },
         newPrice: { brandName: 'Serviço de Recuperação', price: 0, link: '#' },
@@ -628,7 +646,7 @@ const SAMPLES = [
         side: 'Central',
         position: 'Traseiro',
         notes: 'Travas laterais rompidas e fissura estrutural na capa traseira.',
-        box: [60, 20, 90, 85],
+        box: [65, 15, 92, 85],
         selectedChoice: 'used',
         ops: { fun: 0, pin: 1, tap: 0, mec: 0, rec: 0 },
         newPrice: {
@@ -654,7 +672,7 @@ const SAMPLES = [
     label: 'Honda Civic Touring 2021',
     sub: 'Colisão Frontal • Farol & Para-choque',
     img: '/samples/civic_front.jpg',
-    vehicle: { brand: 'Honda', model: 'Civic Touring 1.5 Turbo', year: '2021', color: 'Prata', plate: 'BRA-2021', clientName: 'Ricardo Silva', fipeValue: 128000 },
+    vehicle: { brand: 'Honda', model: 'Civic Touring 1.5 Turbo', year: '2021', color: 'Prata', plate: 'BRA-2021', clientName: 'Ricardo Silva', fipeValue: 0 },
     parts: [
       {
         id: 'c1',
@@ -664,7 +682,7 @@ const SAMPLES = [
         side: 'Esquerdo',
         position: 'Dianteiro',
         notes: 'Lente acrílica e máscara interna destruídas no impacto frontal esquerdo.',
-        box: [15, 10, 50, 45],
+        box: [35, 62, 60, 90],
         selectedChoice: 'used',
         ops: { fun: 0, pin: 0.5, tap: 0, mec: 1, rec: 0 },
         newPrice: {
@@ -688,7 +706,7 @@ const SAMPLES = [
         side: 'Central',
         position: 'Dianteiro',
         notes: 'Rachadura nos encaixes do paralama dianteiro esquerdo.',
-        box: [40, 20, 85, 90],
+        box: [55, 20, 88, 85],
         selectedChoice: 'used',
         ops: { fun: 0.5, pin: 2, tap: 0, mec: 0, rec: 0 },
         newPrice: {
@@ -714,7 +732,7 @@ const SAMPLES = [
     label: 'Toyota Corolla XEi 2020',
     sub: 'Impacto Lateral • Porta & Retrovisor',
     img: '/samples/corolla_side.jpg',
-    vehicle: { brand: 'Toyota', model: 'Corolla XEi 2.0 Flex', year: '2020', color: 'Branco Pérola', plate: 'TOY-2020', clientName: 'Juliana Costa', fipeValue: 135000 },
+    vehicle: { brand: 'Toyota', model: 'Corolla XEi 2.0 Flex', year: '2020', color: 'Branco Pérola', plate: 'TOY-2020', clientName: 'Juliana Costa', fipeValue: 0 },
     parts: [
       {
         id: 't1',
@@ -724,7 +742,7 @@ const SAMPLES = [
         side: 'Direito',
         position: 'Lateral',
         notes: 'Mecanismo de rebatimento destruído no impacto direito.',
-        box: [25, 65, 55, 90],
+        box: [28, 62, 48, 82],
         selectedChoice: 'used',
         ops: { fun: 0, pin: 0.5, tap: 0, mec: 1, rec: 0 },
         newPrice: {
@@ -748,7 +766,7 @@ const SAMPLES = [
         side: 'Direito',
         position: 'Lateral',
         notes: 'Amassado na folha externa e recuperação de dobradiça.',
-        box: [30, 15, 80, 70],
+        box: [40, 25, 82, 75],
         selectedChoice: 'repair',
         ops: { fun: 3, pin: 4, tap: 1, mec: 0.5, rec: 0 },
         newPrice: { brandName: 'Serviço de Recuperação', price: 0, link: '#' },
@@ -761,7 +779,7 @@ const SAMPLES = [
 
 function App() {
   const [images, setImages] = useState([]);
-  const [vehicle, setVehicle] = useState({ brand: '', model: '', year: '', plate: '', color: '', clientName: '', fipeValue: 68500 });
+  const [vehicle, setVehicle] = useState({ brand: '', model: '', year: '', plate: '', color: '', clientName: '', fipeValue: 0 });
   const [parts, setParts] = useState([]);
   const [thirdParty, setThirdParty] = useState([]);
   const [analysis, setAnalysis] = useState(null);
@@ -785,6 +803,15 @@ function App() {
 
   const setVField = (field, value) => {
     setVehicle(prev => ({ ...prev, [field]: value }));
+  };
+
+  const newInspection = () => {
+    setImages([]);
+    setVehicle({ brand: '', model: '', year: '', plate: '', color: '', clientName: '', fipeValue: 0 });
+    setParts([]);
+    setThirdParty([]);
+    setAnalysis(null);
+    if (fileRef.current) fileRef.current.value = '';
   };
 
   const setPartOp = (partId, opId, val) => {
@@ -841,9 +868,10 @@ function App() {
   const budgetSel = totSelected + totalLabor;
   const saving = Math.max(0, budgetNew - budgetSel);
   const savingPct = budgetNew > 0 ? ((saving / budgetNew) * 100).toFixed(1) : '0.0';
-  const fipeVal = vehicle.fipeValue || 68500;
-  const fipePct = ((budgetSel / fipeVal) * 100).toFixed(1);
-  const isTotalLoss = parseFloat(fipePct) >= 75.0;
+  
+  const fipeVal = parseFloat(vehicle.fipeValue) || 0;
+  const fipePct = fipeVal > 0 ? ((budgetSel / fipeVal) * 100).toFixed(1) : '0.0';
+  const isTotalLoss = fipeVal > 0 && parseFloat(fipePct) >= 75.0;
 
   const processFiles = async (files) => {
     const imgs = [];
@@ -860,9 +888,9 @@ function App() {
   };
 
   const analyze = async () => {
-    if (!images.length || !vehicle.brand) return;
+    if (!images.length) return;
     setLoading(true);
-    setLoadingMsg('Analisando imagens e precificando peças via IA...');
+    setLoadingMsg('Identificando veículo e mapeando avarias com IA...');
     try {
       const resp = await fetch('/api/analyze', {
         method: 'POST',
@@ -872,15 +900,29 @@ function App() {
       if (!resp.ok) throw new Error('Falha no servidor: ' + resp.status);
       const data = await resp.json();
       if (data.error) throw new Error(data.error);
-      const enriched = (data.parts || []).map((p, i) => ({
+
+      // AUTO-FILL VEHICLE DATA IDENTIFIED BY AI
+      if (data.vehicle) {
+        setVehicle(prev => ({
+          ...prev,
+          brand: data.vehicle.brand && data.vehicle.brand !== 'Veículo Identificado' ? data.vehicle.brand : (prev.brand || data.vehicle.brand || ''),
+          model: data.vehicle.model && data.vehicle.model !== 'Modelo Identificado' ? data.vehicle.model : (prev.model || data.vehicle.model || ''),
+          year: data.vehicle.year && data.vehicle.year !== 'N/A' ? data.vehicle.year : (prev.year || data.vehicle.year || ''),
+          color: data.vehicle.color && data.vehicle.color !== 'N/A' ? data.vehicle.color : (prev.color || data.vehicle.color || ''),
+          fipeValue: prev.fipeValue || 0
+        }));
+      }
+
+      const rawParts = data.parts || (data.damageAnalysis && data.damageAnalysis.parts) || [];
+      const enriched = rawParts.map((p, i) => ({
         ...p,
-        id: 'p' + Date.now().toString().slice(-6) + i,
-        ops: { fun: 0, pin: 0, tap: 0, mec: 0, rec: 0 },
-        selectedChoice: p.actionRequired === 'Substituição' ? 'used' : 'repair'
+        id: p.id || ('p' + Date.now().toString().slice(-6) + i),
+        ops: p.ops || { fun: 0, pin: 0, tap: 0, mec: 0, rec: 0 },
+        selectedChoice: p.actionRequired === 'Recuperação' || p.actionRequired === 'Pintura' ? 'repair' : 'used'
       }));
       setParts(enriched);
       setThirdParty([]);
-      setAnalysis({ aiPowered: true });
+      setAnalysis({ aiPowered: data.aiPowered !== false });
     } catch(e) {
       alert('Erro na análise: ' + e.message);
     } finally {
@@ -901,11 +943,11 @@ function App() {
     const newOs = {
       id: 'OS-' + Date.now().toString().slice(-6),
       date: new Date().toLocaleDateString('pt-BR'),
-      vehicle: vehicle.brand + ' ' + vehicle.model,
-      plate: vehicle.plate,
-      client: vehicle.clientName,
+      vehicle: (vehicle.brand || 'Veículo') + ' ' + (vehicle.model || ''),
+      plate: vehicle.plate || 'N/I',
+      client: vehicle.clientName || 'Cliente',
       total: budgetSel,
-      fipePct: fipePct,
+      fipePct: fipeVal > 0 ? fipePct : 'N/A',
       isTotalLoss: isTotalLoss,
       status: osStatus
     };
@@ -930,9 +972,9 @@ function App() {
     const lines = [
       '🏎️ *ORÇAMENTO DE REPAROS AUTOMOTIVOS*',
       '📅 Data: ' + new Date().toLocaleDateString('pt-BR'),
-      '🚗 Veículo: ' + vehicle.brand + ' ' + vehicle.model + ' (' + vehicle.year + ')',
+      '🚗 Veículo: ' + (vehicle.brand || '') + ' ' + (vehicle.model || '') + ' (' + (vehicle.year || '') + ')',
       '🏷️ Placa: ' + (vehicle.plate || 'N/I') + ' | Cliente: ' + (vehicle.clientName || 'Cliente'),
-      '📊 FIPE: ' + fmt(fipeVal) + ' | Comprometimento: ' + fipePct + '% ' + (isTotalLoss ? '🚨 RISCO PERDA TOTAL' : ''),
+      (fipeVal > 0 ? '📊 FIPE: ' + fmt(fipeVal) + ' | Comprometimento: ' + fipePct + '% ' + (isTotalLoss ? '🚨 RISCO PERDA TOTAL' : '') : '📊 FIPE: Não informada'),
       '',
       '📋 *PEÇAS & COMPONENTES:*',
       pList,
@@ -970,7 +1012,10 @@ function App() {
           </div>
         </div>
         
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <button className="btn btn-ghost" onClick={newInspection} title="Limpar tudo e iniciar novo orçamento" style={{ borderColor: 'rgba(245,158,11,0.4)', color: 'var(--gold-light)' }}>
+            🔄 Nova Vistoria
+          </button>
           <button className="btn btn-ghost" onClick={() => setActiveTab(activeTab === 'history' ? 'budget' : 'history')}>
             📋 Histórico ({osList.length})
           </button>
@@ -979,7 +1024,7 @@ function App() {
         </div>
       </header>
 
-      {/* FIPE & BUDGET SUMMARY BAR */}
+      {/* FIPE & BUDGET SUMMARY BAR (Top persistent) */}
       {parts.length > 0 && (
         <div className={'fipe-card' + (isTotalLoss ? ' total-loss' : '')}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'center', justifyContent: 'space-between' }}>
@@ -991,8 +1036,9 @@ function App() {
                   <input
                     type="number"
                     className="form-inp"
-                    value={vehicle.fipeValue || 68500}
-                    onChange={e => setVField('fipeValue', parseFloat(e.target.value) || 0)}
+                    placeholder="0,00 (Manual)"
+                    value={vehicle.fipeValue ? vehicle.fipeValue : ''}
+                    onChange={e => setVField('fipeValue', Math.max(0, parseFloat(e.target.value) || 0))}
                     style={{ width: 140, fontWeight: 800, fontSize: '1.05rem', color: '#fff', padding: '6px 12px' }}
                   />
                 </div>
@@ -1015,8 +1061,8 @@ function App() {
 
               <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: 20 }}>
                 <div className="form-label">% da FIPE</div>
-                <div style={{ fontSize: '1.45rem', fontWeight: 900, color: isTotalLoss ? 'var(--rose-light)' : 'var(--emerald-light)' }}>
-                  {fipePct}%
+                <div style={{ fontSize: '1.45rem', fontWeight: 900, color: isTotalLoss ? 'var(--rose-light)' : (fipeVal > 0 ? 'var(--emerald-light)' : 'var(--text-dim)') }}>
+                  {fipeVal > 0 ? (fipePct + '%') : '—'}
                 </div>
               </div>
             </div>
@@ -1024,6 +1070,12 @@ function App() {
             {isTotalLoss && (
               <div style={{ background: 'rgba(244,63,94,0.18)', border: '1px solid var(--rose)', borderRadius: 'var(--radius-sm)', padding: '8px 16px', color: 'var(--rose-light)', fontWeight: 800, fontSize: '0.84rem', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span>🚨</span> ALERTA DE PERDA TOTAL (Atinge {'>'} 75% da FIPE)
+              </div>
+            )}
+            
+            {fipeVal === 0 && (
+              <div style={{ color: 'var(--text-dim)', fontSize: '0.78rem', background: 'rgba(255,255,255,0.03)', padding: '6px 12px', borderRadius: 'var(--radius-sm)', border: '1px dashed var(--border)' }}>
+                💡 Digite o valor da FIPE ao lado para calcular o % de perda total
               </div>
             )}
           </div>
@@ -1063,7 +1115,9 @@ function App() {
                       <td><code style={{ background: 'rgba(255,255,255,0.06)', padding: '2px 6px', borderRadius: 4 }}>{os.plate}</code></td>
                       <td>{os.client || '—'}</td>
                       <td style={{ fontWeight: 800 }}>{fmt(os.total)}</td>
-                      <td style={{ fontWeight: 800, color: parseFloat(os.fipePct) >= 75 ? 'var(--rose-light)' : 'var(--emerald-light)' }}>{os.fipePct}%</td>
+                      <td style={{ fontWeight: 800, color: parseFloat(os.fipePct) >= 75 ? 'var(--rose-light)' : 'var(--emerald-light)' }}>
+                        {os.fipePct !== 'N/A' ? (os.fipePct + '%') : '—'}
+                      </td>
                       <td><span className="badge badge-repair">{os.status}</span></td>
                     </tr>
                   ))}
@@ -1080,8 +1134,13 @@ function App() {
 
           {/* 1. SAMPLES PRESETS */}
           <div className="glass-panel" style={{ padding: '18px 22px', marginBottom: 20 }}>
-            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12 }}>
-              ⚡ Carregar Vistoria Rápida de Exemplo
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                ⚡ Carregar Vistoria Rápida de Exemplo
+              </div>
+              <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: '0.72rem' }} onClick={newInspection}>
+                🔄 Limpar Campos
+              </button>
             </div>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               {SAMPLES.map(s => (
@@ -1098,10 +1157,10 @@ function App() {
             </div>
           </div>
 
-          {/* 2. PHOTOS UPLOAD */}
+          {/* 2. PHOTOS UPLOAD & BOUNDING BOXES */}
           <div className="glass-panel" style={{ padding: '20px 24px', marginBottom: 20 }}>
             <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12 }}>
-              📷 Fotos da Avaria / Vistoria
+              📷 Fotos da Avaria / Vistoria Computacional
             </div>
             
             <div
@@ -1111,21 +1170,22 @@ function App() {
               onDrop={e => { e.preventDefault(); processFiles(e.dataTransfer.files); }}
             >
               <div style={{ fontSize: '2.2rem', marginBottom: 6 }}>📸</div>
-              <div style={{ fontWeight: 800, fontSize: '0.95rem', marginBottom: 4 }}>Arraste as fotos do veículo avariado aqui ou clique para selecionar</div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Formatos suportados: JPG, PNG, WEBP (Várias fotos simultâneas)</div>
+              <div style={{ fontWeight: 800, fontSize: '0.95rem', marginBottom: 4 }}>Arraste fotos do veículo aqui ou clique para selecionar</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Formatos: JPG, PNG, WEBP (A IA identifica automaticamente o veículo e as avarias)</div>
               <input ref={fileRef} type="file" multiple accept="image/*" style={{ display: 'none' }} onChange={e => processFiles(e.target.files)} />
             </div>
 
             {images.length > 0 && (
-              <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 16 }}>
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 18 }}>
                 {images.map((img, idx) => (
-                  <div key={idx} className="img-box-container" style={{ maxWidth: 220 }}>
-                    <img src={img.blobUrl} style={{ width: '100%', display: 'block' }} alt={'Foto ' + (idx + 1)} />
-                    {parts.filter(p => p.box).map((p, pi) => {
-                      const [x1, y1, x2, y2] = p.box;
+                  <div key={idx} className="img-box-container" style={{ position: 'relative', width: '100%', maxWidth: 540, borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border-accent)', background: '#000' }}>
+                    <img src={img.blobUrl} style={{ width: '100%', height: 'auto', display: 'block' }} alt={'Foto ' + (idx + 1)} />
+                    {parts.map((p, pi) => {
+                      const boxStyle = getBoxStyle(p.box);
+                      if (!boxStyle) return null;
                       return (
-                        <div key={p.id} className="bbox-overlay" style={{ left: x1 + '%', top: y1 + '%', width: (x2 - x1) + '%', height: (y2 - y1) + '%' }}>
-                          <span className="bbox-label">#{pi + 1}</span>
+                        <div key={p.id} className="bbox-overlay" style={boxStyle} title={p.name + ': ' + p.notes}>
+                          <span className="bbox-label">#{pi + 1} {p.name.split(' ')[0]}</span>
                         </div>
                       );
                     })}
@@ -1135,20 +1195,28 @@ function App() {
             )}
           </div>
 
-          {/* 3. VEHICLE DATA */}
+          {/* 3. VEHICLE DATA (Auto-filled by AI) */}
           <div className="glass-panel" style={{ padding: '20px 24px', marginBottom: 20 }}>
-            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 14 }}>
-              🚗 Dados do Veículo & Cliente
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  🚗 Dados do Veículo & Cliente (Preenchidos pela IA ou Manual)
+                </div>
+                <p style={{ fontSize: '0.74rem', color: 'var(--text-dim)' }}>A IA detecta automaticamente Marca, Modelo, Ano e Cor a partir das fotos</p>
+              </div>
+              <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: '0.72rem' }} onClick={newInspection}>
+                🔄 Nova Vistoria
+              </button>
             </div>
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
               {[
-                ['brand', 'Marca', 'Ex: Chevrolet'],
-                ['model', 'Modelo', 'Ex: Onix LTZ 1.0'],
+                ['brand', 'Marca', 'Detectada por IA ou digite'],
+                ['model', 'Modelo', 'Detectado por IA ou digite'],
                 ['year', 'Ano', 'Ex: 2021'],
                 ['plate', 'Placa', 'Ex: ABC-1234'],
                 ['color', 'Cor', 'Ex: Prata'],
-                ['clientName', 'Cliente', 'Ex: Lucas Oliveira']
+                ['clientName', 'Cliente', 'Nome do proprietário']
               ].map(([key, label, placeholder]) => (
                 <div key={key}>
                   <label className="form-label">{label}</label>
@@ -1166,9 +1234,9 @@ function App() {
                 <input
                   type="number"
                   className="form-inp"
-                  placeholder="68500"
-                  value={vehicle.fipeValue || 68500}
-                  onChange={e => setVField('fipeValue', parseFloat(e.target.value) || 0)}
+                  placeholder="0,00 (Manual)"
+                  value={vehicle.fipeValue ? vehicle.fipeValue : ''}
+                  onChange={e => setVField('fipeValue', Math.max(0, parseFloat(e.target.value) || 0))}
                   style={{ fontWeight: 800, color: 'var(--gold-light)' }}
                 />
               </div>
@@ -1177,7 +1245,7 @@ function App() {
             <div style={{ marginTop: 16, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
               <button
                 className="btn btn-gold"
-                disabled={!images.length || !vehicle.brand || loading}
+                disabled={!images.length || loading}
                 onClick={analyze}
               >
                 {loading ? (loadingMsg || 'Analisando com IA...') : '🤖 Analisar Avarias com Gemini AI'}
@@ -1542,12 +1610,12 @@ function App() {
                     <span>💰</span> Resumo Executivo do Orçamento Final
                   </h2>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    Veículo: {vehicle.brand} {vehicle.model} ({vehicle.year}) • Placa: {vehicle.plate || 'N/I'} • Cliente: {vehicle.clientName || 'Cliente'}
+                    Veículo: {(vehicle.brand || 'Veículo')} {(vehicle.model || '')} {(vehicle.year ? '(' + vehicle.year + ')' : '')} • Placa: {vehicle.plate || 'N/I'} • Cliente: {vehicle.clientName || 'Cliente'}
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <span className="badge" style={{ background: isTotalLoss ? 'rgba(244,63,94,0.2)' : 'rgba(16,185,129,0.2)', color: isTotalLoss ? 'var(--rose-light)' : 'var(--emerald-light)', border: '1px solid ' + (isTotalLoss ? 'var(--rose)' : 'var(--emerald)') }}>
-                    {isTotalLoss ? '🚨 RISCO PERDA TOTAL' : '✅ REPARO VIÁVEL'}
+                  <span className="badge" style={{ background: isTotalLoss ? 'rgba(244,63,94,0.2)' : (fipeVal > 0 ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.08)'), color: isTotalLoss ? 'var(--rose-light)' : (fipeVal > 0 ? 'var(--emerald-light)' : 'var(--text-dim)'), border: '1px solid ' + (isTotalLoss ? 'var(--rose)' : (fipeVal > 0 ? 'var(--emerald)' : 'var(--border)')) }}>
+                    {isTotalLoss ? '🚨 RISCO PERDA TOTAL' : (fipeVal > 0 ? '✅ REPARO VIÁVEL' : '📋 FIPE NÃO INFORMADA')}
                   </span>
                 </div>
               </div>
@@ -1581,12 +1649,14 @@ function App() {
                   </div>
                 </div>
 
-                <div style={{ background: isTotalLoss ? 'var(--rose-glow)' : 'var(--emerald-glow)', borderRadius: 'var(--radius-sm)', padding: '14px 16px', border: '1px solid ' + (isTotalLoss ? 'rgba(244,63,94,0.4)' : 'rgba(16,185,129,0.4)') }}>
-                  <div style={{ fontSize: '0.72rem', color: isTotalLoss ? 'var(--rose-light)' : 'var(--emerald-light)', fontWeight: 700, textTransform: 'uppercase' }}>% Tabela FIPE</div>
-                  <div style={{ fontSize: '1.65rem', fontWeight: 900, color: isTotalLoss ? 'var(--rose-light)' : 'var(--emerald-light)', marginTop: 4 }}>
-                    {fipePct}%
+                <div style={{ background: isTotalLoss ? 'var(--rose-glow)' : (fipeVal > 0 ? 'var(--emerald-glow)' : 'rgba(255,255,255,0.02)'), borderRadius: 'var(--radius-sm)', padding: '14px 16px', border: '1px solid ' + (isTotalLoss ? 'rgba(244,63,94,0.4)' : (fipeVal > 0 ? 'rgba(16,185,129,0.4)' : 'var(--border)')) }}>
+                  <div style={{ fontSize: '0.72rem', color: isTotalLoss ? 'var(--rose-light)' : (fipeVal > 0 ? 'var(--emerald-light)' : 'var(--text-dim)'), fontWeight: 700, textTransform: 'uppercase' }}>% Tabela FIPE</div>
+                  <div style={{ fontSize: '1.65rem', fontWeight: 900, color: isTotalLoss ? 'var(--rose-light)' : (fipeVal > 0 ? 'var(--emerald-light)' : 'var(--text-dim)'), marginTop: 4 }}>
+                    {fipeVal > 0 ? (fipePct + '%') : '—'}
                   </div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>FIPE: {fmt(fipeVal)}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>
+                    {fipeVal > 0 ? ('FIPE: ' + fmt(fipeVal)) : 'FIPE: Não informada'}
+                  </div>
                 </div>
               </div>
 
@@ -1658,12 +1728,12 @@ function App() {
             </div>
 
             <div style={{ background: '#f8fafc', padding: 14, borderRadius: 8, marginBottom: 18, fontSize: '0.86rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              <div><strong>Veículo:</strong> {vehicle.brand} {vehicle.model} ({vehicle.year})</div>
+              <div><strong>Veículo:</strong> {(vehicle.brand || 'Veículo')} {(vehicle.model || '')} {(vehicle.year ? '(' + vehicle.year + ')' : '')}</div>
               <div><strong>Placa:</strong> {vehicle.plate || 'N/I'} • <strong>Cor:</strong> {vehicle.color || 'N/I'}</div>
               <div><strong>Cliente:</strong> {vehicle.clientName || 'N/I'}</div>
               <div><strong>Data:</strong> {new Date().toLocaleDateString('pt-BR')}</div>
-              <div><strong>Valor FIPE:</strong> {fmt(fipeVal)}</div>
-              <div><strong>Comprometimento:</strong> {fipePct}% {isTotalLoss ? '(🚨 RISCO PERDA TOTAL)' : ''}</div>
+              <div><strong>Valor FIPE:</strong> {fipeVal > 0 ? fmt(fipeVal) : 'Não informada'}</div>
+              <div><strong>Comprometimento:</strong> {fipeVal > 0 ? (fipePct + '%') : '—'} {isTotalLoss ? '(🚨 RISCO PERDA TOTAL)' : ''}</div>
             </div>
 
             <h3 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: 10, color: '#0f172a' }}>Demonstrativo por Peça e Especialidade:</h3>
