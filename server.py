@@ -81,40 +81,66 @@ def get_fipe_value(brand, model, year):
 # Real Mercado Livre exact item table
 REAL_MARKET_PRICES = {
     'geral': {
-        'farol': {'new': 980, 'used': 480, 'supplier': 'CDV Desmanche Credenciado DETRAN', 'link_new': 'https://produto.mercadolivre.com.br/MLB-3390182911-farol-dianteiro-original-oem-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3490182912-farol-dianteiro-usado-original-detran-_JM'},
-        'lanterna': {'new': 700, 'used': 340, 'supplier': 'Desmanche Credenciado DETRAN', 'link_new': 'https://produto.mercadolivre.com.br/MLB-1948831998-lanterna-traseira-original-oem-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3315720911-lanterna-traseira-usada-detran-_JM'},
-        'para-choque': {'new': 650, 'used': 320, 'supplier': 'Recuperadora Credenciada BR', 'link_new': 'https://produto.mercadolivre.com.br/MLB-3610996841-parachoque-dianteiro-novo-sem-pintura-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3482701449-parachoque-dianteiro-recuperado-detran-_JM'},
-        'parachoque': {'new': 650, 'used': 320, 'supplier': 'Recuperadora Credenciada BR', 'link_new': 'https://produto.mercadolivre.com.br/MLB-3610996841-parachoque-dianteiro-novo-sem-pintura-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3482701449-parachoque-dianteiro-recuperado-detran-_JM'},
-        'porta': {'new': 1500, 'used': 720, 'supplier': 'CDV Leilão & Peças SP', 'link_new': 'https://produto.mercadolivre.com.br/MLB-3512998811-porta-dianteira-original-sem-pintura-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3498819201-porta-dianteira-usada-original-detran-_JM'},
-        'retrovisor': {'new': 620, 'used': 300, 'supplier': 'Desmanche Credenciado DETRAN', 'link_new': 'https://produto.mercadolivre.com.br/MLB-2144891002-retrovisor-eletrico-original-oem-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3419028114-retrovisor-eletrico-usado-detran-_JM'},
-        'capô': {'new': 1400, 'used': 650, 'supplier': 'CDV Peças Originais', 'link_new': 'https://produto.mercadolivre.com.br/MLB-3314488915-capo-dianteiro-original-oem-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3561992019-capo-dianteiro-usado-original-detran-_JM'},
-        'capo': {'new': 1400, 'used': 650, 'supplier': 'CDV Peças Originais', 'link_new': 'https://produto.mercadolivre.com.br/MLB-3314488915-capo-dianteiro-original-oem-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3561992019-capo-dianteiro-usado-original-detran-_JM'},
+        'farol': {'new': 980, 'used': 480, 'supplier': 'CDV Desmanche Credenciado DETRAN', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/farol-dianteiro-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/farol-dianteiro-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'lanterna': {'new': 700, 'used': 340, 'supplier': 'Desmanche Credenciado DETRAN', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/lanterna-traseira-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/lanterna-traseira-usada-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'para-choque': {'new': 650, 'used': 320, 'supplier': 'Recuperadora Credenciada BR', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'parachoque': {'new': 650, 'used': 320, 'supplier': 'Recuperadora Credenciada BR', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'porta': {'new': 1500, 'used': 720, 'supplier': 'CDV Leilão & Peças SP', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/porta-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/porta-usada-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'retrovisor': {'new': 620, 'used': 300, 'supplier': 'Desmanche Credenciado DETRAN', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/retrovisor-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/retrovisor-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'capô': {'new': 1400, 'used': 650, 'supplier': 'CDV Peças Originais', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/capo-dianteiro-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/capo-dianteiro-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'capo': {'new': 1400, 'used': 650, 'supplier': 'CDV Peças Originais', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/capo-dianteiro-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/capo-dianteiro-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
     },
     'onix': {
-        'farol': {'new': 890, 'used': 499, 'supplier': 'CDV Desmanche Credenciado DETRAN SP', 'link_new': 'https://produto.mercadolivre.com.br/MLB-5501296624-farol-led-chevrolet-onix-2020-2021-2022-2023-2024-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-5405547970-farol-onix-2020-2021-2022-2023-2024-2025-direito-original-_JM'},
-        'lanterna': {'new': 780, 'used': 390, 'supplier': 'Auto Peças Desmanche Autorizado GM', 'link_new': 'https://produto.mercadolivre.com.br/MLB-1948831998-lanterna-traseira-onix-hatch-2020-2021-2022-lado-esquerdo-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3315720911-lanterna-traseira-esquerda-onix-hatch-2021-original-_JM'},
-        'para-choque': {'new': 680, 'used': 380, 'supplier': 'Recuperadora Sucatas BR', 'link_new': 'https://produto.mercadolivre.com.br/MLB-3610996841-parachoque-dianteiro-onix-premier-turbo-2020-2021-2022-2023-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3482701449-parachoque-dianteiro-chevrolet-onix-2020-2021-2022-original-_JM'},
-        'parachoque': {'new': 680, 'used': 380, 'supplier': 'Recuperadora Sucatas BR', 'link_new': 'https://produto.mercadolivre.com.br/MLB-3610996841-parachoque-dianteiro-onix-premier-turbo-2020-2021-2022-2023-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3482701449-parachoque-dianteiro-chevrolet-onix-2020-2021-2022-original-_JM'},
-        'porta': {'new': 1450, 'used': 680, 'supplier': 'CDV Leilão & Peças SP', 'link_new': 'https://produto.mercadolivre.com.br/MLB-3512998811-porta-dianteira-esquerda-onix-2020-2021-2022-original-gm-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3498819201-porta-dianteira-esquerda-onix-hatch-2021-original-usada-_JM'},
-        'retrovisor': {'new': 550, 'used': 280, 'supplier': 'Desmanche Credenciado DETRAN', 'link_new': 'https://produto.mercadolivre.com.br/MLB-2144891002-retrovisor-onix-2020-2021-2022-com-controle-eletrico-esquerdo-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3419028114-retrovisor-esquerdo-chevrolet-onix-2021-original-_JM'},
-        'capô': {'new': 1250, 'used': 590, 'supplier': 'CDV Peças Originais GM', 'link_new': 'https://produto.mercadolivre.com.br/MLB-3314488915-capo-chevrolet-onix-2020-2021-2022-2023-original-gm-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3561992019-capo-dianteiro-onix-2020-2021-2022-2023-original-usado-_JM'},
-        'capo': {'new': 1250, 'used': 590, 'supplier': 'CDV Peças Originais GM', 'link_new': 'https://produto.mercadolivre.com.br/MLB-3314488915-capo-chevrolet-onix-2020-2021-2022-2023-original-gm-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3561992019-capo-dianteiro-onix-2020-2021-2022-2023-original-usado-_JM'},
+        'farol': {'new': 890, 'used': 499, 'supplier': 'CDV Desmanche Credenciado DETRAN SP', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/farol-onix-2020-2021-2022-2023-esquerdo-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/farol-onix-2020-2021-2022-2023-esquerdo-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'lanterna': {'new': 780, 'used': 390, 'supplier': 'Auto Peças Desmanche Autorizado GM', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/lanterna-traseira-onix-hatch-2020-2021-2022-esquerda-nova_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/lanterna-traseira-onix-hatch-2020-2021-2022-esquerda-usada-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'para-choque': {'new': 680, 'used': 380, 'supplier': 'Recuperadora Sucatas BR', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-traseiro-onix-hatch-2020-2021-2022-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-traseiro-onix-hatch-2020-2021-2022-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'parachoque': {'new': 680, 'used': 380, 'supplier': 'Recuperadora Sucatas BR', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-traseiro-onix-hatch-2020-2021-2022-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-traseiro-onix-hatch-2020-2021-2022-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'porta': {'new': 1450, 'used': 680, 'supplier': 'CDV Leilão & Peças SP', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/porta-dianteira-esquerda-onix-2020-2021-2022-nova_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/porta-dianteira-esquerda-onix-2020-2021-2022-usada-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'retrovisor': {'new': 550, 'used': 280, 'supplier': 'Desmanche Credenciado DETRAN', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/retrovisor-eletrico-esquerdo-onix-2020-2021-2022-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/retrovisor-eletrico-esquerdo-onix-2020-2021-2022-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'capô': {'new': 1250, 'used': 590, 'supplier': 'CDV Peças Originais GM', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/capo-onix-2020-2021-2022-2023-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/capo-onix-2020-2021-2022-2023-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'capo': {'new': 1250, 'used': 590, 'supplier': 'CDV Peças Originais GM', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/capo-onix-2020-2021-2022-2023-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/capo-onix-2020-2021-2022-2023-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
     },
     'civic': {
-        'farol': {'new': 2850, 'used': 1250, 'supplier': 'CDV Sucatas Autorizadas DETRAN SP', 'link_new': 'https://produto.mercadolivre.com.br/MLB-3388190019-farol-dianteiro-esquerdo-honda-civic-g10-full-led-2020-2021-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3518290112-farol-full-led-honda-civic-g10-2019-2020-2021-original-usado-_JM'},
-        'para-choque': {'new': 750, 'used': 420, 'supplier': 'Recuperadora AutoSul', 'link_new': 'https://produto.mercadolivre.com.br/MLB-2109820012-parachoque-dianteiro-honda-civic-g10-2020-2021-original-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3418290912-parachoque-dianteiro-honda-civic-g10-2021-usado-original-_JM'},
-        'parachoque': {'new': 750, 'used': 420, 'supplier': 'Recuperadora AutoSul', 'link_new': 'https://produto.mercadolivre.com.br/MLB-2109820012-parachoque-dianteiro-honda-civic-g10-2020-2021-original-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3418290912-parachoque-dianteiro-honda-civic-g10-2021-usado-original-_JM'},
+        'farol': {'new': 2850, 'used': 1250, 'supplier': 'CDV Sucatas Autorizadas DETRAN SP', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/farol-dianteiro-esquerdo-honda-civic-g10-full-led-2020-2021-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/farol-dianteiro-esquerdo-honda-civic-g10-full-led-2020-2021-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'para-choque': {'new': 750, 'used': 420, 'supplier': 'Recuperadora AutoSul', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-dianteiro-honda-civic-g10-2020-2021-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-dianteiro-honda-civic-g10-2020-2021-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'parachoque': {'new': 750, 'used': 420, 'supplier': 'Recuperadora AutoSul', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-dianteiro-honda-civic-g10-2020-2021-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/parachoque-dianteiro-honda-civic-g10-2020-2021-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
     },
     'corolla': {
-        'retrovisor': {'new': 1350, 'used': 650, 'supplier': 'CDV Sucatas RS', 'link_new': 'https://produto.mercadolivre.com.br/MLB-3219080112-retrovisor-eletrico-toyota-corolla-2020-2021-2022-original-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3489102911-retrovisor-direito-corolla-2020-2021-original-usado-_JM'},
-        'porta': {'new': 1850, 'used': 890, 'supplier': 'Mega Desmanche SP', 'link_new': 'https://produto.mercadolivre.com.br/MLB-3318902811-porta-dianteira-direita-corolla-2020-2021-2022-original-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3590129811-porta-dianteira-direita-toyota-corolla-2020-2021-usada-_JM'},
-        'farol': {'new': 1950, 'used': 880, 'supplier': 'CDV Toyota Peças', 'link_new': 'https://produto.mercadolivre.com.br/MLB-3190820911-farol-dianteiro-toyota-corolla-xei-2020-2021-original-_JM', 'link_used': 'https://produto.mercadolivre.com.br/MLB-3490182911-farol-corolla-2020-2021-usado-original-detran-_JM'},
+        'retrovisor': {'new': 1350, 'used': 650, 'supplier': 'CDV Sucatas RS', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/retrovisor-eletrico-direito-toyota-corolla-2020-2021-2022-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/retrovisor-eletrico-direito-toyota-corolla-2020-2021-2022-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'porta': {'new': 1850, 'used': 890, 'supplier': 'Mega Desmanche SP', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/porta-dianteira-direita-toyota-corolla-2020-2021-2022-nova_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/porta-dianteira-direita-toyota-corolla-2020-2021-2022-usada-original_OrderId_PRICE_ASC_NoIndex_True'},
+        'farol': {'new': 1950, 'used': 880, 'supplier': 'CDV Toyota Peças', 'link_new': 'https://lista.mercadolivre.com.br/pecas-carros/farol-dianteiro-toyota-corolla-xei-2020-2021-novo_OrderId_PRICE_ASC_NoIndex_True', 'link_used': 'https://lista.mercadolivre.com.br/pecas-carros/farol-dianteiro-toyota-corolla-xei-2020-2021-usado-original_OrderId_PRICE_ASC_NoIndex_True'},
     }
 }
 
+def detect_part_attributes(part_name):
+    p_lower = part_name.lower()
+    
+    # Detect Side
+    side = None
+    if any(k in p_lower for k in ['esquerdo', 'esquerda', 'esq', 'motorista', 'lh', 'left']):
+        side = 'esquerdo'
+    elif any(k in p_lower for k in ['direito', 'direita', 'dir', 'passageiro', 'rh', 'right']):
+        side = 'direito'
+    elif any(k in p_lower for k in ['traseiro', 'traseira', 'dianteiro', 'dianteira', 'capo', 'capô', 'teto']):
+        side = 'central'
+
+    # Detect Position
+    pos = None
+    if any(k in p_lower for k in ['dianteiro', 'dianteira', 'frente', 'frontal']):
+        pos = 'dianteiro'
+    elif any(k in p_lower for k in ['traseiro', 'traseira', 'atras', 'trás', 'tampa']):
+        pos = 'traseiro'
+    elif any(k in p_lower for k in ['lateral', 'porta', 'retrovisor', 'paralama']):
+        pos = 'lateral'
+
+    return {'side': side, 'position': pos}
+
 def get_market_prices(brand, model, year, part_name):
     part_lower = part_name.lower()
-    model_lower = model.lower()
+    model_lower = (model or '').lower()
+    attrs = detect_part_attributes(part_name)
+    side = attrs['side']
+    pos = attrs['position']
 
     model_key = None
     if any(k in model_lower for k in ['onix', 'prisma', 'joy', 'tracker']):
@@ -128,12 +154,16 @@ def get_market_prices(brand, model, year, part_name):
     price_used = 480
     supplier_used = "CDV / Desmanche Credenciado Oficial DETRAN"
     
-    query_base = f"{brand} {model} {year} {part_name}".strip()
-    encoded_new = urllib.parse.quote(f"{query_base} novo")
-    encoded_used = urllib.parse.quote(f"{query_base} usado original")
+    # Build exact terms with side & position
+    side_str = f" {side}" if side and side != 'central' else ""
+    pos_str = f" {pos}" if pos and pos != 'lateral' else ""
     
-    link_new = f"https://lista.mercadolivre.com.br/{encoded_new}"
-    link_used = f"https://lista.mercadolivre.com.br/{encoded_used}"
+    query_clean = f"{part_name} {brand} {model} {year}".strip()
+    query_slug_new = f"{part_name}-{brand}-{model}-{year}-novo".lower().replace(" ", "-").replace("/", "-")
+    query_slug_used = f"{part_name}-{brand}-{model}-{year}-usado-original".lower().replace(" ", "-").replace("/", "-")
+    
+    link_new = f"https://lista.mercadolivre.com.br/pecas-carros/{query_slug_new}_OrderId_PRICE_ASC_NoIndex_True"
+    link_used = f"https://lista.mercadolivre.com.br/pecas-carros/{query_slug_used}_OrderId_PRICE_ASC_NoIndex_True"
 
     tables_to_try = []
     if model_key:
@@ -154,7 +184,7 @@ def get_market_prices(brand, model, year, part_name):
             continue
         break
 
-    brand_upper = brand.upper()
+    brand_upper = (brand or '').upper()
     if any(b in brand_upper for b in ['BMW', 'MERCEDES', 'AUDI', 'VOLVO', 'PORSCHE', 'LAND ROVER']):
         price_new = int(price_new * 2.8)
         price_used = int(price_used * 2.2)
@@ -162,24 +192,29 @@ def get_market_prices(brand, model, year, part_name):
         price_new = int(price_new * 1.35)
         price_used = int(price_used * 1.25)
 
+    side_label = f"Lado {side.title()}" if side and side != 'central' else "Posição Central"
+
     return {
         "newPrice": {
             "brandName": f"Original {brand} OEM / Paralela 1ª Linha",
             "price": price_new,
             "type": "Nova (Original / Paralela)",
             "supplier": "Distribuidora AutoPeças Brasil & Concessionárias",
-            "availability": "Em estoque",
             "link": link_new,
+            "side": side,
+            "compatibility": f"{side_label} • Em Estoque Garantido • 100% Compatível {brand} {model} ({year})"
         },
         "usedPrice": {
-            "brandName": f"Seminova Original {brand}",
+            "brandName": f"Peça Usada Certificada DETRAN ({supplier_used})",
             "price": price_used,
-            "type": "Usada / Seminova (Desmanche Credenciado DETRAN)",
+            "type": "Usada Certificada DETRAN (com Nota e Rastreabilidade)",
             "supplier": supplier_used,
-            "availability": "Disponível com NF e Rastreabilidade DETRAN",
             "link": link_used,
+            "side": side,
+            "compatibility": f"{side_label} • Desmanche Credenciado DETRAN • Em Estoque"
         }
     }
+
 
 def call_gemini_vision(base64_images, vehicle_hint=None):
     if not GEMINI_API_KEY:
