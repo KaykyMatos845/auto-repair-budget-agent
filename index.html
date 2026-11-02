@@ -857,7 +857,9 @@ function App() {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState('');
-  const [apiKey, setApiKey] = useState(null);
+  const [apiKey, setApiKey] = useState(true);
+  const [showKeyModal, setShowKeyModal] = useState(false);
+  const [keyInput, setKeyInput] = useState(() => localStorage.getItem('autobudget_gemini_key') || '');
   const [showPdf, setShowPdf] = useState(false);
   const [showAddPart, setShowAddPart] = useState(false);
   const [newPart, setNewPart] = useState({
@@ -878,11 +880,42 @@ function App() {
   const fileRef = useRef();
 
   useEffect(() => {
+    const saved = localStorage.getItem('autobudget_gemini_key');
+    if (saved) {
+      fetch('/api/set-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: saved })
+      }).catch(() => {});
+    }
     fetch('/api/health')
       .then(r => r.json())
-      .then(d => setApiKey(d.geminiKeyConfigured))
-      .catch(() => setApiKey(false));
+      .then(d => {
+        setApiKey(Boolean(d.geminiKeyConfigured || saved));
+      })
+      .catch(() => {
+        setApiKey(Boolean(saved));
+      });
   }, []);
+
+  const handleSaveKey = async () => {
+    const k = (keyInput || '').trim();
+    if (!k) {
+      alert('Por favor digite ou cole sua chave do Gemini.');
+      return;
+    }
+    localStorage.setItem('autobudget_gemini_key', k);
+    setApiKey(true);
+    setShowKeyModal(false);
+    try {
+      await fetch('/api/set-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: k })
+      });
+    } catch(e) {}
+    alert('✅ Chave Gemini AI configurada e salva com sucesso!');
+  };
 
   const setVField = (field, value) => {
     setVehicle(prev => ({ ...prev, [field]: value }));
@@ -1029,10 +1062,15 @@ function App() {
     setLoading(true);
     setLoadingMsg('Inspecionando lataria, mecânica/suspensão e iluminação com IA...');
     try {
+      const savedKey = localStorage.getItem('autobudget_gemini_key') || keyInput || '';
       const resp = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images: images.map(i => i.base64), vehicle })
+        body: JSON.stringify({ 
+          images: images.map(i => i.base64), 
+          vehicle,
+          apiKey: savedKey 
+        })
       });
       if (!resp.ok) throw new Error('Falha no servidor: ' + resp.status);
       const data = await resp.json();
@@ -1156,8 +1194,40 @@ function App() {
           <button className="btn btn-ghost" onClick={() => setActiveTab(activeTab === 'history' ? 'budget' : 'history')}>
             📋 Histórico ({osList.length})
           </button>
-          {apiKey === false && <span className="badge" style={{ background: 'rgba(244,63,94,0.12)', color: 'var(--rose-light)', border: '1px solid rgba(244,63,94,0.3)' }}>⚠️ Sem API Key</span>}
-          {apiKey === true && <span className="badge badge-ai">✨ Gemini AI Ativo</span>}
+          {apiKey === false && (
+            <button 
+              className="badge" 
+              onClick={() => setShowKeyModal(true)}
+              style={{ 
+                cursor: 'pointer',
+                background: 'rgba(244,63,94,0.18)', 
+                color: 'var(--rose-light)', 
+                border: '1px solid rgba(244,63,94,0.4)',
+                padding: '6px 12px',
+                fontWeight: 700,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6
+              }}
+              title="Clique para configurar sua chave da API do Gemini">
+              ⚠️ Sem API Key • Inserir Chave
+            </button>
+          )}
+          {apiKey === true && (
+            <button 
+              className="badge badge-ai" 
+              onClick={() => setShowKeyModal(true)}
+              style={{ 
+                cursor: 'pointer',
+                padding: '6px 12px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6
+              }}
+              title="Clique para gerenciar ou alterar a chave do Gemini">
+              ✨ Gemini AI Ativo • ⚙️ Chave
+            </button>
+          )}
         </div>
       </header>
 
@@ -2140,6 +2210,92 @@ function App() {
             >
               Fechar
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL CONFIGURAÇÃO DE CHAVE GEMINI */}
+      {showKeyModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.85)',
+          backdropFilter: 'blur(6px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 99999,
+          padding: 20
+        }}>
+          <div style={{
+            background: 'var(--surface, #1e293b)',
+            border: '1px solid rgba(245,158,11,0.3)',
+            borderRadius: 16,
+            maxWidth: 540,
+            width: '100%',
+            padding: 24,
+            boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
+            color: 'var(--text, #f8fafc)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
+                🔑 Configuração da Chave Google Gemini AI
+              </h3>
+              <button 
+                onClick={() => setShowKeyModal(false)}
+                style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '1.4rem', cursor: 'pointer' }}>
+                ✕
+              </button>
+            </div>
+
+            <p style={{ fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.5, marginBottom: 16 }}>
+              A chave do Gemini é utilizada para o <strong>agente pericial automatizado</strong> (visão computacional, identificação do modelo do veículo e mapeamento de avarias).
+            </p>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#fbbf24', marginBottom: 6 }}>
+                SUA CHAVE API GEMINI
+              </label>
+              <input
+                type="text"
+                value={keyInput}
+                onChange={e => setKeyInput(e.target.value)}
+                placeholder="Cole sua chave aqui (ex: AQ.Ab8... ou AIza...)"
+                style={{
+                  width: '100%',
+                  background: 'rgba(15,23,42,0.8)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  borderRadius: 8,
+                  padding: '12px 14px',
+                  color: '#fff',
+                  fontSize: '0.9rem',
+                  fontFamily: 'monospace'
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button
+                onClick={() => setShowKeyModal(false)}
+                className="btn btn-ghost"
+                style={{ padding: '8px 16px', borderRadius: 8, cursor: 'pointer' }}>
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveKey}
+                className="btn btn-primary"
+                style={{
+                  background: 'linear-gradient(135deg, #fbbf24, #d97706)',
+                  color: '#0f172a',
+                  fontWeight: 800,
+                  border: 'none',
+                  padding: '8px 20px',
+                  borderRadius: 8,
+                  cursor: 'pointer'
+                }}>
+                💾 Salvar e Ativar IA
+              </button>
+            </div>
           </div>
         </div>
       )}
