@@ -1194,6 +1194,9 @@ function App() {
           <button className="btn btn-ghost" onClick={() => setActiveTab(activeTab === 'history' ? 'budget' : 'history')}>
             📋 Histórico ({osList.length})
           </button>
+          <a href="/slides.html" target="_blank" rel="noopener noreferrer" className="btn btn-ghost" style={{ textDecoration: 'none', borderColor: 'rgba(6,182,212,0.4)', color: '#38bdf8' }} title="Abrir slides de apresentação do projeto">
+            📊 Slides
+          </a>
           {apiKey === false && (
             <button 
               className="badge" 

@@ -1,8 +1,9 @@
 # Imagem Nginx Alpine leve para servir o frontend standalone
 FROM nginx:alpine
 
-# Copia o index.html (aplicação React standalone completa)
+# Copia o index.html (aplicação React standalone completa) e os slides
 COPY index.html /usr/share/nginx/html/index.html
+COPY slides.html /usr/share/nginx/html/slides.html
 
 # Copia assets estáticos (imagens de exemplo dos veículos)
 COPY public/ /usr/share/nginx/html/
