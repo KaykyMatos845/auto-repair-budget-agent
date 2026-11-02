@@ -5,8 +5,9 @@ FROM nginx:alpine
 COPY index.html /usr/share/nginx/html/index.html
 COPY slides.html /usr/share/nginx/html/slides.html
 
-# Copia assets estáticos (imagens de exemplo dos veículos)
+# Copia assets estáticos (imagens de exemplo dos veículos e slides)
 COPY public/ /usr/share/nginx/html/
+COPY assets/ /usr/share/nginx/html/assets/
 
 # Copia configuração customizada do Nginx (proxy reverso para o backend Python)
 COPY nginx.conf /etc/nginx/conf.d/default.conf

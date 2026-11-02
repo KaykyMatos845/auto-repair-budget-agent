@@ -6,15 +6,20 @@ from pptx.enum.text import PP_ALIGN
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 
+DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+ASSETS_DIR = os.path.join(DIRECTORY, "assets")
+SAMPLES_DIR = os.path.join(DIRECTORY, "public", "samples")
+
 # ── Colors & Styles ──────────────────────────────────────────────────────────
-COLOR_BG = RGBColor(10, 15, 29)         # #0A0F1D Dark Navy
-COLOR_CARD = RGBColor(22, 32, 54)       # #162036 Card Navy
-COLOR_CARD_BORDER = RGBColor(40, 56, 88)
-COLOR_GOLD = RGBColor(245, 158, 11)     # #F59E0B Gold
+COLOR_BG = RGBColor(10, 15, 29)          # #0A0F1D Deep Dark Navy
+COLOR_CARD = RGBColor(20, 29, 48)        # #141D30 Card Navy
+COLOR_CARD_BORDER = RGBColor(38, 53, 84) # Subtle slate border
+COLOR_GOLD = RGBColor(245, 158, 11)      # #F59E0B Gold
 COLOR_GOLD_LIGHT = RGBColor(251, 191, 36)
-COLOR_CYAN = RGBColor(6, 182, 212)      # #06B6D4 Cyan
+COLOR_CYAN = RGBColor(6, 182, 212)       # #06B6D4 Cyan
 COLOR_CYAN_LIGHT = RGBColor(56, 189, 248)
-COLOR_EMERALD = RGBColor(16, 185, 129)  # #10B981 Emerald
+COLOR_EMERALD = RGBColor(16, 185, 129)   # #10B981 Emerald
+COLOR_ROSE = RGBColor(244, 63, 94)       # #F43F5E Rose
 COLOR_TEXT_MAIN = RGBColor(248, 250, 252)
 COLOR_TEXT_MUTED = RGBColor(148, 163, 184)
 COLOR_TEXT_DIM = RGBColor(100, 116, 139)
@@ -29,7 +34,7 @@ def create_presentation():
     prs.slide_height = Inches(7.5)
     blank_layout = prs.slide_layouts[6]
 
-    def add_background(slide):
+    def add_bg(slide):
         bg = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, prs.slide_width, prs.slide_height)
         bg.fill.solid()
         bg.fill.fore_color.rgb = COLOR_BG
@@ -38,30 +43,27 @@ def create_presentation():
 
     def add_header(slide, tag_text, title_text, title_highlight=""):
         # Tag Badge
-        tag_box = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(0.45), Inches(4.5), Inches(0.38))
-        tag_box.fill.solid()
-        tag_box.fill.fore_color.rgb = RGBColor(30, 42, 68)
-        tag_box.line.color.rgb = COLOR_GOLD
-        tag_box.line.width = Pt(1)
-        tf_tag = tag_box.text_frame
-        tf_tag.word_wrap = True
-        tf_tag.margin_top = Inches(0.04)
-        p_tag = tf_tag.paragraphs[0]
-        p_tag.text = tag_text.upper()
-        p_tag.font.name = FONT_BODY
-        p_tag.font.size = Pt(10)
-        p_tag.font.bold = True
-        p_tag.font.color.rgb = COLOR_GOLD_LIGHT
-        p_tag.alignment = PP_ALIGN.CENTER
+        tag = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(0.4), Inches(4.8), Inches(0.36))
+        tag.fill.solid()
+        tag.fill.fore_color.rgb = RGBColor(28, 40, 65)
+        tag.line.color.rgb = COLOR_GOLD
+        tag.line.width = Pt(1)
+        p_t = tag.text_frame.paragraphs[0]
+        p_t.text = tag_text.upper()
+        p_t.font.name = FONT_BODY
+        p_t.font.size = Pt(10)
+        p_t.font.bold = True
+        p_t.font.color.rgb = COLOR_GOLD_LIGHT
+        p_t.alignment = PP_ALIGN.CENTER
 
-        # Main Title
-        tx_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.85), Inches(11.5), Inches(0.9))
-        tf = tx_box.text_frame
+        # Title
+        tx = slide.shapes.add_textbox(Inches(0.8), Inches(0.8), Inches(11.5), Inches(0.8))
+        tf = tx.text_frame
         tf.word_wrap = True
         p = tf.paragraphs[0]
         p.text = title_text + " "
         p.font.name = FONT_HEADING
-        p.font.size = Pt(28)
+        p.font.size = Pt(26)
         p.font.bold = True
         p.font.color.rgb = COLOR_TEXT_MAIN
 
@@ -69,346 +71,424 @@ def create_presentation():
             run = p.add_run()
             run.text = title_highlight
             run.font.name = FONT_HEADING
-            run.font.size = Pt(28)
+            run.font.size = Pt(26)
             run.font.bold = True
             run.font.color.rgb = COLOR_GOLD_LIGHT
 
-    def add_card(slide, left, top, width, height, title, text="", border_color=COLOR_CARD_BORDER, icon=""):
+    def add_metric_card(slide, left, top, width, height, number, label, subtext="", border_color=COLOR_CARD_BORDER):
         card = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, top, width, height)
         card.fill.solid()
         card.fill.fore_color.rgb = COLOR_CARD
         card.line.color.rgb = border_color
-        card.line.width = Pt(1.2)
-        
+        card.line.width = Pt(1.5)
         tf = card.text_frame
         tf.word_wrap = True
-        tf.margin_left = Inches(0.25)
-        tf.margin_right = Inches(0.25)
-        tf.margin_top = Inches(0.25)
-        tf.margin_bottom = Inches(0.2)
+        tf.margin_top = Inches(0.18)
+        tf.margin_left = Inches(0.2)
+        tf.margin_right = Inches(0.2)
 
-        # Title
-        p_title = tf.paragraphs[0]
-        full_title = f"{icon}  {title}" if icon else title
-        p_title.text = full_title
-        p_title.font.name = FONT_HEADING
-        p_title.font.size = Pt(15)
-        p_title.font.bold = True
-        p_title.font.color.rgb = COLOR_TEXT_MAIN
-        p_title.space_after = Pt(8)
+        # Number
+        p_num = tf.paragraphs[0]
+        p_num.text = number
+        p_num.font.name = FONT_HEADING
+        p_num.font.size = Pt(28)
+        p_num.font.bold = True
+        p_num.font.color.rgb = border_color
+        p_num.alignment = PP_ALIGN.LEFT
 
-        # Body text
-        if text:
-            p_text = tf.add_paragraph()
-            p_text.text = text
-            p_text.font.name = FONT_BODY
-            p_text.font.size = Pt(12)
-            p_text.font.color.rgb = COLOR_TEXT_MUTED
-            p_text.line_spacing = 1.25
+        # Label
+        p_lbl = tf.add_paragraph()
+        p_lbl.text = label
+        p_lbl.font.name = FONT_HEADING
+        p_lbl.font.size = Pt(13)
+        p_lbl.font.bold = True
+        p_lbl.font.color.rgb = COLOR_TEXT_MAIN
+        p_lbl.space_before = Pt(4)
+
+        if subtext:
+            p_sub = tf.add_paragraph()
+            p_sub.text = subtext
+            p_sub.font.name = FONT_BODY
+            p_sub.font.size = Pt(10)
+            p_sub.font.color.rgb = COLOR_TEXT_MUTED
+            p_sub.space_before = Pt(2)
 
         return card
 
-    def add_notes(slide, notes_text):
-        notes_slide = slide.notes_slide
-        text_frame = notes_slide.notes_text_frame
-        text_frame.text = notes_text
+    def add_notes(slide, notes):
+        slide.notes_slide.notes_text_frame.text = "NOTAS DO ORADOR (O QUE FALAR):\n" + notes
 
     # ══════════════════════════════════════════════════════════════════════════
-    # SLIDE 1: CAPA
+    # SLIDE 1: CAPA VISUAL COM FOTO DO PROJETO
     # ══════════════════════════════════════════════════════════════════════════
     s1 = prs.slides.add_slide(blank_layout)
-    add_background(s1)
+    add_bg(s1)
 
-    # Big Badge
-    badge = s1.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.2), Inches(4.8), Inches(0.42))
-    badge.fill.solid()
-    badge.fill.fore_color.rgb = RGBColor(30, 42, 68)
-    badge.line.color.rgb = COLOR_GOLD
-    p_b = badge.text_frame.paragraphs[0]
-    p_b.text = "PROJETO DE DISCIPLINA • DEVOPS & SISTEMAS DISTRIBUÍDOS"
-    p_b.font.size = Pt(10)
-    p_b.font.bold = True
-    p_b.font.color.rgb = COLOR_GOLD_LIGHT
-    p_b.alignment = PP_ALIGN.CENTER
+    # Left: Headlines & Metrics
+    tx1 = s1.shapes.add_textbox(Inches(0.8), Inches(1.0), Inches(5.8), Inches(2.5))
+    tf1 = tx1.text_frame
+    tf1.word_wrap = True
+    p_tag = tf1.paragraphs[0]
+    p_tag.text = "PROJETO DE DISCIPLINA • DEVOPS & SISTEMAS DISTRIBUÍDOS"
+    p_tag.font.size = Pt(10)
+    p_tag.font.bold = True
+    p_tag.font.color.rgb = COLOR_GOLD_LIGHT
 
-    # Title
-    tb_title = s1.shapes.add_textbox(Inches(0.8), Inches(1.7), Inches(11.5), Inches(1.8))
-    p1 = tb_title.text_frame.paragraphs[0]
-    p1.text = "AutoBudget AI PRO"
-    p1.font.size = Pt(44)
-    p1.font.bold = True
-    p1.font.color.rgb = COLOR_GOLD_LIGHT
+    p_title = tf1.add_paragraph()
+    p_title.text = "AutoBudget AI"
+    p_title.font.size = Pt(46)
+    p_title.font.bold = True
+    p_title.font.color.rgb = COLOR_GOLD_LIGHT
+    p_title.space_before = Pt(8)
 
-    p2 = tb_title.text_frame.add_paragraph()
-    p2.text = "Agente Pericial Automotivo em Cluster Docker Swarm de Alta Disponibilidade"
-    p2.font.size = Pt(20)
-    p2.font.color.rgb = COLOR_TEXT_MAIN
-    p2.space_before = Pt(8)
+    p_sub = tf1.add_paragraph()
+    p_sub.text = "Vistoria Automotiva com Visão Computacional & Orquestração em Cluster Docker Swarm"
+    p_sub.font.size = Pt(16)
+    p_sub.font.color.rgb = COLOR_TEXT_MAIN
+    p_sub.space_before = Pt(6)
 
-    p3 = tb_title.text_frame.add_paragraph()
-    p3.text = "Visão computacional multimodal com Gemini AI, integração FIPE (75% Perda Total) e cluster DinD com 1 Manager e 2 Workers."
-    p3.font.size = Pt(14)
-    p3.font.color.rgb = COLOR_TEXT_MUTED
-    p3.space_before = Pt(8)
+    # 3 Metrics pills left
+    add_metric_card(s1, Inches(0.8), Inches(4.2), Inches(1.8), Inches(2.4), "IA", "Gemini 2.0", "Visão computacional e bounding boxes", COLOR_GOLD)
+    add_metric_card(s1, Inches(2.8), Inches(4.2), Inches(1.8), Inches(2.4), "3 Nós", "Cluster DinD", "1 Manager + 2 Workers reais", COLOR_CYAN)
+    add_metric_card(s1, Inches(4.8), Inches(4.2), Inches(1.8), Inches(2.4), "100%", "Disponível", "Zero downtime e auto-healing", COLOR_EMERALD)
 
-    # 4 Highlights bottom
-    add_card(s1, Inches(0.8), Inches(4.3), Inches(2.7), Inches(2.2), "Gemini 2.0 AI", "Visão computacional e detecção de avarias via bounding boxes em tempo real.", COLOR_GOLD, "🧠")
-    add_card(s1, Inches(3.7), Inches(4.3), Inches(2.7), Inches(2.2), "Docker Swarm", "Cluster DinD com 1 Manager e 2 Workers ativos e overlay network.", COLOR_CYAN, "🐳")
-    add_card(s1, Inches(6.6), Inches(4.3), Inches(2.7), Inches(2.2), "Tabela FIPE", "Cálculo pericial automatizado da regra de 75% para Perda Total.", COLOR_GOLD, "📊")
-    add_card(s1, Inches(9.5), Inches(4.3), Inches(2.7), Inches(2.2), "Resiliência", "2 réplicas por microsserviço, rolling updates e Nginx reverse proxy.", COLOR_CYAN, "🛡️")
+    # Right: Big Image (Annotated Car Inspection)
+    ai_img_path = os.path.join(ASSETS_DIR, "ai_annotated_inspection.jpg")
+    if os.path.exists(ai_img_path):
+        s1.shapes.add_picture(ai_img_path, Inches(6.9), Inches(1.1), width=Inches(5.6))
 
-    add_notes(s1, "ROTEIRO DO ORADOR:\nBoa noite professor e colegas! Hoje vou apresentar o AutoBudget AI, uma solução corporativa completa que une Inteligência Artificial Generativa para visão computacional pericial com alta disponibilidade e orquestração de microsserviços via Docker Swarm em arquitetura DinD.")
+    add_notes(s1, "Boa noite professor e turma! Hoje apresento o AutoBudget AI. O projeto une Inteligência Artificial de visão computacional para detecção de danos em veículos com alta disponibilidade corporativa em um cluster Docker Swarm de 3 nós.")
 
     # ══════════════════════════════════════════════════════════════════════════
-    # SLIDE 2: O PROBLEMA DE NEGÓCIO
+    # SLIDE 2: O PROBLEMA (VISUAL ANTES VS DEPOIS)
     # ══════════════════════════════════════════════════════════════════════════
     s2 = prs.slides.add_slide(blank_layout)
-    add_background(s2)
-    add_header(s2, "Contexto do Problema", "O Desafio das", "Vistorias Automotivas")
+    add_bg(s2)
+    add_header(s2, "Contexto do Problema", "O Cenário Atual vs", "AutoBudget AI")
 
-    add_card(s2, Inches(0.8), Inches(2.0), Inches(3.6), Inches(3.8), "Lentidão na Regulação", 
-             "• Peritos levam de 48h a 7 dias para analisar fotos e cotar peças.\n• Filas longas em seguradoras e oficinas credenciadas.\n• Processo manual com planilhas e consultas descentralizadas.", COLOR_GOLD, "⏳")
+    # Column Left: O Processo Tradicional (Gargalo)
+    card_trad = s2.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.8), Inches(5.6), Inches(5.0))
+    card_trad.fill.solid()
+    card_trad.fill.fore_color.rgb = RGBColor(26, 20, 24)
+    card_trad.line.color.rgb = COLOR_ROSE
+    card_trad.line.width = Pt(2)
+    tf_tr = card_trad.text_frame
+    tf_tr.word_wrap = True
+    tf_tr.margin_left = Inches(0.3)
+    tf_tr.margin_top = Inches(0.3)
+    p_tr_h = tf_tr.paragraphs[0]
+    p_tr_h.text = "⚠️ PROCESSO TRADICIONAL (MANUAL)"
+    p_tr_h.font.size = Pt(16)
+    p_tr_h.font.bold = True
+    p_tr_h.font.color.rgb = COLOR_ROSE
+    p_tr_h.space_after = Pt(14)
 
-    add_card(s2, Inches(4.7), Inches(2.0), Inches(3.6), Inches(3.8), "Superfaturamento & Erros", 
-             "• Dificuldade em auditar se a peça necessitava de troca ou de recuperação/pintura.\n• Preços arbitrários de peças sem referência de mercado.\n• Assimetria de dados entre oficinas e clientes.", COLOR_GOLD, "💸")
+    items_trad = [
+        ("⏳ 48h a 7 dias", "Demora na regulação do sinistro"),
+        ("💸 Cotações Manuais", "Preços arbitrários e risco de superfaturamento"),
+        ("📄 Sem Cruzamento FIPE", "Dificuldade em auditar a regra de 75% Perda Total"),
+        ("❌ Vistoria Subjetiva", "Sem mapeamento visual rastreável das peças trocadas")
+    ]
+    for title, desc in items_trad:
+        p1 = tf_tr.add_paragraph()
+        p1.text = title
+        p1.font.bold = True
+        p1.font.size = Pt(13)
+        p1.font.color.rgb = COLOR_TEXT_MAIN
+        p2 = tf_tr.add_paragraph()
+        p2.text = desc
+        p2.font.size = Pt(11)
+        p2.font.color.rgb = COLOR_TEXT_MUTED
+        p2.space_after = Pt(8)
 
-    add_card(s2, Inches(8.6), Inches(2.0), Inches(3.6), Inches(3.8), "Cálculo de Perda Total", 
-             "• Falta de integração em tempo real com o valor venal da Tabela FIPE.\n• Risco de aprovar consertos acima de 75% da FIPE, gerando prejuízo à seguradora.\n• Decisões lentas em acidentes graves.", COLOR_GOLD, "⚖️")
+    # Column Right: A Solução AutoBudget
+    card_auto = s2.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(6.8), Inches(1.8), Inches(5.6), Inches(5.0))
+    card_auto.fill.solid()
+    card_auto.fill.fore_color.rgb = RGBColor(16, 32, 40)
+    card_auto.line.color.rgb = COLOR_EMERALD
+    card_auto.line.width = Pt(2)
+    tf_au = card_auto.text_frame
+    tf_au.word_wrap = True
+    tf_au.margin_left = Inches(0.3)
+    tf_au.margin_top = Inches(0.3)
+    p_au_h = tf_au.paragraphs[0]
+    p_au_h.text = "✨ COM AUTBUDGET AI (AUTOMATIZADO)"
+    p_au_h.font.size = Pt(16)
+    p_au_h.font.bold = True
+    p_au_h.font.color.rgb = COLOR_EMERALD
+    p_au_h.space_after = Pt(14)
 
-    add_notes(s2, "ROTEIRO DO ORADOR:\nExplique aqui a dor do mercado: as seguradoras e oficinas demoram dias para regular sinistros, o processo manual é sujeito a superfaturamento e fraudes, e não há integração imediata entre fotos, FIPE e cotação de peças.")
+    items_auto = [
+        ("⚡ 15 Segundos", "Diagnóstico pericial instantâneo via IA multimodal"),
+        ("🏷️ Cotação Dupla Transparente", "Peças novas OEM vs usadas certificadas pelo DETRAN"),
+        ("📊 Tabela FIPE Integrada", "Cálculo matemático automático da regra de 75%"),
+        ("🎯 Bounding Boxes Visuais", "Caixas delimitadoras em cada peça danificada")
+    ]
+    for title, desc in items_auto:
+        p1 = tf_au.add_paragraph()
+        p1.text = title
+        p1.font.bold = True
+        p1.font.size = Pt(13)
+        p1.font.color.rgb = COLOR_TEXT_MAIN
+        p2 = tf_au.add_paragraph()
+        p2.text = desc
+        p2.font.size = Pt(11)
+        p2.font.color.rgb = COLOR_TEXT_MUTED
+        p2.space_after = Pt(8)
+
+    add_notes(s2, "Explique a dor do mercado: as vistorias tradicionais são lentas e manuais. Mostre o contraste: o AutoBudget AI reduz o tempo de 7 dias para apenas 15 segundos, com dados FIPE e cotação de mercado em tempo real.")
 
     # ══════════════════════════════════════════════════════════════════════════
-    # SLIDE 3: A SOLUÇÃO AUTBUDGET AI
+    # SLIDE 3: VISÃO COMPUTACIONAL NA PRÁTICA (COM IMAGEM)
     # ══════════════════════════════════════════════════════════════════════════
     s3 = prs.slides.add_slide(blank_layout)
-    add_background(s3)
-    add_header(s3, "Engenharia da Solução", "Como o AutoBudget AI", "Resolve")
+    add_bg(s3)
+    add_header(s3, "Inteligência Artificial", "Visão Computacional &", "Mapeamento de Danos")
 
-    add_card(s3, Inches(0.8), Inches(2.0), Inches(5.6), Inches(2.3), "1. Visão Computacional com Gemini", 
-             "Reconhece marca, modelo, ano e cor pelas fotos. Mapeia áreas de colisão e gera caixas delimitadoras (bounding boxes) com severidade do dano.", COLOR_GOLD, "🔍")
+    # Left: Big Annotated Car Picture
+    if os.path.exists(ai_img_path):
+        s3.shapes.add_picture(ai_img_path, Inches(0.8), Inches(1.8), width=Inches(6.2))
 
-    add_card(s3, Inches(6.8), Inches(2.0), Inches(5.6), Inches(2.3), "2. Classificação de Ação Pericial", 
-             "Diferencia peças com troca obrigatória (óptica/iluminação ou eixos tortos) de peças recuperáveis via funilaria e pintura, evitando desperdícios.", COLOR_CYAN, "📋")
+    # Right: 3 Visual Highlight Cards
+    add_metric_card(s3, Inches(7.3), Inches(1.8), Inches(5.2), Inches(1.5), "Identificação", "Veículo & Modelo", "Marca, modelo, ano e cor identificados pelas fotos.", COLOR_GOLD)
+    add_metric_card(s3, Inches(7.3), Inches(3.5), Inches(5.2), Inches(1.5), "Classificação", "Ação Pericial", "Diferencia troca de lanterna de recuperação de lata.", COLOR_CYAN)
+    add_metric_card(s3, Inches(7.3), Inches(5.2), Inches(5.2), Inches(1.5), "Bounding Boxes", "Coordenadas Reais", "Caixas delimitadoras percentuais projetadas sobre o dano.", COLOR_EMERALD)
 
-    add_card(s3, Inches(0.8), Inches(4.6), Inches(5.6), Inches(2.3), "3. Cotação Dupla (Novas vs DETRAN)", 
-             "Apresenta preço de peças novas originais OEM e peças usadas certificadas pelo DETRAN com nota e rastreabilidade, gerando economia de até 50%.", COLOR_GOLD, "🏷️")
-
-    add_card(s3, Inches(6.8), Inches(4.6), Inches(5.6), Inches(2.3), "4. Mão de Obra Tabelada & FIPE", 
-             "Mão de obra a R$ 80,00/h fixo para funilaria, pintura e mecânica. Verificação automática da regra de 75% da FIPE para emissão de Perda Total.", COLOR_CYAN, "⏱️")
-
-    add_notes(s3, "ROTEIRO DO ORADOR:\nApresente as 4 engrenagens: a IA multimodal que enxerga as fotos, a classificação técnica de ação necessária, a cotação dupla inteligente e o cálculo de mão de obra tabelado com auditoria FIPE.")
+    add_notes(s3, "Mostre a foto na tela: a IA recebe fotos do carro batido e analisa em 3 níveis: identifica o modelo, gera as caixas coloridas nos pontos de impacto e decide a ação (substituição obrigatória para óptica ou recuperação para lata).")
 
     # ══════════════════════════════════════════════════════════════════════════
-    # SLIDE 4: ARQUITETURA DE MICROSSERVIÇOS
+    # SLIDE 4: ARQUITETURA DE MICROSSERVIÇOS (PIPELINE)
     # ══════════════════════════════════════════════════════════════════════════
     s4 = prs.slides.add_slide(blank_layout)
-    add_background(s4)
-    add_header(s4, "Arquitetura de Software", "Separação de Camadas &", "Microsserviços")
+    add_bg(s4)
+    add_header(s4, "Arquitetura de Software", "Separação em Camadas &", "Microsserviços")
 
-    add_card(s4, Inches(0.8), Inches(2.0), Inches(3.6), Inches(4.8), "Nginx Reverse Proxy",
-             "• Porta 80 exposta para os clientes\n• Serve o frontend React estático com gzip\n• Roteamento inteligente de /api/ para o backend\n• Suporte a uploads de fotos até 50MB\n• Timeout ampliado de 120s para IA", COLOR_CYAN, "🌐")
+    add_metric_card(s4, Inches(0.8), Inches(1.8), Inches(3.6), Inches(4.8), "01. BORDA", "Nginx Reverse Proxy", 
+                    "• Porta pública 80\n• Serve o frontend React estático\n• Compressão Gzip ativa\n• Proxy reverso /api/ -> backend\n• Upload de fotos até 50MB\n• Timeout de 120s para IA", COLOR_CYAN)
 
-    add_card(s4, Inches(4.7), Inches(2.0), Inches(3.6), Inches(4.8), "Backend Python REST",
-             "• Porta interna 5000 na overlay network\n• Threaded TCP Server de alta concorrência\n• Integração com Gemini 2.0 Flash\n• Motor de benchmarks FIPE e cálculo de horas\n• API de parametrização dinâmica de chave", COLOR_GOLD, "⚡")
+    add_metric_card(s4, Inches(4.7), Inches(1.8), Inches(3.6), Inches(4.8), "02. LÓGICA", "Python REST API", 
+                    "• Porta interna 5000\n• Threaded TCP Server de alta concorrência\n• Integração com Gemini 2.0 Flash\n• Banco FIPE e cotações de peças\n• Cálculo de R$ 80/h de mão de obra", COLOR_GOLD)
 
-    add_card(s4, Inches(8.6), Inches(2.0), Inches(3.6), Inches(4.8), "Frontend React SPA",
-             "• Interface moderna com tema Dark Mode pericial\n• Bounding box overlay desenhado sobre as fotos\n• Modal interativo de configuração de API Key\n• Histórico de ordens de serviço local\n• Emissão e impressão de Laudo Pericial em PDF", COLOR_CYAN, "🖥️")
+    add_metric_card(s4, Inches(8.6), Inches(1.8), Inches(3.6), Inches(4.8), "03. CLIENTE", "React Standalone SPA", 
+                    "• Interface reativa em Dark Mode\n• Bounding box overlay nas imagens\n• Modal de configuração de API Key\n• Histórico de vistorias local\n• Emissão de laudo em PDF", COLOR_EMERALD)
 
-    add_notes(s4, "ROTEIRO DO ORADOR:\nMostre a separação clara de responsabilidades: o Nginx na porta 80 protege o sistema e atua como gateway de borda, roteando para o backend Python na porta 5000, enquanto o frontend React proporciona uma experiência visual rica.")
+    add_notes(s4, "Explique a modularidade: o Nginx expõe a porta 80 e encaminha as chamadas para a API Python na porta interna 5000 via rede overlay. Essa arquitetura é leve, segura e rápida.")
 
     # ══════════════════════════════════════════════════════════════════════════
-    # SLIDE 5: CLUSTER DOCKER SWARM (O NÚCLEO)
+    # SLIDE 5: CLUSTER DOCKER SWARM (COM DIAGRAMA EM ALTA RESOLUÇÃO)
     # ══════════════════════════════════════════════════════════════════════════
     s5 = prs.slides.add_slide(blank_layout)
-    add_background(s5)
-    add_header(s5, "Orquestração Distribuída", "Cluster Docker Swarm em", "DinD (Multi-Nó)")
+    add_bg(s5)
+    add_header(s5, "Orquestração de Nós", "Topologia do Cluster", "Docker Swarm (DinD)")
 
-    add_card(s5, Inches(0.8), Inches(2.0), Inches(3.6), Inches(4.2), "swarm-manager (Leader)",
-             "• Função: Orquestração e Raft Consensus\n• Portas mapeadas: 80, 8080, 5000\n• Roda o Docker Visualizer (constraint)\n• Mantém o estado desejado da stack\n• Ingress Routing Mesh ativo", COLOR_GOLD, "👑")
+    # Big Diagram Image
+    diag_path = os.path.join(ASSETS_DIR, "swarm_cluster_diagram.png")
+    if os.path.exists(diag_path):
+        s5.shapes.add_picture(diag_path, Inches(0.8), Inches(1.8), width=Inches(11.7))
 
-    add_card(s5, Inches(4.7), Inches(2.0), Inches(3.6), Inches(4.2), "swarm-worker-1",
-             "• Função: Nó de execução de carga\n• Conectado ao cluster via Join Token\n• Executa réplicas do backend e frontend\n• Isolamento de processos e recursos\n• Comunicação via rede overlay segura", COLOR_CYAN, "⚙️")
-
-    add_card(s5, Inches(8.6), Inches(2.0), Inches(3.6), Inches(4.2), "swarm-worker-2",
-             "• Função: Nó de execução e redundância\n• Executa réplicas distribuídas da stack\n• Pronto para auto-scaling imediato\n• Absorve carga em caso de falha de nó\n• Monitorado em tempo real pelo Manager", COLOR_CYAN, "⚙️")
-
-    # Banner Overlay Network
-    ov_box = s5.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(6.35), Inches(11.4), Inches(0.75))
-    ov_box.fill.solid()
-    ov_box.fill.fore_color.rgb = RGBColor(16, 36, 60)
-    ov_box.line.color.rgb = COLOR_CYAN
-    p_ov = ov_box.text_frame.paragraphs[0]
-    p_ov.text = "🌐 Overlay Network (autobudget-net): Rede virtual VXLAN que permite comunicação segura e resolução de DNS interno (ex: backend:5000) entre nós distintos sem expor portas internamente."
-    p_ov.font.size = Pt(11)
-    p_ov.font.color.rgb = COLOR_TEXT_MAIN
-
-    add_notes(s5, "ROTEIRO DO ORADOR:\nAqui é o ponto central da disciplina: criamos um cluster Swarm completo com 1 Manager e 2 Workers reais usando Docker-in-Docker (DinD). O Manager cuida da orquestração e da rede overlay, enquanto os Workers executam as tarefas distribuídas.")
+    add_notes(s5, "Este é o núcleo da disciplina: nosso cluster Swarm tem 1 nó Manager e 2 nós Workers rodando em Docker-in-Docker. Mostre no diagrama o Visualizer e o Registry no Manager, e as réplicas distribuídas nos Workers via Overlay Network.")
 
     # ══════════════════════════════════════════════════════════════════════════
     # SLIDE 6: ALTA DISPONIBILIDADE & RESILIÊNCIA
     # ══════════════════════════════════════════════════════════════════════════
     s6 = prs.slides.add_slide(blank_layout)
-    add_background(s6)
+    add_bg(s6)
     add_header(s6, "Tolerância a Falhas", "Alta Disponibilidade &", "Auto-Healing")
 
-    add_card(s6, Inches(0.8), Inches(2.0), Inches(3.6), Inches(4.8), "Múltiplas Réplicas",
-             "• Backend: 2 réplicas ativas\n• Frontend: 2 réplicas ativas\n• Distribuídas automaticamente entre os workers pelo scheduler do Swarm\n• Zero downtime se um container for finalizado", COLOR_GOLD, "👥")
+    add_metric_card(s6, Inches(0.8), Inches(1.8), Inches(3.6), Inches(3.0), "2 Réplicas", "Redundância Ativa", "Backend e frontend rodam com 2 cópias ativas distribuídas entre os nós.", COLOR_GOLD)
+    add_metric_card(s6, Inches(4.7), Inches(1.8), Inches(3.6), Inches(3.0), "Auto-Healing", "Reinicialização Automática", "restart_policy: on-failure garante recuperação imediata em caso de falha.", COLOR_EMERALD)
+    add_metric_card(s6, Inches(8.6), Inches(1.8), Inches(3.6), Inches(3.0), "Zero Downtime", "Rolling Updates", "Atualizações graduais com delay de 10s sem derrubar a aplicação.", COLOR_CYAN)
 
-    add_card(s6, Inches(4.7), Inches(2.0), Inches(3.6), Inches(4.8), "Rolling Updates",
-             "• Atualização contínua com parallelism: 1 e delay: 10s\n• Sobe a réplica nova antes de encerrar a antiga\n• Permite deploy contínuo em produção sem indisponibilidade para o perito", COLOR_CYAN, "🔄")
+    # Bottom Terminal Box with code
+    box_code = s6.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(5.1), Inches(11.4), Inches(1.8))
+    box_code.fill.solid()
+    box_code.fill.fore_color.rgb = RGBColor(6, 9, 19)
+    box_code.line.color.rgb = COLOR_CARD_BORDER
+    tf_c = box_code.text_frame
+    tf_c.word_wrap = True
+    tf_c.margin_left = Inches(0.3)
+    tf_c.margin_top = Inches(0.2)
+    p_c1 = tf_c.paragraphs[0]
+    p_c1.text = "# Ingress Routing Mesh ativo na porta 80:"
+    p_c1.font.name = FONT_CODE
+    p_c1.font.size = Pt(11)
+    p_c1.font.color.rgb = COLOR_TEXT_MUTED
+    
+    p_c2 = tf_c.add_paragraph()
+    p_c2.text = "docker service update --image 127.0.0.1:5000/autobudget-backend:latest --force autobudget_backend"
+    p_c2.font.name = FONT_CODE
+    p_c2.font.size = Pt(11)
+    p_c2.font.color.rgb = COLOR_CYAN_LIGHT
 
-    add_card(s6, Inches(8.6), Inches(2.0), Inches(3.6), Inches(4.8), "Ingress Routing Mesh",
-             "• Roteamento de entrada transparente via IPVS do kernel Linux\n• O usuário pode acessar por qualquer nó do cluster\n• O Swarm redireciona a requisição para um container saudável automaticamente", COLOR_GOLD, "🔀")
+    p_c3 = tf_c.add_paragraph()
+    p_c3.text = "[OK] 2/2 replicas atualizadas com sucesso • Zero perda de pacotes"
+    p_c3.font.name = FONT_CODE
+    p_c3.font.size = Pt(11)
+    p_c3.font.color.rgb = COLOR_EMERALD
 
-    add_notes(s6, "ROTEIRO DO ORADOR:\nDestaque as configurações do docker-compose: replicas: 2, restart_policy: condition: on-failure, e o Ingress Routing Mesh. Se um container cair, o Swarm sobe outro automaticamente.")
+    add_notes(s6, "Destaque como o Swarm trata falhas: se um container cair, o Swarm sobe outro automaticamente. Se atualizarmos a imagem, ele faz rolling update sem o usuário perceber.")
 
     # ══════════════════════════════════════════════════════════════════════════
-    # SLIDE 7: REGISTRY PRIVADO & IMAGENS
+    # SLIDE 7: REGISTRY PRIVADO LOCAL & IMAGENS
     # ══════════════════════════════════════════════════════════════════════════
     s7 = prs.slides.add_slide(blank_layout)
-    add_background(s7)
-    add_header(s7, "Gerenciamento de Artefatos", "Registry Privado Local &", "Build de Imagens")
+    add_bg(s7)
+    add_header(s7, "Gerenciamento de Artefatos", "Registry Privado Local &", "Imagens Slim/Alpine")
 
-    add_card(s7, Inches(0.8), Inches(2.0), Inches(5.6), Inches(4.8), "Registry Local (127.0.0.1:5000)",
-             "• Subido diretamente no manager do cluster\n• Elimina dependência de conexão com o Docker Hub externo\n• Sem risco de atingir limites de taxa de download (rate limit)\n• Distribuição ultrarrápida de imagens entre nós pela rede interna\n\nComandos utilizados:\n• docker push 127.0.0.1:5000/autobudget-backend:latest\n• docker push 127.0.0.1:5000/autobudget-frontend:latest", COLOR_GOLD, "📦")
+    add_metric_card(s7, Inches(0.8), Inches(1.8), Inches(3.6), Inches(4.8), "Porta 5000", "Registry Local", 
+                    "• Subido diretamente no manager\n• Elimina dependência do Docker Hub\n• Sem limite de rate limit de downloads\n• Distribuição instantânea pela rede interna\n• docker push 127.0.0.1:5000/backend:latest", COLOR_GOLD)
 
-    add_card(s7, Inches(6.8), Inches(2.0), Inches(5.6), Inches(4.8), "Otimização de Dockerfiles",
-             "• Dockerfile.backend:\n  Baseado em python:3.11-slim para footprint mínimo de memória, sem compiladores desnecessários e com inicialização em menos de 1 segundo.\n\n• Dockerfile.frontend:\n  Baseado em nginx:alpine de apenas ~23MB servindo os arquivos estáticos compilados e provendo o proxy reverso de alta performance.", COLOR_CYAN, "⚡")
+    add_metric_card(s7, Inches(4.7), Inches(1.8), Inches(3.6), Inches(4.8), "~23 MB", "Nginx Alpine (Frontend)", 
+                    "• Imagem ultraleve para borda\n• Tempo de boot em milissegundos\n• Superfície de ataque reduzida\n• Servindo bundle React e Nginx config", COLOR_CYAN)
 
-    add_notes(s7, "ROTEIRO DO ORADOR:\nExplique como as imagens foram distribuídas para os nós: utilizamos um registry local na porta 5000 do manager. O manager constrói as imagens, dá push no registry local e os workers puxam de 127.0.0.1:5000.")
+    add_metric_card(s7, Inches(8.6), Inches(1.8), Inches(3.6), Inches(4.8), "Python Slim", "Backend Otimizado", 
+                    "• Baseado em python:3.11-slim\n• Sem compiladores desnecessários\n• Inicialização em menos de 1s\n• Consumo mínimo de RAM por réplica", COLOR_EMERALD)
+
+    add_notes(s7, "Explique o Registry local na porta 5000: os nós puxam as imagens diretamente do Manager sem gastar internet e sem bater em limites de download do Docker Hub.")
 
     # ══════════════════════════════════════════════════════════════════════════
     # SLIDE 8: OBSERVABILIDADE COM VISUALIZER
     # ══════════════════════════════════════════════════════════════════════════
     s8 = prs.slides.add_slide(blank_layout)
-    add_background(s8)
-    add_header(s8, "Monitoramento em Tempo Real", "Observabilidade com", "Docker Visualizer")
+    add_bg(s8)
+    add_header(s8, "Monitoramento do Cluster", "Observabilidade com", "Docker Visualizer")
 
-    add_card(s8, Inches(0.8), Inches(2.0), Inches(3.6), Inches(4.8), "Dashboard Visualizer",
-             "• Acessível via navegador na porta 8080\n• Mapeia visualmente cada container em seu respectivo nó do Swarm\n• Permite auditar ao vivo se o balanceamento de réplicas está correto", COLOR_GOLD, "📊")
+    add_metric_card(s8, Inches(0.8), Inches(1.8), Inches(3.6), Inches(4.8), "Porta 8080", "Dashboard em Tempo Real", 
+                    "• Mapeia visualmente nós e réplicas\n• Atualização automática em tempo real\n• Audita se o balanceamento está correto\n• Visualização imediata de containers ativos", COLOR_GOLD)
 
-    add_card(s8, Inches(4.7), Inches(2.0), Inches(3.6), Inches(4.8), "Placement Constraints",
-             "• Configurado com node.role == manager\n• Acesso direto ao /var/run/docker.sock\n• Garante que serviços administrativos não rodem em workers não privilegiados", COLOR_CYAN, "🔒")
+    add_metric_card(s8, Inches(4.7), Inches(1.8), Inches(3.6), Inches(4.8), "Constraint", "node.role == manager", 
+                    "• Restrição de colocação no compose\n• Acesso exclusivo ao docker.sock\n• Protege os workers de privilégios de root\n• Prática recomendada de segurança", COLOR_CYAN)
 
-    add_card(s8, Inches(8.6), Inches(2.0), Inches(3.6), Inches(4.8), "Failover em Tempo Real",
-             "• Se pausarmos ou derrubarmos um nó durante a apresentação, o Visualizer mostra os containers migrando instantaneamente para os nós ativos\n• Prova cabal de resiliência corporativa", COLOR_GOLD, "⚡")
+    add_metric_card(s8, Inches(8.6), Inches(1.8), Inches(3.6), Inches(4.8), "Ao Vivo", "Failover Visual", 
+                    "• Se pausarmos um worker ao vivo, o Visualizer mostra os containers migrando na hora para os nós saudáveis\n• Excelente para demonstrar ao professor!", COLOR_EMERALD)
 
-    add_notes(s8, "ROTEIRO DO ORADOR:\nMostre o Docker Visualizer! Ele roda na porta 8080 conectado ao socket do Docker (/var/run/docker.sock) com restrição para rodar no manager. Ele mostra visualmente as réplicas em cada nó.")
+    add_notes(s8, "Apresente o Visualizer: ele roda na porta 8080 e mostra em blocos coloridos onde está cada réplica. Comente a constraint de segurança para rodar apenas no Manager.")
 
     # ══════════════════════════════════════════════════════════════════════════
-    # SLIDE 9: TESTES DE CARGA E RESILIÊNCIA
+    # SLIDE 9: VALIDAÇÃO DE QUALIDADE (MÉTRICAS GRANDES)
     # ══════════════════════════════════════════════════════════════════════════
     s9 = prs.slides.add_slide(blank_layout)
-    add_background(s9)
-    add_header(s9, "Validação de Qualidade", "Testes de Carga &", "Resiliência (stress_test.py)")
+    add_bg(s9)
+    add_header(s9, "Validação de Qualidade", "Resultados de Teste de Carga &", "Resiliência")
 
-    add_card(s9, Inches(0.8), Inches(2.0), Inches(2.7), Inches(2.2), "100% Sucesso", "Zero falhas em testes de endpoints REST e proxy reverso.", COLOR_EMERALD, "✓")
-    add_card(s9, Inches(3.7), Inches(2.0), Inches(2.7), Inches(2.2), "~35ms Latência", "Tempo médio de resposta nos endpoints de cotação e saúde.", COLOR_CYAN, "⚡")
-    add_card(s9, Inches(6.6), Inches(2.0), Inches(2.7), Inches(2.2), "50MB Body", "Suporte a payloads pesados com múltiplas fotos em alta definição.", COLOR_GOLD, "📦")
-    add_card(s9, Inches(9.5), Inches(2.0), Inches(2.7), Inches(2.2), "Multi-Thread", "Testado sob concorrência simultânea sem travamentos.", COLOR_CYAN, "👥")
+    add_metric_card(s9, Inches(0.8), Inches(1.8), Inches(2.7), Inches(2.4), "100%", "Taxa de Sucesso", "Zero erros nos testes de estresse REST", COLOR_EMERALD)
+    add_metric_card(s9, Inches(3.7), Inches(1.8), Inches(2.7), Inches(2.4), "35 ms", "Latência Média", "Tempo de resposta dos endpoints da API", COLOR_CYAN)
+    add_metric_card(s9, Inches(6.6), Inches(1.8), Inches(2.7), Inches(2.4), "50 MB", "Capacidade Payload", "Suporte a múltiplas fotos em alta resolução", COLOR_GOLD)
+    add_metric_card(s9, Inches(9.5), Inches(1.8), Inches(2.7), Inches(2.4), "Concorrente", "Multi-Thread", "Testado sob múltiplas requisições simultâneas", COLOR_CYAN)
 
-    # Code / Terminal log
-    log_box = s9.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(4.5), Inches(11.4), Inches(2.2))
-    log_box.fill.solid()
-    log_box.fill.fore_color.rgb = RGBColor(6, 9, 19)
-    log_box.line.color.rgb = COLOR_CARD_BORDER
-    tf_l = log_box.text_frame
-    tf_l.word_wrap = True
-    tf_l.margin_left = Inches(0.3)
-    tf_l.margin_top = Inches(0.2)
-    p_l1 = tf_l.paragraphs[0]
-    p_l1.text = "[PASS] Health Check endpoint (/api/health) [12ms]"
-    p_l1.font.name = FONT_CODE
-    p_l1.font.size = Pt(11)
-    p_l1.font.color.rgb = COLOR_EMERALD
-    
-    p_l2 = tf_l.add_paragraph()
-    p_l2.text = "[PASS] Dynamic Gemini Key Verification & Fallback [18ms]"
-    p_l2.font.name = FONT_CODE
-    p_l2.font.size = Pt(11)
-    p_l2.font.color.rgb = COLOR_EMERALD
+    # Bottom summary box
+    box_test = s9.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(4.5), Inches(11.4), Inches(2.2))
+    box_test.fill.solid()
+    box_test.fill.fore_color.rgb = COLOR_CARD
+    box_test.line.color.rgb = COLOR_EMERALD
+    tf_t = box_test.text_frame
+    tf_t.word_wrap = True
+    tf_t.margin_left = Inches(0.3)
+    tf_t.margin_top = Inches(0.2)
+    p_t1 = tf_t.paragraphs[0]
+    p_t1.text = "SUÍTE DE TESTES AUTOMATIZADOS (stress_test.py):"
+    p_t1.font.size = Pt(13)
+    p_t1.font.bold = True
+    p_t1.font.color.rgb = COLOR_EMERALD
 
-    p_l3 = tf_l.add_paragraph()
-    p_l3.text = "[PASS] FIPE & Part Quote Market Pricing Engine [41ms]"
-    p_l3.font.name = FONT_CODE
-    p_l3.font.size = Pt(11)
-    p_l3.font.color.rgb = COLOR_EMERALD
+    p_t2 = tf_t.add_paragraph()
+    p_t2.text = "• Testes de integridade de headers CORS e proxy reverso Nginx [PASS]\n• Validação dinâmica da API Key do Gemini com contingência [PASS]\n• Simulação de upload e processamento de sinistro com imagem base64 [PASS]\n• Teste de concorrência com threads simultâneas simulando peritos ativos [PASS]"
+    p_t2.font.size = Pt(11)
+    p_t2.font.color.rgb = COLOR_TEXT_MAIN
+    p_t2.space_before = Pt(6)
 
-    p_l4 = tf_l.add_paragraph()
-    p_l4.text = "[PASS] Multi-Image Vehicle Inspection Payload Handling [85ms]"
-    p_l4.font.name = FONT_CODE
-    p_l4.font.size = Pt(11)
-    p_l4.font.color.rgb = COLOR_EMERALD
-
-    add_notes(s9, "ROTEIRO DO ORADOR:\nComente que criamos uma suíte de testes de estresse em Python (stress_test.py) que dispara requisições concorrentes contra o cluster para validar tempo de resposta, cabeçalhos de CORS e resiliência a payloads grandes.")
+    add_notes(s9, "Apresente os dados de teste: criamos o stress_test.py para estressar a aplicação. Mostre que tivemos 100% de sucesso, com latência média de 35ms e capacidade de receber fotos grandes sem falhas.")
 
     # ══════════════════════════════════════════════════════════════════════════
-    # SLIDE 10: ROTEIRO DE DEMONSTRAÇÃO PRÁTICA
+    # SLIDE 10: VEÍCULOS DE TESTE (GALERIA VISUAL COM 3 FOTOS REAIS)
     # ══════════════════════════════════════════════════════════════════════════
     s10 = prs.slides.add_slide(blank_layout)
-    add_background(s10)
-    add_header(s10, "Roteiro da Live Demo", "Demonstração Prática", "Passo a Passo")
+    add_bg(s10)
+    add_header(s10, "Casos de Teste Reais", "Veículos Validados na", "Live Demo")
 
-    add_card(s10, Inches(0.8), Inches(2.0), Inches(3.6), Inches(4.8), "Passo 1: Upload",
-             "• O perito faz upload das fotos do sinistro (ex: Onix com colisão traseira)\n• O frontend codifica em base64 e despacha via POST /api/analyze\n• Exibição imediata de feedback de progresso ao usuário", COLOR_GOLD, "📸")
+    # 3 Vehicle Photos with labels
+    cars = [
+        ("civic_front.jpg", Inches(0.8), "Honda Civic (Colisão Frontal)", "Farol e Para-choque"),
+        ("corolla_side.jpg", Inches(4.7), "Toyota Corolla (Lateral)", "Porta e Retrovisor"),
+        ("onix_rear.jpg", Inches(8.6), "Chevrolet Onix (Traseira)", "Lanterna e Eixo Traseiro")
+    ]
 
-    add_card(s10, Inches(4.7), Inches(2.0), Inches(3.6), Inches(4.8), "Passo 2: IA Pericial",
-             "• Gemini 2.0 Flash identifica marca, modelo, ano e cor\n• Detecta lanterna quebrada, para-choque deformado e eixo torto\n• Projeta as caixas delimitadoras coloridas sobre as fotos originais", COLOR_CYAN, "🤖")
+    for fname, x_pos, car_title, car_parts in cars:
+        fpath = os.path.join(SAMPLES_DIR, fname)
+        if os.path.exists(fpath):
+            s10.shapes.add_picture(fpath, x_pos, Inches(1.8), width=Inches(3.6), height=Inches(2.7))
+        
+        # Label card below image
+        lbl_card = s10.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, x_pos, Inches(4.7), Inches(3.6), Inches(2.0))
+        lbl_card.fill.solid()
+        lbl_card.fill.fore_color.rgb = COLOR_CARD
+        lbl_card.line.color.rgb = COLOR_CARD_BORDER
+        tf_l = lbl_card.text_frame
+        tf_l.word_wrap = True
+        tf_l.margin_left = Inches(0.2)
+        tf_l.margin_top = Inches(0.18)
+        p1 = tf_l.paragraphs[0]
+        p1.text = car_title
+        p1.font.bold = True
+        p1.font.size = Pt(13)
+        p1.font.color.rgb = COLOR_GOLD_LIGHT
+        p2 = tf_l.add_paragraph()
+        p2.text = f"Danos: {car_parts}\nStatus: Pronto para teste ao vivo"
+        p2.font.size = Pt(11)
+        p2.font.color.rgb = COLOR_TEXT_MUTED
+        p2.space_before = Pt(4)
 
-    add_card(s10, Inches(8.6), Inches(2.0), Inches(3.6), Inches(4.8), "Passo 3: Orçamento & PDF",
-             "• Cota peças novas vs usadas de desmanches homologados\n• Calcula horas de funilaria/pintura a R$ 80/h\n• Checa regra de 75% da FIPE para Perda Total\n• Gera laudo pericial pronto para impressão em PDF", COLOR_GOLD, "📑")
-
-    add_notes(s10, "ROTEIRO DO ORADOR:\nPasse por esse slide mostrando a tela do sistema ao vivo: 1) Mostre o badge da IA ativo, 2) Selecione as fotos de exemplo ou suba uma foto, 3) Clique em Analisar, 4) Mostre os danos identificados e a opção de peças novas vs usadas, 5) Mostre o laudo em PDF.")
+    add_notes(s10, "Aqui mostramos os 3 carros reais incluídos no sistema: o Civic com colisão frontal, o Corolla com colisão lateral e o Onix com colisão traseira. Você pode rodar a análise de qualquer um ao vivo durante a apresentação!")
 
     # ══════════════════════════════════════════════════════════════════════════
     # SLIDE 11: DIFERENCIAIS TÉCNICOS & DEVOPS
     # ══════════════════════════════════════════════════════════════════════════
     s11 = prs.slides.add_slide(blank_layout)
-    add_background(s11)
-    add_header(s11, "Resumo de Impacto", "Diferenciais do", "AutoBudget AI")
+    add_bg(s11)
+    add_header(s11, "Resumo de Destaques", "Diferenciais do", "AutoBudget AI")
 
-    add_card(s11, Inches(0.8), Inches(2.0), Inches(5.6), Inches(4.8), "Excelência DevOps & Infraestrutura",
-             "• Arquitetura 100% conteinerizada e orquestrada via Docker Swarm\n• Simulação fiel de cluster multi-nó em ambiente DinD com economia de recursos\n• Registry privado local otimizando a distribuição de imagens\n• Alta resiliência comprovada com failover automático e balanceamento por mesh\n• Observabilidade nativa via Docker Visualizer", COLOR_GOLD, "🎯")
+    add_metric_card(s11, Inches(0.8), Inches(1.8), Inches(5.6), Inches(4.8), "DevOps & Cloud", "Excelência em Infraestrutura", 
+                    "• 100% conteinerizado e escalável vertical e horizontalmente\n• Simulação fiel de cluster multi-nó em ambiente DinD\n• Registry privado local otimizando a distribuição de imagens\n• Alta resiliência comprovada com failover automático e balanceamento por mesh\n• Observabilidade nativa via Docker Visualizer", COLOR_GOLD)
 
-    add_card(s11, Inches(6.8), Inches(2.0), Inches(5.6), Inches(4.8), "Inovação Prática com IA Generativa",
-             "• Substitui formulários manuais lentos por visão computacional instantânea\n• Transparência pericial com auditoria e rastreabilidade de peças DETRAN\n• UX premium profissional com temas escuros refinados e animações reativas\n• Parametrização dinâmica de chaves com persistência em disco e memória\n• Totalmente alinhado às necessidades reais do mercado de sinistros", COLOR_CYAN, "✨")
+    add_metric_card(s11, Inches(6.8), Inches(1.8), Inches(5.6), Inches(4.8), "Inovação & IA", "Impacto Real de Negócio", 
+                    "• Substitui formulários manuais por visão computacional instantânea\n• Transparência pericial com auditoria e rastreabilidade de peças DETRAN\n• UX premium profissional com temas escuros refinados e animações reativas\n• Parametrização dinâmica de chaves com persistência em disco e memória\n• Totalmente alinhado às necessidades reais do mercado de sinistros", COLOR_CYAN)
 
-    add_notes(s11, "ROTEIRO DO ORADOR:\nSintetize os grandes destaques do projeto: IA de ponta com Gemini, arquitetura em cluster Swarm com DinD sem gastar nada com nuvem paga, código modular e foco total em resolver um problema real de negócio.")
+    add_notes(s11, "Sintetize os grandes destaques do projeto: IA de ponta com Gemini, arquitetura em cluster Swarm com DinD sem gastar nada com nuvem paga, código modular e foco total em resolver um problema real de negócio.")
 
     # ══════════════════════════════════════════════════════════════════════════
     # SLIDE 12: CONCLUSÃO & PERGUNTAS
     # ══════════════════════════════════════════════════════════════════════════
     s12 = prs.slides.add_slide(blank_layout)
-    add_background(s12)
-    add_header(s12, "Conclusão", "Obrigado! Estamos Abertos a", "Perguntas")
+    add_bg(s12)
+    add_header(s12, "Encerramento", "Obrigado! Estamos Abertos a", "Perguntas")
 
-    add_card(s12, Inches(0.8), Inches(2.0), Inches(3.6), Inches(4.0), "Código & Repositório",
-             "• Repositório no GitHub:\n  KaykyMatos845/auto-repair-budget-agent\n\n• Dockerfiles, compose, scripts DinD e documentação inclusos no projeto", COLOR_GOLD, "💻")
+    add_metric_card(s12, Inches(0.8), Inches(1.8), Inches(3.6), Inches(3.8), "GitHub", "Repositório Aberto", 
+                    "KaykyMatos845/\nauto-repair-budget-agent\n\nCódigo-fonte, compose e scripts disponíveis.", COLOR_GOLD)
 
-    add_card(s12, Inches(4.7), Inches(2.0), Inches(3.6), Inches(4.0), "Cluster Ativo",
-             "• 1 Manager + 2 Workers em execução\n• 5 réplicas saudáveis distribuídas\n• Overlay network autobudget-net ativa\n• Registry local na porta 5000", COLOR_CYAN, "🐳")
+    add_metric_card(s12, Inches(4.7), Inches(1.8), Inches(3.6), Inches(3.8), "Cluster", "Estado Atual", 
+                    "1 Manager + 2 Workers ativos\n5 Réplicas saudáveis\nOverlay Network ativa.", COLOR_CYAN)
 
-    add_card(s12, Inches(8.6), Inches(2.0), Inches(3.6), Inches(4.0), "Pontos de Acesso",
-             "• Aplicação Web: porta 80\n• Docker Visualizer: porta 8080\n• API Health: /api/health\n• Slides: /slides.html", COLOR_GOLD, "🚀")
+    add_metric_card(s12, Inches(8.6), Inches(1.8), Inches(3.6), Inches(3.8), "Acessos", "Pontos de Entrada", 
+                    "App Web: Porta 80\nVisualizer: Porta 8080\nSlides: /slides.html", COLOR_EMERALD)
 
-    # Closing banner
-    banner = s12.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(6.2), Inches(11.4), Inches(0.8))
+    # Banner
+    banner = s12.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(6.0), Inches(11.4), Inches(0.9))
     banner.fill.solid()
-    banner.fill.fore_color.rgb = RGBColor(30, 42, 68)
+    banner.fill.fore_color.rgb = RGBColor(28, 40, 65)
     banner.line.color.rgb = COLOR_GOLD
-    p_ban = banner.text_frame.paragraphs[0]
-    p_ban.text = "Estamos à disposição para demonstrar qualquer parte da infraestrutura, derrubar nós ao vivo ou inspecionar o código! 🛠️"
-    p_ban.font.size = Pt(12)
-    p_ban.font.bold = True
-    p_ban.font.color.rgb = COLOR_GOLD_LIGHT
-    p_ban.alignment = PP_ALIGN.CENTER
+    p_b = banner.text_frame.paragraphs[0]
+    p_b.text = "Estamos à disposição para demonstrar o cluster ao vivo, pausar nós ou inspecionar o código! 🛠️"
+    p_b.font.size = Pt(13)
+    p_b.font.bold = True
+    p_b.font.color.rgb = COLOR_GOLD_LIGHT
+    p_b.alignment = PP_ALIGN.CENTER
 
-    add_notes(s12, "ROTEIRO DO ORADOR:\nAgradeça a atenção do professor e da turma, deixe o slide aberto e convide todos a fazer perguntas ou pedir testes práticos no cluster.")
+    add_notes(s12, "Agradeça a atenção do professor e da turma, deixe o slide aberto e convide todos a fazer perguntas ou pedir testes práticos no cluster.")
 
-    # Save presentation
-    output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Apresentacao_AutoBudget_AI.pptx")
-    prs.save(output_path)
-    print(f"Presentation saved successfully to: {output_path}")
+    # Save
+    out_path = os.path.join(DIRECTORY, "Apresentacao_AutoBudget_AI.pptx")
+    prs.save(out_path)
+    print(f"Visually enriched presentation saved to: {out_path}")
 
 if __name__ == "__main__":
     create_presentation()

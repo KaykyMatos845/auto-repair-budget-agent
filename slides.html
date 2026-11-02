@@ -519,35 +519,33 @@
 
     <!-- SLIDE 1: CAPA -->
     <section class="slide active" data-notes="Boa noite professor e colegas! Hoje vou apresentar o AutoBudget AI, uma solução completa que une Inteligência Artificial Generativa para visão computacional pericial com alta disponibilidade e orquestração de microsserviços via Docker Swarm em arquitetura DinD.">
-      <div class="slide-tag">PROJETO DE DISCIPLINA • DEVOPS & SISTEMAS DISTRIBUÍDOS</div>
-      <h1 class="slide-title">AutoBudget <span class="highlight">AI</span></h1>
-      <p style="font-size: 1.35rem; font-weight: 700; color: #cbd5e1; margin-bottom: 8px;">
-        Agente Pericial Automotivo em Cluster Docker Swarm de Alta Disponibilidade
-      </p>
-      <p class="slide-desc">
-        Detecção automatizada de avarias com Google Gemini AI, cruzamento com Tabela FIPE (regra de 75% Perda Total), cotação inteligente de peças e orquestração resiliente com 1 Manager e 2 Workers.
-      </p>
-
-      <div class="grid-4" style="margin-top: 10px;">
-        <div class="card glow-gold">
-          <div class="card-icon">🧠</div>
-          <div class="card-title">Gemini 2.0 AI</div>
-          <div class="card-text">Visão computacional e bounding boxes em tempo real.</div>
+      <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 36px; align-items: center;">
+        <div>
+          <div class="slide-tag">PROJETO DE DISCIPLINA • DEVOPS & SISTEMAS DISTRIBUÍDOS</div>
+          <h1 class="slide-title">AutoBudget <span class="highlight">AI</span></h1>
+          <p style="font-size: 1.25rem; font-weight: 700; color: #cbd5e1; margin-bottom: 8px;">
+            Vistoria Automotiva com Visão Computacional & Cluster Docker Swarm
+          </p>
+          <p class="slide-desc" style="font-size: 0.95rem; margin-bottom: 20px;">
+            Detecção automatizada de danos com Google Gemini AI, cruzamento com Tabela FIPE (75% Perda Total) e orquestração resiliente com 1 Manager e 2 Workers.
+          </p>
+          <div class="grid-3" style="gap: 12px;">
+            <div class="card glow-gold" style="padding: 16px;">
+              <div style="font-size: 1.35rem; font-weight: 900; color: #fbbf24;">Gemini AI</div>
+              <div style="font-size: 0.78rem; color: #94a3b8; font-weight: 600;">Visão Multimodal</div>
+            </div>
+            <div class="card glow-cyan" style="padding: 16px;">
+              <div style="font-size: 1.35rem; font-weight: 900; color: #38bdf8;">3 Nós</div>
+              <div style="font-size: 0.78rem; color: #94a3b8; font-weight: 600;">Cluster DinD</div>
+            </div>
+            <div class="card" style="padding: 16px; border-color: rgba(16,185,129,0.4);">
+              <div style="font-size: 1.35rem; font-weight: 900; color: #34d399;">100%</div>
+              <div style="font-size: 0.78rem; color: #94a3b8; font-weight: 600;">Auto-Healing</div>
+            </div>
+          </div>
         </div>
-        <div class="card glow-cyan">
-          <div class="card-icon">🐳</div>
-          <div class="card-title">Docker Swarm</div>
-          <div class="card-text">Cluster DinD com 1 Manager + 2 Workers ativos.</div>
-        </div>
-        <div class="card glow-gold">
-          <div class="card-icon">📊</div>
-          <div class="card-title">Tabela FIPE</div>
-          <div class="card-text">Auditoria de Perda Total e precificação transparente.</div>
-        </div>
-        <div class="card glow-cyan">
-          <div class="card-icon">🛡️</div>
-          <div class="card-title">Resiliência</div>
-          <div class="card-text">Múltiplas réplicas, auto-healing e proxy reverso Nginx.</div>
+        <div>
+          <img src="assets/ai_annotated_inspection.jpg" alt="Vistoria com IA" style="width: 100%; border-radius: 16px; border: 1px solid rgba(245,158,11,0.4); box-shadow: 0 16px 36px rgba(0,0,0,0.6); object-fit: cover; max-height: 420px;">
         </div>
       </div>
     </section>
@@ -597,45 +595,27 @@
     <section class="slide" data-notes="Apresente as 4 grandes engrenagens da aplicação: A IA multimodal que enxerga as fotos, o cálculo FIPE de 75%, as cotações de peças novas vs homologadas DETRAN e a mão de obra padronizada em R$ 80/hora.">
       <div class="slide-tag">ENGENHARIA DA APLICAÇÃO</div>
       <h2 class="slide-title">Como o AutoBudget AI <span class="highlight">Resolve</span></h2>
-      <p class="slide-desc">
-        Pipeline integrado de inteligência pericial capaz de processar múltiplas fotos simultâneas e gerar orçamento completo auditável.
+      <p class="slide-desc" style="margin-bottom: 20px;">
+        Pipeline integrado de visão computacional pericial que analisa fotos reais e gera orçamento auditável em segundos.
       </p>
 
-      <div class="grid-2">
-        <div class="card glow-gold">
-          <div class="card-title" style="display:flex; align-items:center; gap:8px;">
-            <span>🔍</span> 1. Visão Computacional com Gemini
-          </div>
-          <p class="card-text">
-            Reconhecimento da marca, modelo, ano e cor do carro. Análise das áreas de impacto (frontal, lateral, traseira) e marcação de <strong>bounding boxes</strong> das peças danificadas com severidade do dano.
-          </p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center;">
+        <div>
+          <img src="assets/ai_annotated_inspection.jpg" alt="Detecção IA" style="width: 100%; border-radius: 14px; border: 1px solid rgba(245,158,11,0.4); box-shadow: 0 12px 30px rgba(0,0,0,0.5); object-fit: cover; max-height: 380px;">
         </div>
-
-        <div class="card glow-cyan">
-          <div class="card-title" style="display:flex; align-items:center; gap:8px;">
-            <span>📋</span> 2. Classificação de Ação Pericial
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div class="card glow-gold" style="padding: 14px 18px;">
+            <div class="card-title" style="font-size: 1rem; margin-bottom: 4px;">🔍 Visão Computacional Multimodal</div>
+            <p class="card-text" style="font-size: 0.82rem;">Identifica modelo, ano, áreas de colisão e gera caixas delimitadoras coloridas.</p>
           </div>
-          <p class="card-text">
-            Diferenciação automática entre <strong>Substituição</strong> (peças ópticas como lanternas/faróis quebrados ou eixos tortos) e <strong>Recuperação/Pintura</strong> de lataria, evitando desperdício de peças.
-          </p>
-        </div>
-
-        <div class="card glow-gold">
-          <div class="card-title" style="display:flex; align-items:center; gap:8px;">
-            <span>🏷️</span> 3. Cotação Dupla (Novas vs Usadas DETRAN)
+          <div class="card glow-cyan" style="padding: 14px 18px;">
+            <div class="card-title" style="font-size: 1rem; margin-bottom: 4px;">📋 Classificação: Troca vs Recuperação</div>
+            <p class="card-text" style="font-size: 0.82rem;">Troca obrigatória para óptica/suspensão e recuperação/pintura para lataria.</p>
           </div>
-          <p class="card-text">
-            Apresenta preço de peças novas originais OEM e peças usadas certificadas pelo DETRAN com rastreabilidade, permitindo ao usuário economizar até <strong>50%</strong> com 1 clique.
-          </p>
-        </div>
-
-        <div class="card glow-cyan">
-          <div class="card-title" style="display:flex; align-items:center; gap:8px;">
-            <span>⏱️</span> 4. Mão de Obra Tabelada & FIPE
+          <div class="card glow-gold" style="padding: 14px 18px;">
+            <div class="card-title" style="font-size: 1rem; margin-bottom: 4px;">🏷️ Cotação Dupla & Tabela FIPE</div>
+            <p class="card-text" style="font-size: 0.82rem;">Peças novas OEM vs usadas certificadas pelo DETRAN (50% off) + alerta de 75% Perda Total.</p>
           </div>
-          <p class="card-text">
-            Horas técnicas de funilaria, pintura, mecânica e tapeçaria calculadas a R$ 80,00/h fixo. Alerta automático de <strong>Perda Total</strong> se o orçamento ultrapassar 75% da FIPE.
-          </p>
         </div>
       </div>
     </section>
@@ -697,78 +677,16 @@
     </section>
 
     <!-- SLIDE 5: CLUSTER DOCKER SWARM (O NÚCLEO) -->
+    <!-- SLIDE 5: CLUSTER DOCKER SWARM (O NÚCLEO) -->
     <section class="slide" data-notes="Aqui é o momento chave com o professor! Explique a arquitetura do cluster: 1 Manager e 2 Workers criados via Docker-in-Docker (DinD). O Manager cuida da orquestração e da rede overlay, enquanto os Workers executam as tarefas distribuídas.">
       <div class="slide-tag">ORQUESTRAÇÃO DISTRIBUÍDA</div>
       <h2 class="slide-title">Cluster <span class="highlight">Docker Swarm</span> (DinD)</h2>
-      <p class="slide-desc">
-        Cluster multi-nó implementado com Docker-in-Docker em um host Ubuntu, seguindo as diretrizes do livro <em>Descomplicando o Docker</em>.
+      <p class="slide-desc" style="margin-bottom: 16px;">
+        Cluster multi-nó com 1 Manager e 2 Workers em rede Overlay VXLAN, com Visualizer na porta 8080 e Registry local na 5000.
       </p>
 
-      <div class="swarm-diagram">
-        <div class="node-row">
-          <!-- Manager Node -->
-          <div class="node-box manager">
-            <div class="node-header">
-              <div class="node-name">🖥️ swarm-manager</div>
-              <span class="node-role-badge role-manager">LEADER / MANAGER</span>
-            </div>
-            <p style="font-size:0.75rem; color:#94a3b8; margin-bottom:10px;">
-              Orquestração, Raft Consensus, Ingress Load Balancer & Visualizer
-            </p>
-            <div class="container-pill">
-              <span>autobudget_visualizer.1</span>
-              <span class="pill-active"></span>
-            </div>
-            <div class="container-pill">
-              <span>autobudget_frontend.1</span>
-              <span class="pill-active"></span>
-            </div>
-          </div>
-
-          <!-- Worker 1 -->
-          <div class="node-box">
-            <div class="node-header">
-              <div class="node-name">⚙️ swarm-worker-1</div>
-              <span class="node-role-badge role-worker">WORKER NODE</span>
-            </div>
-            <p style="font-size:0.75rem; color:#94a3b8; margin-bottom:10px;">
-              Execução de tarefas de computação e API
-            </p>
-            <div class="container-pill">
-              <span>autobudget_backend.1</span>
-              <span class="pill-active"></span>
-            </div>
-            <div class="container-pill">
-              <span>autobudget_frontend.2</span>
-              <span class="pill-active"></span>
-            </div>
-          </div>
-
-          <!-- Worker 2 -->
-          <div class="node-box">
-            <div class="node-header">
-              <div class="node-name">⚙️ swarm-worker-2</div>
-              <span class="node-role-badge role-worker">WORKER NODE</span>
-            </div>
-            <p style="font-size:0.75rem; color:#94a3b8; margin-bottom:10px;">
-              Execução de réplicas de contingência e escalabilidade
-            </p>
-            <div class="container-pill">
-              <span>autobudget_backend.2</span>
-              <span class="pill-active"></span>
-            </div>
-            <div class="container-pill" style="opacity: 0.5;">
-              <span>(Pronto para auto-scale)</span>
-              <span class="pill-active" style="background:#64748b; box-shadow:none;"></span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card" style="margin-top: 16px; padding: 14px 20px; background: rgba(6, 182, 212, 0.08); border-color: rgba(6, 182, 212, 0.25);">
-        <p style="font-size:0.84rem; color:#e0f2fe;">
-          🌐 <strong>Overlay Network (autobudget-net):</strong> Permite que containers em nós físicos/virtuais diferentes se comuniquem por nome DNS (ex: <code>backend:5000</code>) com criptografia e isolamento de rede virtual VXLAN.
-        </p>
+      <div style="text-align: center;">
+        <img src="assets/swarm_cluster_diagram.png" alt="Topologia Docker Swarm" style="width: 100%; max-height: 480px; object-fit: contain; border-radius: 14px; border: 1px solid rgba(6,182,212,0.4); box-shadow: 0 16px 36px rgba(0,0,0,0.6);">
       </div>
     </section>
 
@@ -943,45 +861,30 @@
 
     <!-- SLIDE 10: DEMONSTRAÇÃO PRÁTICA (ROTEIRO LIVE DEMO) -->
     <section class="slide" data-notes="Passe por esse slide mostrando a tela do sistema ao vivo: 1) Mostre o badge da IA ativo, 2) Selecione as fotos de exemplo ou suba uma foto, 3) Clique em Analisar, 4) Mostre os danos identificados e a opção de peças novas vs usadas, 5) Mostre o laudo em PDF.">
-      <div class="slide-tag">ROTEIRO DE DEMONSTRAÇÃO</div>
-      <h2 class="slide-title">Demonstração <span class="highlight">Passo a Passo</span></h2>
-      <p class="slide-desc">
-        Fluxo ao vivo demonstrando a experiência do perito ou oficina mecânica.
+      <div class="slide-tag">CASOS DE TESTE AO VIVO</div>
+      <h2 class="slide-title">Veículos Validados na <span class="highlight">Demonstração</span></h2>
+      <p class="slide-desc" style="margin-bottom: 20px;">
+        3 cenários reais de colisão incluídos no sistema e validados com IA pericial.
       </p>
 
       <div class="grid-3">
-        <div class="card glow-gold">
-          <div class="card-title" style="display:flex; align-items:center; gap:8px;">
-            <span>📸</span> Passo 1: Upload
-          </div>
-          <p class="card-text">
-            O usuário envia fotos reais do veículo danificado (ex: Onix com traseira batida). As imagens são codificadas em Base64 e enviadas para o Nginx.
-          </p>
+        <div class="card glow-gold" style="padding: 14px;">
+          <img src="public/samples/civic_front.jpg" alt="Honda Civic" style="width: 100%; height: 160px; object-fit: cover; border-radius: 10px; margin-bottom: 12px;">
+          <div class="card-title" style="font-size: 1.05rem; margin-bottom: 4px;">Honda Civic (Frontal)</div>
+          <p class="card-text" style="font-size: 0.82rem;">Danos: Farol dianteiro quebrado e grade deformada. Diagnóstico: Substituição óptica.</p>
         </div>
 
-        <div class="card glow-cyan">
-          <div class="card-title" style="display:flex; align-items:center; gap:8px;">
-            <span>🤖</span> Passo 2: IA Pericial
-          </div>
-          <p class="card-text">
-            O Gemini Vision detecta o veículo, identifica lanterna quebrada, eixo empenado e parachoques, traçando caixas delimitadoras coloridas sobre as fotos.
-          </p>
+        <div class="card glow-cyan" style="padding: 14px;">
+          <img src="public/samples/corolla_side.jpg" alt="Toyota Corolla" style="width: 100%; height: 160px; object-fit: cover; border-radius: 10px; margin-bottom: 12px;">
+          <div class="card-title" style="font-size: 1.05rem; margin-bottom: 4px;">Toyota Corolla (Lateral)</div>
+          <p class="card-text" style="font-size: 0.82rem;">Danos: Porta e lateral amassada. Diagnóstico: Funilaria e pintura sem troca de chapa.</p>
         </div>
 
-        <div class="card glow-gold">
-          <div class="card-title" style="display:flex; align-items:center; gap:8px;">
-            <span>💰</span> Passo 3: Orçamento & PDF
-          </div>
-          <p class="card-text">
-            O sistema calcula peças novas vs usadas, soma horas de funilaria/pintura, verifica FIPE (alerta de Perda Total) e emite laudo oficial em PDF.
-          </p>
+        <div class="card glow-gold" style="padding: 14px;">
+          <img src="public/samples/onix_rear.jpg" alt="Chevrolet Onix" style="width: 100%; height: 160px; object-fit: cover; border-radius: 10px; margin-bottom: 12px;">
+          <div class="card-title" style="font-size: 1.05rem; margin-bottom: 4px;">Chevrolet Onix (Traseira)</div>
+          <p class="card-text" style="font-size: 0.82rem;">Danos: Lanterna fraturada e para-choque. Diagnóstico: Cotação DETRAN e teste FIPE.</p>
         </div>
-      </div>
-
-      <div class="card" style="margin-top: 20px; border: 1px dashed var(--gold); background: rgba(245, 158, 11, 0.04);">
-        <p style="font-size:0.9rem; color:#f8fafc;">
-          💡 <strong>Dica para a banca:</strong> Mostre também o painel do Docker Visualizer na porta 8080 enquanto realiza a vistoria para provar que a aplicação está rodando distribuída nos containers do Swarm!
-        </p>
       </div>
     </section>
 
