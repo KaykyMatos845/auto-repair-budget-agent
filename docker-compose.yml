@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  backend:
+    image: autobudget-backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment:
+      - PORT=5000
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    networks:
+      - autobudget-net
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 10s
+
+  frontend:
+    image: autobudget-frontend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "80:80"
+    networks:
+      - autobudget-net
+    depends_on:
+      - backend
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 10s
+
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    stop_grace_period: 1m30s
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - autobudget-net
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+
+networks:
+  autobudget-net:
+    driver: overlay
+    attachable: true
