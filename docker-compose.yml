@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   backend:
-    image: autobudget-backend:latest
+    image: 127.0.0.1:5000/autobudget-backend:latest
     build:
       context: .
       dockerfile: Dockerfile.backend
@@ -20,7 +20,7 @@ services:
         delay: 10s
 
   frontend:
-    image: autobudget-frontend:latest
+    image: 127.0.0.1:5000/autobudget-frontend:latest
     build:
       context: .
       dockerfile: Dockerfile.frontend
