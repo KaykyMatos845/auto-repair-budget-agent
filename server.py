@@ -1,4 +1,4 @@
-﻿import http.server
+import http.server
 import socketserver
 import json
 import urllib.parse
@@ -14,7 +14,7 @@ if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
     sys.stderr.reconfigure(encoding='utf-8')
 
-PORT = 3000
+PORT = int(os.environ.get('PORT', 5000))
 DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 PUBLIC_DIR = os.path.join(DIRECTORY, 'public')
 
