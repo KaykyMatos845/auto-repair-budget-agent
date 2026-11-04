@@ -135,7 +135,9 @@ def main(check=False, backend_only=False):
     prepare_model()
     print('Iniciando o servidor. Mantenha este terminal aberto.', flush=True)
     os.environ['LOCAL_PRELOAD'] = '1'
-    os.execv(str(ENV_PYTHON), [str(ENV_PYTHON), '-u', str(ROOT / 'server.py')])
+    # On Windows os.execv uses the CRT argument joiner, which does not quote
+    # paths containing spaces. subprocess quotes each argument for CreateProcess.
+    return subprocess.call([str(ENV_PYTHON), '-u', str(ROOT / 'server.py')], cwd=ROOT)
 
 
 if __name__ == '__main__':
