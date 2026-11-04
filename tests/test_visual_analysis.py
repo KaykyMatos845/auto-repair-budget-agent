@@ -5,8 +5,9 @@ from pathlib import Path
 import sys
 import tempfile
 import threading
+from types import SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 import urllib.error
 import urllib.request
 
@@ -114,6 +115,37 @@ class ImageAndInferenceTests(unittest.TestCase):
         with self.assertRaises(vision.LocalVisionError):
             vision.parse_detections(np.zeros((1, 10, 5)), (1, 0, 0, 640, 640), 0.6)
 
+    def test_detail_crop_coordinates_map_to_original_photo(self):
+        model = Mock()
+        model.get_inputs.return_value = [SimpleNamespace(name='images')]
+        model.run.return_value = [None]
+        crop_detection = {'classId': 5, 'score': .8, 'xyxy': [100, 100, 200, 200]}
+        with patch.object(vision, 'parse_detections', side_effect=[[], [], [], [], [crop_detection]]):
+            detections, passes = vision.detect_photo(model, Image.new('RGB', (1000, 1000)), .6, True)
+        self.assertEqual(passes, 5)
+        self.assertEqual(model.run.call_count, 5)
+        self.assertEqual(detections[0]['box'], [40, 40, 50, 50])
+
+    def test_crop_duplicates_and_internal_edge_fragments_are_removed(self):
+        model = Mock()
+        model.get_inputs.return_value = [SimpleNamespace(name='images')]
+        model.run.return_value = [None]
+        full = {'classId': 5, 'score': .7, 'xyxy': [400, 400, 500, 500]}
+        duplicate = {'classId': 5, 'score': .8, 'xyxy': [100, 100, 200, 200]}
+        fragment = {'classId': 8, 'score': .9, 'xyxy': [0, 100, 200, 200]}
+        with patch.object(vision, 'parse_detections', side_effect=[[full], [], [], [], [duplicate, fragment]]):
+            detections, _ = vision.detect_photo(model, Image.new('RGB', (1000, 1000)), .6, True)
+        self.assertEqual(len(detections), 1)
+        self.assertEqual(detections[0]['score'], .8)
+
+    def test_small_photos_and_quick_mode_use_only_one_pass(self):
+        for size, detailed in [((640, 480), True), ((1600, 1200), False)]:
+            model = Mock()
+            model.get_inputs.return_value = [SimpleNamespace(name='images')]
+            model.run.return_value = [np.zeros((1, 18, 1))]
+            self.assertEqual(vision.detect_photo(model, Image.new('RGB', size), .6, detailed), ([], 1))
+            self.assertEqual(model.run.call_count, 1)
+
     def test_missing_or_corrupt_weights_are_errors(self):
         with tempfile.TemporaryDirectory() as temp, patch.object(vision, '_session', None):
             path = Path(temp)/'model.onnx'
@@ -144,6 +176,20 @@ class ImageAndInferenceTests(unittest.TestCase):
             self.assertIn(part['name'], {item[0] for item in vision.LABELS})
             self.assertTrue(all(0 <= x <= 100 for x in part['box']))
         self.assertEqual(result['vehicle']['model'], '')
+
+    @unittest.skipUnless(vision.model_path().exists(), 'Instale os pesos com scripts/download_model.py')
+    def test_detail_mode_recovers_sample_lantern_without_network(self):
+        photo = vision.ROOT / 'public/samples/onix_rear.jpg'
+        encoded = base64.b64encode(photo.read_bytes()).decode()
+        with patch.dict(vision.os.environ, {'LOCAL_CONFIDENCE': '.60'}), \
+             patch('socket.create_connection', side_effect=AssertionError('Network must not be used')):
+            quick = vision.analyze_local([encoded], detailed=False)
+            detailed = vision.analyze_local([encoded, encoded], detailed=True)
+        self.assertFalse(quick['damageAnalysis']['parts'])
+        lanterns = [part for part in detailed['damageAnalysis']['parts'] if part['name'] == 'Lanterna']
+        self.assertEqual(len(lanterns), 2)
+        self.assertEqual({part['imageIndex'] for part in lanterns}, {0, 1})
+        self.assertEqual(detailed['analysisSettings']['inferencePasses'], 10)
 
 
 class ApiTests(unittest.TestCase):
@@ -188,6 +234,15 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(data['provider'], 'local')
         self.assertEqual(data['parts'][0]['actionRequired'], 'Avaliação presencial')
+
+    def test_analysis_mode_is_validated_and_forwarded(self):
+        photo = vision.ROOT / 'public/samples/civic_front.jpg'
+        encoded = base64.b64encode(photo.read_bytes()).decode()
+        with patch.object(server, 'analyze_local', return_value=observation()) as analyze:
+            self.assertEqual(self.post({'images': [encoded], 'detailed': 'false'})[0], 400)
+            analyze.assert_not_called()
+            self.assertEqual(self.post({'images': [encoded], 'detailed': False})[0], 200)
+            self.assertIs(analyze.call_args.kwargs['detailed'], False)
 
     def test_cloud_credentials_endpoint_removed(self):
         self.assertEqual(self.post({}, '/api/set-key')[0], 404)

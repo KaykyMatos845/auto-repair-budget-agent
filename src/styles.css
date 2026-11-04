@@ -543,3 +543,57 @@ input[type=checkbox] { accent-color: #244d73; }
 .part-header > div { min-width: 0; max-width: 100%; }
 .part-summary-pill { max-width: 100%; flex-wrap: wrap; gap: 12px; }
 @media (max-width: 600px) { .part-summary-pill { text-align: left; } }
+
+/* Keep the inspection result short; supporting context stays in native details. */
+.inspection-result { padding: 24px; margin-bottom: 20px; }
+.inspection-result-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+.section-eyebrow { color: var(--text-muted); font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 6px; }
+.inspection-result h2 { font-size: 1.4rem; font-weight: 700; line-height: 1.3; margin-bottom: 8px; }
+.inspection-result-heading > div > p:last-child { font-size: .9rem; color: var(--text-muted); max-width: 650px; }
+.review-progress { flex-shrink: 0; padding: 6px 10px; background: #f0f4f7; border-radius: 4px; color: var(--accent); font-size: .8rem; font-weight: 600; }
+.analysis-details { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 14px; color: var(--text-muted); font-size: .82rem; }
+summary { cursor: pointer; }
+.analysis-details summary, .part-correction summary { width: fit-content; color: var(--accent); font-weight: 600; }
+.analysis-details p, .analysis-details ul { margin-top: 12px; }
+.analysis-details ul, .photo-issues ul { padding-left: 20px; }
+.analysis-details li + li, .photo-issues li + li { margin-top: 4px; }
+.model-reference { overflow-wrap: anywhere; font-family: var(--font-mono); font-size: .75rem; }
+.photo-issues { background: #fff9ed; border-left: 3px solid #b88930; padding: 12px 16px; margin-top: 18px; font-size: .84rem; color: #73551e; }
+.photo-issues ul { margin-top: 6px; }
+.analysis-mode { display: grid; gap: 5px; flex: 1 1 300px; max-width: 500px; color: var(--text-muted); font-size: .8rem; }
+.analysis-mode > span { font-weight: 600; }
+.analysis-mode select { width: 100%; padding: 10px; font-size: .86rem; }
+.analysis-mode small { line-height: 1.5; }
+.finding-preview { display: flex; gap: 16px; align-items: center; margin: 18px 0; max-width: 560px; }
+.finding-photo { position: relative; flex: 0 0 128px; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.finding-photo img { width: 100%; display: block; }
+.finding-photo .bbox-overlay { border-width: 2px; }
+.finding-preview strong { font-size: .82rem; }
+.finding-preview p { font-size: .8rem; color: var(--text-muted); margin-top: 5px; }
+.part-correction { font-size: .8rem; margin: 12px 0 18px; }
+.part-correction .form-label { margin-top: 14px; }
+.part-correction p { margin-top: 6px; color: var(--text-muted); }
+.part-review-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; font-size: .78rem; color: var(--text-muted); }
+.part-review-fields label { display: flex; flex-direction: column; gap: 6px; }
+.part-header .part-review-fields input, .part-header .part-review-fields select { width: 100%; margin: 0; padding: 9px; font-size: .86rem; }
+.part-header > div:first-child { flex: 1 1 430px; }
+.review-check { display: flex; align-items: flex-start; gap: 9px; margin-top: 18px; color: var(--text-muted); font-size: .82rem; }
+.review-check input { margin-top: 4px; flex-shrink: 0; width: 15px; height: 15px; }
+.review-confirmation { padding: 22px 24px; margin-bottom: 20px; }
+.review-confirmation h3 { font-size: 1rem; font-weight: 600; }
+.review-confirmation p { color: var(--text-muted); font-size: .82rem; margin-top: 6px; }
+summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+@media print {
+  body, .wrap { background: #fff; padding: 0; margin: 0; max-width: none; min-height: auto; }
+  .wrap > :not(.print-modal) { display: none !important; }
+  .print-modal { position: static !important; display: block !important; background: none !important; padding: 0 !important; }
+  #pdf-area { position: static; max-height: none !important; max-width: none !important; overflow: visible !important; padding: 0 !important; border-radius: 0 !important; }
+}
+@media (max-width: 600px) {
+  .inspection-result, .review-confirmation { padding: 18px; }
+  .inspection-result-heading { flex-direction: column; gap: 12px; }
+  .inspection-result h2 { font-size: 1.2rem; }
+  .part-review-fields { grid-template-columns: 1fr; }
+  .finding-preview { align-items: flex-start; gap: 12px; }
+  .finding-photo { flex-basis: 96px; }
+}

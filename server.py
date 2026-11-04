@@ -394,12 +394,15 @@ class AutoBudgetHandler(http.server.SimpleHTTPRequestHandler):
 
             images = body.get('images', [])
             vehicle_info = body.get('vehicleInfo', {}) or body.get('vehicle', {}) or {}
+            detailed = body.get('detailed', True)
             if not isinstance(images, list):
                 self.send_json_error("Field 'images' must be an array of base64 strings")
                 return
 
             try:
                 prepare_images(images)
+                if type(detailed) is not bool:
+                    raise ValueError('O modo detalhado deve ser verdadeiro ou falso.')
                 if not isinstance(vehicle_info, dict) or any(
                     not isinstance(vehicle_info.get(f, ''), str)
                     for f in ['brand', 'model', 'year', 'color']
@@ -409,7 +412,7 @@ class AutoBudgetHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_json_error(str(error), 400)
                 return
             try:
-                ai_result = analyze_local(images, vehicle_info)
+                ai_result = analyze_local(images, vehicle_info, detailed=detailed)
             except LocalVisionError as error:
                 status = 400 if error.code == 'LOCAL_IMAGE_INVALID' else 503
                 self.send_json({'success': False, 'aiPowered': False, 'analysisMode': 'error',
@@ -428,6 +431,7 @@ class AutoBudgetHandler(http.server.SimpleHTTPRequestHandler):
             response['provider'] = 'local'
             response['modelUsed'] = ai_result.get('_providerModel', '')
             response['modelChanged'] = ai_result.get('_modelChanged', False)
+            response['analysisSettings'] = ai_result.get('analysisSettings', {})
             self.send_json(response)
             return
 

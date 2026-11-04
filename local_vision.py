@@ -139,7 +139,7 @@ def parse_detections(output, geometry, threshold):
     # Bound CPU work even on unexpected/noisy outputs.
     candidates = sorted(candidates, key=lambda i: float(scores[i]), reverse=True)[:300]
     scale, xpad, ypad, width, height = geometry
-    kept = []
+    detections = []
     for index in candidates:
         cx, cy, w, h = predictions[index, :4]
         if not np.isfinite([cx, cy, w, h]).all() or w <= 0 or h <= 0:
@@ -150,9 +150,19 @@ def parse_detections(output, geometry, threshold):
             continue
         label = int(classes[index])
         box = [float(x1), float(y1), float(x2), float(y2)]
+        detections.append({'classId': label, 'score': round(float(scores[index]), 4), 'xyxy': box,
+                           'box': [round(float(y1 / height * 100), 2), round(float(x1 / width * 100), 2),
+                                   round(float(y2 / height * 100), 2), round(float(x2 / width * 100), 2)]})
+    return suppress_detections(detections)
+
+
+def suppress_detections(detections):
+    kept = []
+    for detection in sorted(detections, key=lambda item: item['score'], reverse=True):
+        x1, y1, x2, y2 = detection['xyxy']
         suppressed = False
         for previous in kept:
-            if previous['classId'] != label:
+            if previous['classId'] != detection['classId']:
                 continue
             a, b, c, d = previous['xyxy']
             intersection = max(0, min(c, x2) - max(a, x1)) * max(0, min(d, y2) - max(b, y1))
@@ -161,24 +171,48 @@ def parse_detections(output, geometry, threshold):
                 suppressed = True
                 break
         if not suppressed:
-            kept.append({'classId': label, 'score': round(float(scores[index]), 4), 'xyxy': box,
-                         'box': [round(float(y1 / height * 100), 2), round(float(x1 / width * 100), 2),
-                                 round(float(y2 / height * 100), 2), round(float(x2 / width * 100), 2)]})
+            kept.append(detection)
         if len(kept) >= 20:
             break
     return kept
 
 
-def analyze_local(images, vehicle_hint=None):
+def detect_photo(session, image, threshold, detailed):
+    """Run a full view plus at most four overlapping views, sequentially on CPU."""
+    width, height = image.size
+    windows = [(0, 0, width, height)]
+    if detailed and max(image.size) > MANIFEST['input_size']:
+        crop_width, crop_height = round(width * 0.7), round(height * 0.7)
+        windows.extend((x, y, crop_width, crop_height)
+                       for y in [0, height - crop_height] for x in [0, width - crop_width])
+    detections = []
+    for x, y, w, h in windows:
+        tensor, geometry = letterbox(image.crop((x, y, x + w, y + h)))
+        output = session.run(None, {session.get_inputs()[0].name: tensor})[0]
+        for detection in parse_detections(output, geometry, threshold):
+            a, b, c, d = detection['xyxy']
+            # Crop boundaries can turn one part into several fragments. Leave those
+            # to the full view or another overlapping crop; never merge across photos.
+            if ((x > 0 and a < 8) or (y > 0 and b < 8) or
+                    (x + w < width and c > w - 8) or (y + h < height and d > h - 8)):
+                continue
+            detection['xyxy'] = [a + x, b + y, c + x, d + y]
+            detection['box'] = [round((b + y) / height * 100, 2), round((a + x) / width * 100, 2),
+                                round((d + y) / height * 100, 2), round((c + x) / width * 100, 2)]
+            detections.append(detection)
+    return suppress_detections(detections), len(windows)
+
+
+def analyze_local(images, vehicle_hint=None, detailed=True):
     if not _lock.acquire(timeout=1):
         raise LocalVisionError('LOCAL_BUSY', 'O detector local está ocupado. Aguarde a análise atual terminar.')
     try:
-        return _analyze(images, vehicle_hint or {})
+        return _analyze(images, vehicle_hint or {}, detailed)
     finally:
         _lock.release()
 
 
-def _analyze(images, vehicle_hint):
+def _analyze(images, vehicle_hint, detailed):
     try:
         import PIL  # noqa: F401
         import cv2  # noqa: F401
@@ -193,6 +227,7 @@ def _analyze(images, vehicle_hint):
         raise LocalVisionError('LOCAL_CONFIG', 'LOCAL_CONFIDENCE deve estar entre 0.10 e 0.95.') from error
     parts, issues, metrics = [], [], []
     usable = False
+    inference_passes = 0
     for image_index, encoded in enumerate(images):
         image, problems, quality = decode_photo(encoded)
         metrics.append({'imageIndex': image_index, **quality, 'usable': not problems})
@@ -201,9 +236,9 @@ def _analyze(images, vehicle_hint):
             continue
         usable = True
         session = get_session()
-        tensor, geometry = letterbox(image)
-        output = session.run(None, {session.get_inputs()[0].name: tensor})[0]
-        for detection in parse_detections(output, geometry, threshold):
+        detections, passes = detect_photo(session, image, threshold, detailed)
+        inference_passes += passes
+        for detection in detections:
             part_name, damage = LABELS[detection['classId']]
             parts.append({'name': part_name, 'category': 'Sugestão do detector local',
                           'evidence': f'{damage.capitalize()} indicado na região marcada da foto {image_index + 1}. Sugestão automática, não confirmação.',
@@ -221,4 +256,6 @@ def _analyze(images, vehicle_hint):
                             'Score do detector não é uma probabilidade calibrada de acerto.',
                             'Fotos diferentes podem mostrar a mesma peça; remova itens duplicados antes de orçar.'],
             'damageAnalysis': {'summary': f'{min(len(parts), 30)} região(ões) suspeita(s) sugerida(s) pelo detector local. Confirme presencialmente.', 'parts': parts[:30]},
+            'analysisSettings': {'detailed': detailed, 'inferencePasses': inference_passes,
+                                 'confidenceThreshold': threshold},
             '_providerModel': MANIFEST['repository'], '_modelChanged': False}

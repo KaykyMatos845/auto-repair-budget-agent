@@ -313,6 +313,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState('');
   const [localStatus, setLocalStatus] = useState(null);
+  const [detailedAnalysis, setDetailedAnalysis] = useState(true);
   const [showPdf, setShowPdf] = useState(false);
   const [showAddPart, setShowAddPart] = useState(false);
   const [newPart, setNewPart] = useState({
@@ -332,6 +333,7 @@ function App() {
   });
   const reviewComplete = !loading && !analysisError && parts.length > 0 &&
     parts.every(p => p.reviewed) && reviewConfirmed;
+  const reviewedCount = parts.filter(p => p.reviewed).length;
   const reviewLabel = analysis?.analysisMode === 'demo' ? 'DEMONSTRAÇÃO — dados simulados' :
     reviewComplete ? 'Estimativa revisada pelo usuário' : 'RASCUNHO — revisão pendente';
   const requireReview = () => {
@@ -511,6 +513,7 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           images: images.map(i => i.base64),
+          detailed: detailedAnalysis,
           vehicle
         })
       });
@@ -776,7 +779,7 @@ function App() {
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '10px 16px', gap: 2 }}
                 >
                   <span style={{ fontWeight: 800, fontSize: '0.88rem', color: 'var(--text-main)' }}>{s.label}</span>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>{s.sub}</span>Remover</button>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>{s.sub}</span></button>
               ))}
             </div>
           </div>
@@ -784,7 +787,7 @@ function App() {
           {/* 2. PHOTOS UPLOAD & BOUNDING BOXES */}
           <div className="panel" style={{ padding: '20px 24px', marginBottom: 20 }}>
             <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12 }}>
-               Fotos da Avaria / Vistoria Computacional
+               Fotos do veículo
             </div>
 
             <div
@@ -867,6 +870,15 @@ function App() {
             </div>
 
             <div style={{ marginTop: 16, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+              <label className="analysis-mode">
+                <span>Leitura das fotos</span>
+                <select value={detailedAnalysis ? 'detailed' : 'quick'} disabled={loading}
+                  onChange={e => setDetailedAnalysis(e.target.value === 'detailed')}>
+                  <option value="detailed">Detalhada — foto inteira e recortes</option>
+                  <option value="quick">Rápida — somente foto inteira</option>
+                </select>
+                <small>O modo detalhado procura também em áreas ampliadas e usa mais CPU.</small>
+              </label>
               <button
                 className="btn btn-primary"
                 disabled={!images.length || loading || images.some(img => !img.base64)}
@@ -874,11 +886,6 @@ function App() {
               >
                 {loading ? (loadingMsg || 'Analisando com IA...') : 'Analisar fotos neste servidor'}
               </button>
-              {analysis && (
-                <span className="badge badge-ai">
-                  {analysis.analysisMode === 'demo' ? 'DEMONSTRAÇÃO — dados simulados' : 'Análise visual preliminar — requer revisão'}
-                </span>
-              )}
             </div>
           </div>
 
@@ -898,27 +905,41 @@ function App() {
           {analysisError && <div role="alert" className="panel" style={{ padding: 18, color: '#a73232' }}>
             Análise não concluída: {analysisError} Os itens anteriores, se houver, não são resultado desta tentativa.
           </div>}
-          <section className="panel" style={{ padding: 18, marginBottom: 20 }} aria-label="Revisão da análise">
-            <strong>{reviewLabel}</strong>
-            {analysis?.provider === 'local' && <p>Processamento local em CPU; nenhuma foto enviada a serviços de IA.</p>}
-            {analysis?.modelUsed && <p style={{ overflowWrap: 'anywhere' }}>Modelo utilizado: {analysis.modelUsed}{analysis.modelChanged ? ' — alternativa selecionada após indisponibilidade do modelo configurado.' : ''}</p>}
-            <p>Fotografe com boa luz e foco, incluindo visão geral e detalhes. Fotos não confirmam danos internos nem segurança para circulação.</p>
-            <p>Preços são referências por regras locais, sem estoque ou compatibilidade verificados. Confirme cotações, decisão de reparo e horas de serviço.</p>
-            {analysis?.damageAnalysis?.summary && <p>{analysis.damageAnalysis.summary}</p>}
-            {analysis?.imageQuality?.issues?.map((issue, i) => <p key={'q'+i}>Qualidade: {issue}</p>)}
-            {analysis?.limitations?.map((item, i) => <p key={'l'+i}>Limitação: {item}</p>)}
-            {analysis?.analysisMode === 'insufficient_images' && <p role="alert">Envie novas fotos com melhor iluminação, foco e ângulos. Nenhum dano foi confirmado.</p>}
-            {analysis?.analysisMode === 'visual' && parts.length === 0 && <p>Nenhuma região ultrapassou o limiar do detector. Isso não comprova ausência de danos.</p>}
-            <label><input type="checkbox" checked={reviewConfirmed}
-              disabled={!parts.length || !parts.every(p => p.reviewed) || !!analysisError || loading}
-              onChange={e => setReviewConfirmed(e.target.checked)} /> Revisei todos os itens, as horas, os preços e os dados do veículo.</label>
-          </section>
+          {(analysis || parts.length > 0) && <section className="panel inspection-result" aria-label="Resultado da análise">
+            <div className="inspection-result-heading">
+              <div>
+                <p className="section-eyebrow">{analysis?.analysisMode === 'demo' ? 'Demonstração · dados simulados' : 'Resultado da vistoria'}</p>
+                <h2>{analysisError ? 'A última tentativa falhou' : loading ? 'Analisando fotos…' :
+                  analysis?.analysisMode === 'insufficient_images' ? 'Precisamos de fotos melhores' :
+                  parts.length ? `${parts.length} ${parts.length === 1 ? 'item para revisar' : 'itens para revisar'}` :
+                  'Nenhuma sugestão encontrada'}</h2>
+                <p>{analysisError || loading ? 'Os itens abaixo pertencem à tentativa anterior.' :
+                  analysis?.analysisMode === 'insufficient_images' ? 'Envie fotos próximas, com boa luz e foco para tentar novamente.' :
+                  parts.length ? 'Confira as regiões marcadas. Corrija ou descarte sugestões incorretas.' :
+                  'Isso não significa ausência de danos. Envie uma foto mais próxima ou adicione um item manualmente.'}</p>
+              </div>
+              {parts.length > 0 && <span className="review-progress">{reviewedCount} de {parts.length} revisados</span>}
+            </div>
+            {!!analysis?.imageQuality?.issues?.length && <div className="photo-issues" role="status">
+              <strong>Algumas fotos não puderam ser analisadas</strong>
+              <ul>{analysis.imageQuality.issues.map((issue, i) => <li key={i}>{issue}</li>)}</ul>
+            </div>}
+            <details className="analysis-details">
+              <summary>Sobre esta análise</summary>
+              <p>São sugestões para revisão. Fotos não confirmam danos internos nem segurança para circulação.</p>
+              <p>Preços são referências estimadas. Confirme cotações, compatibilidade e horas de serviço.</p>
+              {analysis?.provider === 'local' && <p>Processamento local em CPU, sem envio das fotos a serviços de IA.
+                {analysis.analysisSettings && (analysis.analysisSettings.detailed ? ' Leitura detalhada com recortes.' : ' Leitura rápida da foto inteira.')}</p>}
+              {!!analysis?.limitations?.length && <ul>{analysis.limitations.map((item, i) => <li key={i}>{item}</li>)}</ul>}
+              {analysis?.modelUsed && <p className="model-reference">Modelo: {analysis.modelUsed}</p>}
+            </details>
+          </section>}
           {/* 4. PARTS & LABOR BREAKDOWN */}
           <div className="panel" style={{ padding: '22px 24px', marginBottom: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
               <div>
                 <h2 style={{ fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
-                   Peças Avariadas & Operações de Mão de Obra
+                   Itens do orçamento
                   <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: 4, color: 'var(--text-dim)' }}>
                     {parts.length} item(ns)
                   </span>
@@ -948,7 +969,7 @@ function App() {
               <div style={{ textAlign: 'center', padding: '36px 20px', color: 'var(--text-dim)', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)' }}>
                 <div style={{ fontSize: '2rem', marginBottom: 8 }}></div>
                 <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-muted)', marginBottom: 4 }}>Nenhuma peça adicionada ainda</div>
-                <div style={{ fontSize: '0.8rem', marginBottom: 14 }}>Carregue um exemplo acima, analise fotos com a IA ou adicione peças manualmente.</div>
+                <div style={{ fontSize: '0.8rem', marginBottom: 14 }}>Analise suas fotos ou adicione uma peça manualmente.</div>
                 <button className="btn btn-primary" onClick={() => setShowAddPart(true)}>
                    Adicionar Primeira Peça Manual
                 </button>
@@ -972,14 +993,34 @@ function App() {
                     <div>
                       <div className="part-title" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                         <span>#{pIndex + 1} {part.name}</span>
-                        <span className="part-category">• {part.category}</span>
+                        {!part.evidence && <span className="part-category">• {part.category}</span>}
                         <span className={'badge badge-' + (isRepair ? 'repair' : 'replace')}>
                           {part.actionRequired}
                         </span>
                       </div>
-                      {part.notes && <div className="part-notes">{part.evidence ? 'Sugestão: ' : ''}{part.notes}</div>}
-                      {part.evidence && <p>Foto {part.imageIndex + 1} • Sugestão do detector local; confirme a região e o tipo de dano.</p>}
-                      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                      {part.evidence && images[part.imageIndex] && <div className="finding-preview">
+                        <div className="finding-photo">
+                          <img src={images[part.imageIndex].blobUrl} alt={'Região sugerida: ' + part.name} />
+                          {getBoxStyle(part.box) && <span className="bbox-overlay" style={getBoxStyle(part.box)} />}
+                        </div>
+                        <div>
+                          <strong>Foto {part.imageIndex + 1} · região sugerida</strong>
+                          <p>{part.detectedName ? `Identificação corrigida por você. Sugestão original: ${part.detectedName}.` : 'Confira na foto se a peça e o dano correspondem à sugestão.'}</p>
+                        </div>
+                      </div>}
+                      {!part.evidence && part.notes && <p className="part-notes">{part.notes}</p>}
+                      <details className="part-correction">
+                        <summary>Corrigir identificação da peça</summary>
+                        <label className="form-label" htmlFor={'part-name-' + part.id}>Nome da peça</label>
+                        <input id={'part-name-' + part.id} className="form-inp" value={part.name}
+                          onChange={e => setParts(prev => prev.map(p => p.id === part.id ? {
+                            ...p, name: e.target.value, detectedName: p.detectedName || p.name, reviewed: false,
+                            priceSource: 'user_entered', selectedChoice: 'repair',
+                            newPrice: { price: 0 }, usedPrice: { price: 0 }
+                          } : p))} />
+                        <p>Ao mudar a peça, os preços anteriores são removidos. Informe novas cotações abaixo.</p>
+                      </details>
+                      <div className="part-review-fields">
                         {['newPrice', 'usedPrice'].map(priceKey => <label key={priceKey}>
                           {priceKey === 'newPrice' ? 'Cotação nova (R$)' : 'Cotação usada (R$)'}
                           <input type="number" min="0" step="0.01" value={part[priceKey]?.price || 0}
@@ -989,13 +1030,13 @@ function App() {
                               [priceKey]: { ...p[priceKey], price: Math.max(0, Number(e.target.value) || 0) }
                             } : p))} />
                         </label>)}
-                      </div>
-                      <label>Decisão após revisão: <select aria-label={'Decisão para ' + part.name}
+                      <label>Decisão de reparo<select aria-label={'Decisão para ' + part.name}
                         value={part.actionRequired}
                         onChange={e => setParts(prev => prev.map(p => p.id === part.id ? { ...p, actionRequired: e.target.value, reviewed: false } : p))}>
                         {['Avaliação presencial', 'Substituição', 'Recuperação', 'Pintura', 'Alinhamento'].map(action => <option key={action}>{action}</option>)}
                       </select></label>
-                      <label style={{ display: 'block' }}><input type="checkbox" checked={!!part.reviewed}
+                      </div>
+                      <label className="review-check"><input type="checkbox" checked={!!part.reviewed} disabled={!part.name.trim()}
                         onChange={e => setParts(prev => prev.map(p => p.id === part.id ? { ...p, reviewed: e.target.checked } : p))} /> Revisei a evidência, a decisão, os valores e as horas deste item</label>
                     </div>
 
@@ -1024,7 +1065,7 @@ function App() {
                         title="Excluir esta peça do orçamento"
                         onClick={() => removePart(part.id)}
                       >
-                         Excluir
+                         {part.evidence ? 'Descartar sugestão' : 'Excluir'}
                       </button>
                     </div>
                   </div>
@@ -1090,7 +1131,7 @@ function App() {
                         onClick={() => toggleChoice(part.id, 'new')}
                       >
                         <div className="price-option-header">
-                          <span className="badge badge-new"> Nova Genuína OEM</span>
+                          <span className="badge badge-new">Peça nova</span>
                           <span style={{ fontSize: '0.78rem', color: 'var(--text-dim)', fontWeight: 700 }}>
                             {part.selectedChoice === 'new' ? ' Selecionada' : 'Selecionar'}
                           </span>
@@ -1167,6 +1208,18 @@ function App() {
               );
             })}
           </div>
+
+          {parts.length > 0 && <section className="panel review-confirmation" aria-label="Revisão da análise">
+            <div>
+              <h3>{reviewComplete ? 'Orçamento revisado' : 'Concluir revisão'}</h3>
+              <p>{reviewedCount < parts.length ? `Revise os ${parts.length - reviewedCount} itens pendentes antes de finalizar.` :
+                'Confira os dados do veículo e confirme para salvar ou exportar.'}</p>
+              <p>Valores estimados, sujeitos a cotação e inspeção presencial.</p>
+            </div>
+            <label className="review-check"><input type="checkbox" checked={reviewConfirmed}
+              disabled={!parts.every(p => p.reviewed) || !!analysisError || loading}
+              onChange={e => setReviewConfirmed(e.target.checked)} /> Revisei todos os itens, as horas, os preços e os dados do veículo.</label>
+          </section>}
 
           {/* MODAL: ADD MANUAL PART */}
           {showAddPart && (
@@ -1455,7 +1508,7 @@ function App() {
 
           {/* 7. FINAL BUDGET CARD */}
           {parts.length > 0 && (
-            <div className="panel" id="pdf-area" style={{ padding: '26px 28px', marginBottom: 28, border: '2px solid var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
+            <div className="panel" style={{ padding: '26px 28px', marginBottom: 28, border: '2px solid var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
                 <div>
                   <h2 style={{ fontSize: '1.25rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1557,10 +1610,12 @@ function App() {
       {/* PDF PRINT MODAL */}
       {showPdf && (
         <div
+          className="print-modal"
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
           onClick={() => setShowPdf(false)}
         >
           <div
+            id="pdf-area" role="dialog" aria-modal="true" aria-label="Prévia do orçamento"
             style={{ background: '#fff', color: '#111', borderRadius: 14, padding: '32px 36px', maxWidth: 840, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}
             onClick={e => e.stopPropagation()}
           >
@@ -1572,10 +1627,11 @@ function App() {
                 <p style={{ fontSize: '0.8rem', color: '#5d6b7d' }}>{reviewLabel} • Valores estimados, sujeitos a cotação e inspeção presencial</p>
               </div>
               <button
+                className="no-print"
                 onClick={() => { if (requireReview()) window.print(); }}
                 style={{ background: '#244d73', color: '#fff', border: 'none', padding: '9px 18px', borderRadius: 8, cursor: 'pointer', fontWeight: 800 }}
               >
-                 Imprimir Laudo
+                 Imprimir orçamento
               </button>
             </div>
 

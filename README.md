@@ -68,10 +68,18 @@ O download usa Hugging Face apenas como repositório de arquivo, não como API d
 2. Use uma visão geral e detalhes próximos, com boa luz e foco.
 3. O OpenCV verifica iluminação, resolução e detalhes/foco. Fotos claramente
    inadequadas são recusadas e não passam pelo detector.
-4. O modelo sugere regiões suspeitas, com caixas na foto correspondente.
+4. Escolha a leitura **detalhada** (padrão) ou **rápida**. A detalhada analisa a
+   foto inteira e até quatro recortes sobrepostos para procurar detalhes que
+   podem desaparecer ao reduzir a foto. Usa mais CPU, com o mesmo modelo e limiar.
+   A rápida faz uma única leitura. Fotos de até 640 pixels não recebem recortes.
+   O modelo sugere regiões suspeitas, com caixas na foto correspondente.
 5. Preencha marca, modelo, ano e cor manualmente. Revise as sugestões, descarte
    falsos positivos e remova duplicados quando várias fotos mostrarem a mesma peça.
-6. Ajuste decisão de reparo, modalidade de compra, preços e horas. Marque a revisão
+6. Cada sugestão mostra a foto de origem. Use **Corrigir identificação da peça**
+   para ajustar o nome, ou **Descartar sugestão** se estiver incorreta. Corrigir
+   a peça zera as cotações antigas e exige nova revisão. Acrescente manualmente
+   danos que o modelo perdeu. Os detalhes do detector ficam em **Sobre esta análise**.
+7. Ajuste decisão de reparo, modalidade de compra, preços e horas. Marque a revisão
    por item e a confirmação geral antes de salvar, compartilhar ou imprimir.
 
 As amostras pré-carregadas continuam sendo **DEMONSTRAÇÃO**, com dados simulados
@@ -84,6 +92,8 @@ perito automático**: há falsos positivos e danos não detectados. O modelo nã
 reconhece riscos finos, marca/ano do carro, defeitos mecânicos ou danos internos.
 Ausência de detecção não significa carro intacto. Não determina segurança para
 circulação nem troca versus recuperação. Leia [MODEL_CARD.md](MODEL_CARD.md).
+Os recortes podem recuperar detalhes, mas também gerar falsos positivos. Eles não
+adicionam classes ao modelo nem garantem precisão profissional.
 
 Os preços iniciais são referências estimadas por regras locais, sem estoque,
 compatibilidade ou procedência verificados. A IA não calcula preços nem horas de
