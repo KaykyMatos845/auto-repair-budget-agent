@@ -20,5 +20,6 @@ RUN mkdir -p /app/public && chmod 755 /app/models /app/public
 ENV PORT=5000 PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 LOCAL_MODEL_DIR=/app/models LOCAL_PRELOAD=1
 USER 65534:65534
 EXPOSE 5000
+STOPSIGNAL SIGINT
 HEALTHCHECK --interval=15s --timeout=5s --start-period=45s --retries=3 CMD python -c "import json,urllib.request; assert json.load(urllib.request.urlopen('http://127.0.0.1:5000/api/health', timeout=3))['modelLoaded']"
 CMD ["python", "server.py"]
