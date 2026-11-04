@@ -6,15 +6,17 @@ services:
     image: ${BACKEND_IMAGE:?Set BACKEND_IMAGE to a shared registry image with version tag}
     environment:
       PORT: '5000'
-      AI_PROVIDER: ${AI_PROVIDER:-openai}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4.1}
-      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      LOCAL_MODEL_DIR: /app/models
+      LOCAL_CONFIDENCE: ${LOCAL_CONFIDENCE:-0.60}
+    volumes:
+      - type: bind
+        source: ${LOCAL_MODEL_HOST_DIR:-/opt/autobudget/models}
+        target: /app/models
+        read_only: true
     networks:
       - autobudget-net
     healthcheck:
-      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/api/health', timeout=3)"]
+      test: [CMD, python, -c, "import json,urllib.request; assert json.load(urllib.request.urlopen('http://127.0.0.1:5000/api/health', timeout=3))['modelLoaded']"]
       interval: 30s
       timeout: 5s
       start_period: 10s
@@ -25,10 +27,10 @@ services:
         max_replicas_per_node: 1
       resources:
         limits:
-          cpus: '0.50'
-          memory: 256M
+          cpus: '1.00'
+          memory: 768M
         reservations:
-          memory: 64M
+          memory: 256M
       restart_policy:
         condition: on-failure
       update_config:

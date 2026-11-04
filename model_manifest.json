@@ -1,0 +1,9 @@
+{
+  "repository": "sosa123454321/cekicin-damage-yolo11n-onnx",
+  "revision": "d1b028c3b7d7512d8da77497f283177bdb2cb86d",
+  "filename": "model.onnx",
+  "sha256": "0ff1edfd86ffb03b89de0bd5b4be1f81f83096ae1efec2ea24708dde7077f9ee",
+  "size": 10614990,
+  "license": "AGPL-3.0",
+  "input_size": 640
+}

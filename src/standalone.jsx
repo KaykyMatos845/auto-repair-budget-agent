@@ -311,11 +311,7 @@ function App() {
   useEffect(() => { setReviewConfirmed(false); }, [parts, vehicle, thirdParty, analysis, images]);
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState('');
-  const [provider, setProvider] = useState(() => localStorage.getItem('autobudget_provider') === 'gemini' ? 'gemini' : 'openai');
-  const providerLabel = provider === 'openai' ? 'OpenAI' : 'Gemini';
-  const [apiKey, setApiKey] = useState(false);
-  const [showKeyModal, setShowKeyModal] = useState(false);
-  const [keyInput, setKeyInput] = useState(() => sessionStorage.getItem('autobudget_key_' + provider) || '');
+  const [localStatus, setLocalStatus] = useState(null);
   const [showPdf, setShowPdf] = useState(false);
   const [showAddPart, setShowAddPart] = useState(false);
   const [newPart, setNewPart] = useState({
@@ -345,32 +341,8 @@ function App() {
   const fileRef = useRef();
 
   useEffect(() => {
-    let active = true;
-    const saved = sessionStorage.getItem('autobudget_key_' + provider) || '';
-    setKeyInput(saved);
-    setApiKey(!!saved);
-    fetch('/api/health').then(r => r.json()).then(data => {
-      if (active) setApiKey(!!saved || !!data.providers?.[provider]?.configured);
-    }).catch(() => {});
-    return () => { active = false; };
-  }, [provider]);
-
-  const changeProvider = (value) => {
-    setProvider(value);
-    localStorage.setItem('autobudget_provider', value);
-  };
-
-  const handleSaveKey = async () => {
-    const k = (keyInput || '').trim();
-    if (!k) {
-      alert('Informe sua chave de API do provedor selecionado.');
-      return;
-    }
-    sessionStorage.setItem('autobudget_key_' + provider, k);
-    setApiKey(true);
-    setShowKeyModal(false);
-    alert('Chave salva nesta sessão. A conexão será verificada ao analisar as fotos.');
-  };
+    fetch('/api/health').then(r => r.json()).then(setLocalStatus).catch(() => {});
+  }, []);
 
   const setVField = (field, value) => {
     setVehicle(prev => ({ ...prev, [field]: value }));
@@ -529,19 +501,16 @@ function App() {
     setLoading(true);
     setLoadingMsg('Analisando danos externos visíveis...');
     try {
-      const savedKey = sessionStorage.getItem('autobudget_key_' + provider) || keyInput || '';
       const resp = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           images: images.map(i => i.base64),
-          vehicle,
-          provider,
-          apiKey: savedKey
+          vehicle
         })
       });
       const data = await resp.json();
-      if (!resp.ok) throw new Error((data.error || 'A IA não concluiu a análise. Tente novamente.') + (data.code ? ' (Código: ' + data.code + ')' : ''));
+      if (!resp.ok) throw new Error((data.error || 'O detector local não concluiu a análise. Tente novamente.') + (data.code ? ' (Código: ' + data.code + ')' : ''));
       if (data.error) throw new Error(data.error);
 
       // AUTO-FILL VEHICLE DATA IDENTIFIED BY AI
@@ -572,6 +541,7 @@ function App() {
     } finally {
       setLoading(false);
       setLoadingMsg('');
+      fetch('/api/health').then(r => r.json()).then(setLocalStatus).catch(() => {});
     }
   };
 
@@ -673,40 +643,7 @@ function App() {
           <a href="/slides.html" target="_blank" rel="noopener noreferrer" className="btn btn-ghost" style={{ textDecoration: 'none', borderColor: 'rgba(36,77,115,0.4)', color: '#244d73' }} title="Abrir slides de apresentação do projeto">
              Slides
           </a>
-          {apiKey === false && (
-            <button
-              className="badge"
-              onClick={() => setShowKeyModal(true)}
-              style={{
-                cursor: 'pointer',
-                background: 'rgba(177,62,62,0.18)',
-                color: 'var(--danger-light)',
-                border: '1px solid rgba(177,62,62,0.4)',
-                padding: '6px 12px',
-                fontWeight: 700,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6
-              }}
-              title="Configurar provedor e chave de API">
-              {providerLabel} • Configurar API
-            </button>
-          )}
-          {apiKey === true && (
-            <button
-              className="badge badge-ai"
-              onClick={() => setShowKeyModal(true)}
-              style={{
-                cursor: 'pointer',
-                padding: '6px 12px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6
-              }}
-              title="Configurar provedor e chave de API">
-              {providerLabel} • Configurar API
-            </button>
-          )}
+          <span className="badge badge-ai">Análise local • CPU</span>
         </div>
       </header>
 
@@ -822,7 +759,7 @@ function App() {
           <div className="panel" style={{ padding: '18px 22px', marginBottom: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                 Carregar Vistoria Rápida de Exemplo
+                 Carregar exemplo simulado (demonstração)
               </div>
               <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: '0.72rem' }} onClick={newInspection}>
                  Limpar Campos
@@ -856,7 +793,7 @@ function App() {
             >
               <div style={{ fontSize: '2.2rem', marginBottom: 6 }}></div>
               <div style={{ fontWeight: 800, fontSize: '0.95rem', marginBottom: 4 }}>Selecione até 4 fotos: visão geral, lados e detalhes dos danos</div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Formatos: JPG, PNG, WEBP (A IA identifica automaticamente o veículo e as avarias)</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>JPG, PNG ou WebP • Até 8 MB e 24 megapixels por foto. Use imagens próximas, com boa luz e foco.</div>
               <input ref={fileRef} type="file" multiple accept="image/*" style={{ display: 'none' }} onChange={e => processFiles(e.target.files)} />
             </div>
 
@@ -885,9 +822,9 @@ function App() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <div>
                 <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                   Dados do Veículo & Cliente (Preenchidos pela IA ou Manual)
+                   Dados do Veículo e Cliente (Preenchimento manual)
                 </div>
-                <p style={{ fontSize: '0.74rem', color: 'var(--text-dim)' }}>A IA detecta automaticamente Marca, Modelo, Ano e Cor a partir das fotos</p>
+                <p style={{ fontSize: '0.74rem', color: 'var(--text-dim)' }}>Preencha marca, modelo, ano e cor. O detector local identifica somente regiões suspeitas de danos.</p>
               </div>
               <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: '0.72rem' }} onClick={newInspection}>
                  Nova Vistoria
@@ -896,8 +833,8 @@ function App() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
               {[
-                ['brand', 'Marca', 'Detectada por IA ou digite'],
-                ['model', 'Modelo', 'Detectado por IA ou digite'],
+                ['brand', 'Marca', 'Informe a marca'],
+                ['model', 'Modelo', 'Informe o modelo'],
                 ['year', 'Ano', 'Ex: 2021'],
                 ['plate', 'Placa', 'Ex: ABC-1234'],
                 ['color', 'Cor', 'Ex: Prata'],
@@ -933,7 +870,7 @@ function App() {
                 disabled={!images.length || loading || images.some(img => !img.base64)}
                 onClick={analyze}
               >
-                {loading ? (loadingMsg || 'Analisando com IA...') : 'Analisar fotos com ' + providerLabel}
+                {loading ? (loadingMsg || 'Analisando com IA...') : 'Analisar fotos neste servidor'}
               </button>
               {analysis && (
                 <span className="badge badge-ai">
@@ -943,20 +880,27 @@ function App() {
             </div>
           </div>
 
+          {localStatus && (!localStatus.dependenciesInstalled || !localStatus.modelInstalled) &&
+            <section className="panel" style={{ padding: 18, marginBottom: 20 }} aria-label="Instalação do detector">
+              <strong>Prepare o detector local uma vez</strong>
+              <p>Na pasta do projeto, com o ambiente Python ativo:</p>
+              <pre style={{ overflowX: 'auto' }}>python -m pip install -r requirements.txt{'\n'}python scripts/download_model.py</pre>
+              <p>O download inicial usa internet. Depois, as análises funcionam sem API de IA ou chave.</p>
+            </section>}
           {analysisError && <div role="alert" className="panel" style={{ padding: 18, color: '#a73232' }}>
             Análise não concluída: {analysisError} Os itens anteriores, se houver, não são resultado desta tentativa.
           </div>}
           <section className="panel" style={{ padding: 18, marginBottom: 20 }} aria-label="Revisão da análise">
             <strong>{reviewLabel}</strong>
-            {analysis?.provider && <p>Provedor: {analysis.provider === 'openai' ? 'OpenAI' : 'Gemini'}</p>}
-            {analysis?.modelUsed && <p>Modelo utilizado: {analysis.modelUsed}{analysis.modelChanged ? ' — alternativa selecionada após indisponibilidade do modelo configurado.' : ''}</p>}
+            {analysis?.provider === 'local' && <p>Processamento local em CPU; nenhuma foto enviada a serviços de IA.</p>}
+            {analysis?.modelUsed && <p style={{ overflowWrap: 'anywhere' }}>Modelo utilizado: {analysis.modelUsed}{analysis.modelChanged ? ' — alternativa selecionada após indisponibilidade do modelo configurado.' : ''}</p>}
             <p>Fotografe com boa luz e foco, incluindo visão geral e detalhes. Fotos não confirmam danos internos nem segurança para circulação.</p>
             <p>Preços são referências por regras locais, sem estoque ou compatibilidade verificados. Confirme cotações, decisão de reparo e horas de serviço.</p>
             {analysis?.damageAnalysis?.summary && <p>{analysis.damageAnalysis.summary}</p>}
             {analysis?.imageQuality?.issues?.map((issue, i) => <p key={'q'+i}>Qualidade: {issue}</p>)}
             {analysis?.limitations?.map((item, i) => <p key={'l'+i}>Limitação: {item}</p>)}
             {analysis?.analysisMode === 'insufficient_images' && <p role="alert">Envie novas fotos com melhor iluminação, foco e ângulos. Nenhum dano foi confirmado.</p>}
-            {analysis?.analysisMode === 'visual' && parts.length === 0 && <p>Nenhum dano visível foi identificado. Isso não comprova ausência de danos.</p>}
+            {analysis?.analysisMode === 'visual' && parts.length === 0 && <p>Nenhuma região ultrapassou o limiar do detector. Isso não comprova ausência de danos.</p>}
             <label><input type="checkbox" checked={reviewConfirmed}
               disabled={!parts.length || !parts.every(p => p.reviewed) || !!analysisError || loading}
               onChange={e => setReviewConfirmed(e.target.checked)} /> Revisei todos os itens, as horas, os preços e os dados do veículo.</label>
@@ -1025,8 +969,8 @@ function App() {
                           {part.actionRequired}
                         </span>
                       </div>
-                      {part.notes && <div className="part-notes">{part.evidence ? 'Evidência: ' : ''}{part.notes}</div>}
-                      {part.evidence && <p>Foto {part.imageIndex + 1} • Achado visual, sem diagnóstico de danos internos.</p>}
+                      {part.notes && <div className="part-notes">{part.evidence ? 'Sugestão: ' : ''}{part.notes}</div>}
+                      {part.evidence && <p>Foto {part.imageIndex + 1} • Sugestão do detector local; confirme a região e o tipo de dano.</p>}
                       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                         {['newPrice', 'usedPrice'].map(priceKey => <label key={priceKey}>
                           {priceKey === 'newPrice' ? 'Cotação nova (R$)' : 'Cotação usada (R$)'}
@@ -1727,99 +1671,6 @@ function App() {
         </div>
       )}
 
-      {/* MODAL CONFIGURAÇÃO DE CHAVE GEMINI */}
-      {showKeyModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.85)',
-          backdropFilter: 'blur(6px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 99999,
-          padding: 20
-        }}>
-          <div style={{
-            background: 'var(--card-bg)',
-            border: '1px solid rgba(36,77,115,0.3)',
-            borderRadius: 16,
-            maxWidth: 540,
-            width: '100%',
-            padding: 24,
-            boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
-            color: 'var(--text-main)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
-                Configurar análise de imagens
-              </h3>
-              <button
-                onClick={() => setShowKeyModal(false)}
-                style={{ background: 'transparent', border: 'none', color: '#526174', fontSize: '1.4rem', cursor: 'pointer' }}>Fechar</button>
-            </div>
-
-            <p style={{ fontSize: '0.88rem', color: '#526174', lineHeight: 1.5, marginBottom: 16 }}>
-              Selecione o serviço que analisará as fotos. As imagens serão enviadas ao provedor escolhido. A chave fica nesta sessão do navegador; você também pode configurá-la no servidor.
-              {provider === 'openai' && <span> A API OpenAI exige faturamento próprio. A assinatura do ChatGPT não inclui créditos da API.</span>}
-            </p>
-
-            <div style={{ marginBottom: 16 }}>
-              <label className="form-label" htmlFor="ai-provider">Provedor de análise</label>
-              <select id="ai-provider" className="form-inp" value={provider} onChange={e => changeProvider(e.target.value)}>
-                <option value="openai">OpenAI</option><option value="gemini">Google Gemini</option>
-              </select>
-              <a href={provider === 'openai' ? 'https://platform.openai.com/api-keys' : 'https://aistudio.google.com/api-keys'} target="_blank" rel="noopener noreferrer">Criar chave no provedor</a>
-            </div>
-            <div style={{ marginBottom: 16 }}>
-              <label htmlFor="ai-key" style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#244d73', marginBottom: 6 }}>
-                Chave da API {providerLabel}
-              </label>
-              <input
-                id="ai-key"
-                type="password"
-                autoComplete="off"
-                value={keyInput}
-                onChange={e => setKeyInput(e.target.value)}
-                placeholder="Cole a chave do provedor selecionado"
-                style={{
-                  width: '100%',
-                  background: '#ffffff',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  borderRadius: 8,
-                  padding: '12px 14px',
-                  color: 'var(--text-main)',
-                  fontSize: '0.9rem',
-                  fontFamily: 'monospace'
-                }}
-              />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-              <button
-                onClick={() => setShowKeyModal(false)}
-                className="btn btn-ghost"
-                style={{ padding: '8px 16px', borderRadius: 8, cursor: 'pointer' }}>
-                Cancelar
-              </button>
-              <button
-                onClick={handleSaveKey}
-                className="btn btn-primary"
-                style={{
-                  background: 'var(--accent)',
-                  color: '#fff',
-                  fontWeight: 800,
-                  border: 'none',
-                  padding: '8px 20px',
-                  borderRadius: 8,
-                  cursor: 'pointer'
-                }}>
-                 Salvar chave nesta sessão
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );

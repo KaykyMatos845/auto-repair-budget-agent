@@ -139,7 +139,7 @@ def test_server_health():
     print(f"\n{BOLD}{CYAN}━━━ Suite 1: Saúde do Servidor ━━━{RESET}")
     status, data, lat = get('/api/health')
     passed = status == 200 and isinstance(data, dict) and data.get('status') == 'ok'
-    detail = f"geminiKeyConfigured={data.get('geminiKeyConfigured')}" if isinstance(data, dict) else str(data)[:80]
+    detail = f"motor={data.get('provider')}" if isinstance(data, dict) else str(data)[:80]
     log_result("GET /api/health → 200 OK com status=ok", passed, detail, lat)
 
     status, _, lat = get('/')
@@ -200,7 +200,7 @@ def test_search_parts_invalid():
                f"HTTP {s} — servidor sobreviveu", lat)
 
 def visual_outcome(status, data):
-    # Distinguish actual AI success from an explicit provider error; never accept synthetic success.
+    # Distinguish actual local success from an explicit runtime error; never accept synthetic success.
     return isinstance(data, dict) and (
         (status == 200 and data.get('success') and data.get('aiPowered') is True) or
         (status == 503 and data.get('success') is False and data.get('analysisMode') == 'error'))
@@ -210,7 +210,7 @@ def test_analyze_damage():
     print('\nAnálise visual: sem fallback silencioso')
     for vehicle in [{"brand": "Honda", "model": "Civic", "year": "2021"}, {}]:
         s, d, lat = post('/api/analyze-damage', {"images": [TINY_PNG], "vehicleInfo": vehicle}, timeout=60)
-        log_result('Foto → IA real ou erro explícito (sem IA validada em caso de erro)', visual_outcome(s, d), f'HTTP {s}', lat)
+        log_result('Foto → análise local ou erro explícito', visual_outcome(s, d), f'HTTP {s}', lat)
     for body in [{"images": []}, {"vehicleInfo": {}}]:
         s, d, lat = post('/api/analyze-damage', body)
         log_result('Sem fotos → 400, sem diagnóstico inventado', s == 400 and not d.get('success'), f'HTTP {s}', lat)
