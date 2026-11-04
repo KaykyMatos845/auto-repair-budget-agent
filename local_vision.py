@@ -1,7 +1,8 @@
 """Local-only CPU car-damage proposals, with image quality checks and class-wise NMS."""
 import base64
 import hashlib
-import importlib.util
+import importlib
+from functools import lru_cache
 import io
 import json
 import os
@@ -41,13 +42,40 @@ def model_path():
     return Path(os.environ.get('LOCAL_MODEL_DIR', ROOT / 'models')) / MANIFEST['filename']
 
 
+@lru_cache(maxsize=1)
+def dependency_issues():
+    """Import native modules too: an installed wheel can still have broken DLLs."""
+    issues = []
+    for name in ['numpy', 'PIL.Image', 'cv2', 'onnxruntime']:
+        try:
+            importlib.import_module(name)
+        except Exception as error:
+            issues.append({'module': name,
+                           'kind': 'missing' if isinstance(error, ModuleNotFoundError) else 'load',
+                           'detail': str(error)[:600]})
+    return issues
+
+
+def require_dependencies():
+    issues = dependency_issues()
+    if issues:
+        for issue in issues:
+            print(f"[Dependência {issue['module']}] {issue['detail']}", flush=True)
+        modules = ', '.join(issue['module'] for issue in issues)
+        code = 'LOCAL_RUNTIME_LOAD' if any(issue['kind'] == 'load' for issue in issues) else 'LOCAL_DEPENDENCIES'
+        raise LocalVisionError(code, f'O ambiente Python não conseguiu carregar: {modules}. '
+                               'Feche o servidor e inicie com npm start para preparar o ambiente correto. '
+                               'Se persistir, confira o motivo no terminal.')
+
+
 def local_health():
-    dependencies = all(importlib.util.find_spec(name) is not None for name in ['cv2', 'PIL', 'numpy', 'onnxruntime'])
+    issues = dependency_issues()
     try:
         installed = model_path().is_file()
     except OSError:
         installed = False
-    return {'status': 'ok', 'provider': 'local', 'dependenciesInstalled': dependencies,
+    return {'status': 'ok', 'provider': 'local', 'dependenciesInstalled': not issues,
+            'dependencyIssues': [{'module': issue['module'], 'kind': issue['kind']} for issue in issues],
             'modelInstalled': installed, 'modelLoaded': _session is not None,
             'modelName': MANIFEST['repository'], 'networkRequiredForAnalysis': False,
             'note': 'Presença de arquivo não comprova integridade; verificação ocorre ao carregar.'}
@@ -57,10 +85,8 @@ def get_session():
     global _session
     if _session is not None:
         return _session
-    try:
-        import onnxruntime as ort
-    except ImportError as error:
-        raise LocalVisionError('LOCAL_DEPENDENCIES', 'Instale as bibliotecas: python -m pip install -r requirements.txt') from error
+    require_dependencies()
+    import onnxruntime as ort
     path = model_path()
     try:
         if not path.is_file():
@@ -213,12 +239,7 @@ def analyze_local(images, vehicle_hint=None, detailed=True):
 
 
 def _analyze(images, vehicle_hint, detailed):
-    try:
-        import PIL  # noqa: F401
-        import cv2  # noqa: F401
-        import numpy  # noqa: F401
-    except ImportError as error:
-        raise LocalVisionError('LOCAL_DEPENDENCIES', 'Instale as bibliotecas: python -m pip install -r requirements.txt') from error
+    require_dependencies()
     try:
         threshold = float(os.environ.get('LOCAL_CONFIDENCE', '0.60'))
         if not 0.1 <= threshold <= 0.95:

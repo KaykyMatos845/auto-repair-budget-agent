@@ -71,6 +71,36 @@ class ContractTests(unittest.TestCase):
 
 
 class ImageAndInferenceTests(unittest.TestCase):
+    def test_installed_native_module_with_dll_error_is_not_healthy(self):
+        def import_module(name):
+            if name == 'cv2':
+                raise ImportError('DLL load failed: module could not be found')
+            return Mock()
+        vision.dependency_issues.cache_clear()
+        try:
+            with patch.object(vision.importlib, 'import_module', side_effect=import_module):
+                self.assertFalse(vision.local_health()['dependenciesInstalled'])
+                with self.assertRaises(vision.LocalVisionError) as error:
+                    vision.require_dependencies()
+            self.assertEqual(error.exception.code, 'LOCAL_RUNTIME_LOAD')
+            self.assertIn('npm start', str(error.exception))
+        finally:
+            vision.dependency_issues.cache_clear()
+
+    def test_missing_module_reports_dependency_error(self):
+        def import_module(name):
+            if name == 'onnxruntime':
+                raise ModuleNotFoundError("No module named 'onnxruntime'")
+            return Mock()
+        vision.dependency_issues.cache_clear()
+        try:
+            with patch.object(vision.importlib, 'import_module', side_effect=import_module):
+                with self.assertRaises(vision.LocalVisionError) as error:
+                    vision.require_dependencies()
+            self.assertEqual(error.exception.code, 'LOCAL_DEPENDENCIES')
+        finally:
+            vision.dependency_issues.cache_clear()
+
     def test_decode_corrupt_payload(self):
         with self.assertRaises(vision.LocalVisionError):
             vision.decode_photo(base64.b64encode(b'\x89PNG\r\n\x1a\nnot-a-real-png').decode())

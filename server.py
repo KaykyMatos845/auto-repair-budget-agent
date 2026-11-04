@@ -472,7 +472,11 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
 if __name__ == '__main__':
     if os.environ.get('LOCAL_PRELOAD') == '1':
-        get_session()
+        try:
+            get_session()
+        except LocalVisionError as error:
+            print(f'Não foi possível iniciar o detector ({error.code}): {error}', file=sys.stderr)
+            sys.exit(1)
     os.makedirs(PUBLIC_DIR, exist_ok=True)
     print("=" * 58)
     print("  AutoBudget AI -- Servidor v2.5 (FIPE & Bounding Boxes)")
@@ -481,5 +485,12 @@ if __name__ == '__main__':
     print('  MOTOR: ONNX Runtime / CPU, sem API de IA')
     print("=" * 58)
     print()
-    with ThreadedTCPServer(('', PORT), AutoBudgetHandler) as httpd:
-        httpd.serve_forever()
+    try:
+        with ThreadedTCPServer(('', PORT), AutoBudgetHandler) as httpd:
+            httpd.serve_forever()
+    except KeyboardInterrupt:
+        print('\nServidor encerrado.')
+    except OSError as error:
+        print(f'Não foi possível abrir a porta {PORT}: {error}. '
+              'Feche o servidor anterior antes de iniciar novamente.', file=sys.stderr)
+        sys.exit(1)

@@ -897,10 +897,9 @@ function App() {
             </section>}
           {localStatus && !localStatus.connectionError && (!localStatus.dependenciesInstalled || !localStatus.modelInstalled) &&
             <section className="panel" style={{ padding: 18, marginBottom: 20 }} aria-label="Instalação do detector">
-              <strong>Prepare o detector local uma vez</strong>
-              <p>Na pasta do projeto, com o ambiente Python ativo:</p>
-              <pre style={{ overflowX: 'auto' }}>python -m pip install -r requirements.txt{'\n'}python scripts/download_model.py</pre>
-              <p>O download inicial usa internet. Depois, as análises funcionam sem API de IA ou chave.</p>
+              <strong>O ambiente de análise precisa de reparo</strong>
+              <p>Feche este servidor e execute <code>npm start</code> na pasta do projeto. No Windows, você também pode abrir <code>iniciar.bat</code>.</p>
+              <p>A inicialização usa o Python da pasta .venv e prepara bibliotecas e modelo. A primeira instalação precisa de internet.</p>
             </section>}
           {analysisError && <div role="alert" className="panel" style={{ padding: 18, color: '#a73232' }}>
             Análise não concluída: {analysisError} Os itens anteriores, se houver, não são resultado desta tentativa.

@@ -7,8 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "server": "python3 server.py",
-    "start": "python3 server.py"
+    "server": "node scripts/start.mjs --backend-only",
+    "start": "node scripts/start.mjs",
+    "check": "node scripts/start.mjs --check"
   },
   "dependencies": {
     "cors": "^2.8.5",

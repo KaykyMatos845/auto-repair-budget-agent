@@ -6,51 +6,53 @@ cobrança por análise. É necessário baixar as dependências e os pesos uma ve
 depois, a análise funciona sem internet. Links de pesquisa de peças continuam
 abrindo sites externos quando você clicar neles.
 
-## Instalar no Windows
+## Instalar e abrir no Windows
 
-Instale **Python 3.12 de 64 bits** e **Node.js 22 ou superior**. Extraia o ZIP,
-abra o terminal dentro da pasta do projeto e execute um comando por vez. Se um
-comando falhar, resolva esse erro antes de continuar.
-
-Confira primeiro `py -3.12 --version`. Se aparecer “No suitable Python runtime
-found”, instale com `winget install --exact --id Python.Python.3.12`, reabra o
-PowerShell e confira a versão novamente. A criação do ambiente deve terminar sem
-erros; depois, `Test-Path .\.venv\Scripts\python.exe` deve retornar `True`.
-
-Execute:
+Requer **Python 3.12 de 64 bits** e **Node.js 22 ou superior**. Extraia o ZIP e abra
+**iniciar.bat** com dois cliques, ou execute na pasta do projeto:
 
 ```powershell
-py -3.12 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe scripts\download_model.py
-npm ci
-npm run build
-.\.venv\Scripts\python.exe server.py
+npm start
 ```
 
-Abra **http://localhost:5000**. Para iniciar nas próximas vezes, basta executar
-`.\.venv\Scripts\python.exe server.py` na mesma pasta. Não é necessário ativar o
-ambiente no PowerShell nem alterar a política de execução.
+Na primeira abertura, o iniciador cria `.venv`, instala as bibliotecas e pacotes do
+front, gera a interface e baixa/confere o modelo. Essa preparação precisa de
+internet. O terminal só mostra o endereço do sistema depois que o detector carrega.
+Abra **http://localhost:5000** e mantenha esse terminal aberto. Front e análise
+funcionam juntos nesse endereço.
 
-Se o front abrir, mas a análise não responder, acesse
-**http://localhost:5000/api/health**. Essa página deve mostrar um JSON. Se não
-abrir, confira o terminal do Python: `npm run dev` sozinho inicia apenas o front.
-No modo de desenvolvimento, mantenha dois terminais abertos: um com o servidor
-Python acima e outro com `npm run dev`, acessando a URL indicada pelo Vite.
-No modo de produção, após o build, o Python serve front e análise juntos em 5000.
+Nas próximas vezes, use o mesmo **iniciar.bat** ou **npm start**. A instalação pronta
+é reutilizada: os pesos são conferidos e o front só é gerado novamente se seus
+arquivos mudarem. Bibliotecas ausentes ou versões divergentes são reparadas antes
+de iniciar. Ao atualizar o projeto, preserve `.venv`, `models/` e
+`.autobudget-local.json` na mesma pasta. O histórico continua no navegador.
+
+Não é necessário ativar o ambiente, executar `npm ci` ou `npm run build`
+separadamente para usar esse iniciador. O comando antigo `python server.py` usa o
+Python selecionado no terminal, que pode ser outro e não conter as bibliotecas.
+
+Se o iniciador informar que Python está ausente, instale:
+
+```powershell
+winget install --exact --id Python.Python.3.12
+```
+
+Reabra o terminal e execute `npm start` novamente. Em caso de falha de importação,
+o terminal informa o módulo e o erro real. Falhas de DLL no Windows podem exigir
+o [Microsoft Visual C++ Runtime x64](https://aka.ms/vs/17/release/vc_redist.x64.exe).
+Não confunda biblioteca instalada com biblioteca capaz de carregar.
+
+Para verificar o ambiente sem instalar ou iniciar servidor, use `npm run check`.
+Se a página abrir e a análise falhar, consulte também
+**http://localhost:5000/api/health**; o diagnóstico inclui as bibliotecas que não
+carregaram. Feche servidores de tentativas anteriores antes de iniciar de novo.
 
 ## Instalar no Linux/macOS
 
-Requer Python 3.12 e Node.js 22+. Ambiente validado: Linux x86-64, Python 3.12, CPU.
-
-```sh
-python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python scripts/download_model.py
-npm ci
-npm run build
-.venv/bin/python server.py
-```
+Requer Python 3.12 de 64 bits e Node.js 22+. Execute `npm start` na pasta do projeto.
+A preparação é a mesma, com Python em `.venv/bin/python`. Ambiente validado: Linux
+x86-64, Python 3.12, CPU. A seleção do interpretador Windows é coberta por testes e
+os wheels Windows x64 foram conferidos; não houve execução nativa em Windows/macOS.
 
 A implementação usa `CPUExecutionProvider`, sem GPU, CUDA ou PyTorch. A disponibilidade
 dos pacotes ONNX Runtime varia por sistema e arquitetura; macOS/Windows precisam de
@@ -117,7 +119,8 @@ após a análise atual. Erros de dependência, peso ausente ou integridade apare
 interface; nunca viram danos simulados.
 
 A interface atual está em `src/standalone.jsx` e `src/styles.css`. `npm run dev`
-inicia Vite em 3000, com proxy para o Python em 5000. O build de produção fica em
+inicia somente Vite em 3000, com proxy para o Python em 5000. Em outro terminal,
+`npm run server` prepara e inicia apenas o backend pela `.venv`. O build de produção fica em
 `dist/`, servido pelo Python. O tema é claro, com fontes de sistema, sem CDN de
 React, Babel ou fontes externas. Para iniciar o backend em desenvolvimento, use
 o Python do ambiente virtual, não `node server.js` (implementação legada simulada).
