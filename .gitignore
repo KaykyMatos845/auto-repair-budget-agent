@@ -1,4 +1,4 @@
-﻿__pycache__/
+__pycache__/
 *.pyc
 .env
 .DS_Store
@@ -14,3 +14,8 @@ assemble_*.py
 read_*.py
 update_*.py
 part*_v3.py
+
+node_modules/
+node_modules
+dist/
+*.log

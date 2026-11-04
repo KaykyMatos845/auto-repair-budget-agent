@@ -1,60 +1,68 @@
 version: '3.8'
 
+# Build/push images before docker stack deploy; Swarm does not build images.
 services:
   backend:
-    image: 127.0.0.1:5000/autobudget-backend:latest
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
+    image: ${BACKEND_IMAGE:?Set BACKEND_IMAGE to a shared registry image with version tag}
     environment:
-      - PORT=5000
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      PORT: '5000'
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
     networks:
       - autobudget-net
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/api/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
     deploy:
       replicas: 2
+      placement:
+        max_replicas_per_node: 1
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          memory: 64M
       restart_policy:
         condition: on-failure
       update_config:
         parallelism: 1
-        delay: 10s
+        order: stop-first
+        failure_action: rollback
 
   frontend:
-    image: 127.0.0.1:5000/autobudget-frontend:latest
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
+    image: ${FRONTEND_IMAGE:?Set FRONTEND_IMAGE to a shared registry image with version tag}
     ports:
-      - "80:80"
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: ingress
     networks:
       - autobudget-net
-    depends_on:
-      - backend
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, 'http://127.0.0.1/']
+      interval: 30s
+      timeout: 5s
+      retries: 3
     deploy:
       replicas: 2
+      placement:
+        max_replicas_per_node: 1
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 64M
+        reservations:
+          memory: 16M
       restart_policy:
         condition: on-failure
       update_config:
         parallelism: 1
-        delay: 10s
-
-  visualizer:
-    image: dockersamples/visualizer:stable
-    ports:
-      - "8080:8080"
-    stop_grace_period: 1m30s
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-    networks:
-      - autobudget-net
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager
-      restart_policy:
-        condition: on-failure
+        order: stop-first
+        failure_action: rollback
 
 networks:
   autobudget-net:
     driver: overlay
-    attachable: true

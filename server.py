@@ -16,10 +16,11 @@ if hasattr(sys.stdout, 'reconfigure'):
 
 PORT = int(os.environ.get('PORT', 5000))
 DIRECTORY = os.path.dirname(os.path.abspath(__file__))
-PUBLIC_DIR = os.path.join(DIRECTORY, 'public')
+STATIC_DIR = os.environ.get('STATIC_DIR', os.path.join(DIRECTORY, 'dist'))
+PUBLIC_DIR = STATIC_DIR if os.path.isdir(STATIC_DIR) else os.path.join(DIRECTORY, 'public')
 
-# Chave padrão de contingência decodificada dinamicamente (para evitar bloqueio de segurança do git)
-DEFAULT_BACKUP_KEY = base64.b64decode("QVEuQWI4Uk42SlA2N2JLYnJGdHE1OGNOajVnY2ZYX21va0J2TnJPRmN5VW43VWh1R3dqV3c=").decode('utf-8')
+# Credentials are supplied at runtime, never embedded in source.
+DEFAULT_BACKUP_KEY = ''
 
 def load_env():
     for env_path in [os.path.join(DIRECTORY, '.env'), '/app/.env', '.env']:
@@ -496,7 +497,7 @@ class AutoBudgetHandler(http.server.SimpleHTTPRequestHandler):
         if rel.startswith('api/'):
             return os.path.join(DIRECTORY, rel)
         if not rel or rel == 'index.html':
-            return os.path.join(DIRECTORY, 'index.html')
+            return os.path.join(STATIC_DIR, 'index.html')
         return os.path.join(PUBLIC_DIR, rel)
 
     def add_cors_headers(self):
@@ -639,7 +640,7 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
 if __name__ == '__main__':
     os.makedirs(PUBLIC_DIR, exist_ok=True)
-    key_status = f"Configurada ({GEMINI_API_KEY[:8]}...)" if GEMINI_API_KEY else "NAO configurada - crie o arquivo .env"
+    key_status = 'Configurada' if GEMINI_API_KEY else "NAO configurada - crie o arquivo .env"
     print("=" * 58)
     print("  AutoBudget AI -- Servidor v2.5 (FIPE & Bounding Boxes)")
     print("=" * 58)
