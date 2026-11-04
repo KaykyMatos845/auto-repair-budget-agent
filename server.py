@@ -327,10 +327,46 @@ Responda JSON com esta estrutura:
         text = ''.join(part.get('text', '') for part in candidate['content']['parts'])
         return json.loads(text), None
     except urllib.error.HTTPError as error:
-        # Never expose upstream response bodies, URLs or credential values.
+        # Extract only known machine codes; never expose bodies, URLs or credentials.
+        try:
+            details = json.loads(error.read(65536)).get('error', {}).get('details', [])
+            allowed = {'API_KEY_INVALID', 'API_KEY_EXPIRED', 'API_KEY_SERVICE_BLOCKED',
+                       'API_KEY_HTTP_REFERRER_BLOCKED', 'API_KEY_IP_ADDRESS_BLOCKED',
+                       'SERVICE_DISABLED', 'BILLING_DISABLED', 'CONSUMER_SUSPENDED'}
+            for detail in details:
+                if isinstance(detail, dict) and detail.get('reason') in allowed:
+                    return None, detail['reason']
+        except (ValueError, AttributeError, TypeError, OSError):
+            pass
         return None, f'HTTP_{error.code}'
-    except (OSError, ValueError, KeyError, IndexError, TypeError):
+    except (TimeoutError, urllib.error.URLError, OSError):
+        return None, 'CONNECTION_ERROR'
+    except (ValueError, KeyError, IndexError, TypeError):
         return None, 'INVALID_OR_UNAVAILABLE_RESPONSE'
+
+
+def vision_error_message(code):
+    messages = {
+        'NO_API_KEY': 'Configure uma chave da Gemini API criada no Google AI Studio.',
+        'API_KEY_INVALID': 'O Google rejeitou a chave como inválida. Gere uma nova chave da Gemini API no Google AI Studio.',
+        'API_KEY_EXPIRED': 'A chave expirou. Gere uma nova chave da Gemini API no Google AI Studio.',
+        'HTTP_401': 'O Google recusou a autenticação. Confira a chave da Gemini API.',
+        'HTTP_403': 'O Google negou o acesso. Confira as permissões e restrições da chave e a disponibilidade da Gemini API no projeto e na sua região.',
+        'HTTP_400': 'O Google rejeitou a solicitação. Confira a chave, o modelo e as fotos enviadas.',
+        'HTTP_404': 'O modelo configurado não foi encontrado ou não está disponível para este projeto. Confira GEMINI_MODEL.',
+        'HTTP_429': 'A cota ou o limite de requisições do Google foi atingido. Confira os limites e o faturamento no Google AI Studio antes de tentar novamente.',
+        'SERVICE_DISABLED': 'A Generative Language API está desativada no projeto da chave. Ative-a no Google Cloud Console.',
+        'BILLING_DISABLED': 'O Google informou que o faturamento do projeto está desativado. Confira o projeto vinculado à chave.',
+        'CONSUMER_SUSPENDED': 'O Google informou que o projeto está suspenso. Confira a situação dele no Google Cloud Console.',
+        'API_KEY_SERVICE_BLOCKED': 'As restrições da chave bloqueiam a Generative Language API. Revise os serviços permitidos no Google Cloud Console.',
+        'API_KEY_HTTP_REFERRER_BLOCKED': 'A chave está restrita a sites, mas a chamada parte do backend Python. Use uma chave apropriada para o servidor.',
+        'API_KEY_IP_ADDRESS_BLOCKED': 'As restrições de IP da chave bloqueiam o servidor atual. Revise os IPs permitidos.',
+        'MODEL_CONFIG': 'GEMINI_MODEL contém um identificador inválido.',
+        'CONNECTION_ERROR': 'Não foi possível conectar ao Google ou a chamada excedeu o tempo limite. Confira internet, proxy e firewall.',
+        'INCOMPLETE_RESPONSE': 'O Google interrompeu a resposta antes de concluir a análise. Tente fotos mais nítidas e menos imagens por vez.',
+        'INVALID_OR_UNAVAILABLE_RESPONSE': 'A resposta do Google não pôde ser interpretada. Tente novamente; se persistir, confira o modelo configurado.',
+    }
+    return messages.get(code, 'O serviço de IA está indisponível. Tente novamente mais tarde.') + ' Nenhum diagnóstico foi gerado.'
 
 
 def build_analysis_response(ai_result, vehicle_info_hint, image_count=1):
@@ -526,9 +562,7 @@ class AutoBudgetHandler(http.server.SimpleHTTPRequestHandler):
                 return
             ai_result, ai_error = call_gemini_vision(images, vehicle_info, api_key=custom_key)
             if ai_error:
-                message = ('Configure uma chave Gemini para analisar fotos. As amostras são apenas demonstração.'
-                           if ai_error == 'NO_API_KEY' else
-                           'A IA não concluiu a análise. Verifique a chave, a conexão e tente novamente. Nenhum diagnóstico foi gerado.')
+                message = vision_error_message(ai_error)
                 self.send_json({'success': False, 'aiPowered': False, 'analysisMode': 'error',
                                 'code': ai_error, 'error': message}, 503)
                 return

@@ -100,6 +100,18 @@ class VisualContractTests(unittest.TestCase):
         with patch.object(server.urllib.request, 'urlopen', side_effect=error):
             self.assertEqual(server.call_gemini_vision([PNG], api_key='test-only-key'), (None, 'HTTP_429'))
 
+    def test_provider_reason_is_allowlisted_and_explained(self):
+        payload = {'error': {'message': 'private content', 'details': [{'reason': 'API_KEY_INVALID'}]}}
+        error = urllib.error.HTTPError('https://example.invalid', 400, 'bad request', {}, io.BytesIO(json.dumps(payload).encode()))
+        with patch.object(server.urllib.request, 'urlopen', side_effect=error):
+            self.assertEqual(server.call_gemini_vision([PNG], api_key='test-only-key'), (None, 'API_KEY_INVALID'))
+        self.assertIn('inválida', server.vision_error_message('API_KEY_INVALID'))
+        self.assertIn('cota', server.vision_error_message('HTTP_429'))
+
+    def test_connection_failure_has_its_own_code(self):
+        with patch.object(server.urllib.request, 'urlopen', side_effect=urllib.error.URLError('private connection details')):
+            self.assertEqual(server.call_gemini_vision([PNG], api_key='test-only-key'), (None, 'CONNECTION_ERROR'))
+
 
 class ApiTests(unittest.TestCase):
     @classmethod

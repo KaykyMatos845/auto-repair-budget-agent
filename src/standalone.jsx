@@ -534,7 +534,7 @@ function App() {
         })
       });
       const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || 'A IA não concluiu a análise. Tente novamente.');
+      if (!resp.ok) throw new Error((data.error || 'A IA não concluiu a análise. Tente novamente.') + (data.code ? ' (Código: ' + data.code + ')' : ''));
       if (data.error) throw new Error(data.error);
 
       // AUTO-FILL VEHICLE DATA IDENTIFIED BY AI
