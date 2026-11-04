@@ -281,6 +281,56 @@ def prepare_images(images):
     return prepared
 
 
+def discover_vision_model(api_key, unavailable_model):
+    """Select from models actually listed for this credential, not guessed names."""
+    candidates = []
+    token = None
+    for _ in range(3):
+        query = {'pageSize': 1000}
+        if token:
+            query['pageToken'] = token
+        request = urllib.request.Request(
+            'https://generativelanguage.googleapis.com/v1beta/models?' + urllib.parse.urlencode(query),
+            headers={'x-goog-api-key': api_key})
+        with urllib.request.urlopen(request, timeout=10) as response:
+            listing = json.load(response)
+        if not isinstance(listing, dict) or not isinstance(listing.get('models', []), list):
+            raise ValueError('Invalid model listing')
+        for item in listing.get('models', []):
+            if not isinstance(item, dict) or not isinstance(item.get('name', ''), str):
+                continue
+            name = item.get('name', '').removeprefix('models/')
+            # Exclude speech, live, image-generation and other specialized models.
+            if (re.fullmatch(r'gemini-[A-Za-z0-9._-]+', name) and
+                    name != unavailable_model and
+                    'generateContent' in item.get('supportedGenerationMethods', []) and
+                    re.search(r'(?:^|-)(flash|pro)(?:-|$)', name) and
+                    not any(word in name for word in ['audio', 'tts', 'live', 'image', 'robotics', 'computer-use'])):
+                candidates.append(name)
+        token = listing.get('nextPageToken')
+        if not token:
+            break
+    if not candidates:
+        return None
+
+    def preference(name):
+        version = re.match(r'gemini-(\d+)(?:\.(\d+))?', name)
+        numeric = tuple(int(x or 0) for x in version.groups()) if version else (0, 0)
+        return ('preview' not in name and 'exp' not in name,
+                'flash' in name, numeric, 'lite' not in name, name)
+
+    return max(candidates, key=preference)
+
+
+def generate_visual_content(model, api_key, request_body):
+    request = urllib.request.Request(
+        f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent',
+        data=json.dumps(request_body).encode(),
+        headers={'Content-Type': 'application/json', 'x-goog-api-key': api_key})
+    with urllib.request.urlopen(request, timeout=45) as response:
+        return json.load(response)
+
+
 def call_gemini_vision(base64_images, vehicle_hint=None, api_key=None):
     active_key = api_key or get_gemini_api_key()
     if not active_key:
@@ -315,17 +365,29 @@ Responda JSON com esta estrutura:
     model = os.environ.get('GEMINI_MODEL', 'gemini-2.5-flash')
     if not re.fullmatch(r'[A-Za-z0-9._-]+', model):
         return None, 'MODEL_CONFIG'
-    url = f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent'
     try:
-        req = urllib.request.Request(url, data=json.dumps(request_body).encode(),
-                                     headers={'Content-Type': 'application/json', 'x-goog-api-key': active_key})
-        with urllib.request.urlopen(req, timeout=45) as response:
-            result = json.load(response)
+        selected_model = model
+        try:
+            result = generate_visual_content(model, active_key, request_body)
+        except urllib.error.HTTPError as error:
+            if error.code != 404:
+                raise
+            error.close()
+            selected_model = discover_vision_model(active_key, model)
+            if not selected_model:
+                return None, 'NO_COMPATIBLE_MODEL'
+            result = generate_visual_content(selected_model, active_key, request_body)
         candidate = result['candidates'][0]
         if candidate.get('finishReason') != 'STOP':
             return None, 'INCOMPLETE_RESPONSE'
         text = ''.join(part.get('text', '') for part in candidate['content']['parts'])
-        return json.loads(text), None
+        parsed = json.loads(text)
+        if not isinstance(parsed, dict):
+            return None, 'INVALID_OR_UNAVAILABLE_RESPONSE'
+        # Override provider metadata so model-generated text cannot spoof it.
+        parsed['_providerModel'] = selected_model
+        parsed['_modelChanged'] = selected_model != model
+        return parsed, None
     except urllib.error.HTTPError as error:
         # Extract only known machine codes; never expose bodies, URLs or credentials.
         try:
@@ -354,6 +416,7 @@ def vision_error_message(code):
         'HTTP_403': 'O Google negou o acesso. Confira as permissões e restrições da chave e a disponibilidade da Gemini API no projeto e na sua região.',
         'HTTP_400': 'O Google rejeitou a solicitação. Confira a chave, o modelo e as fotos enviadas.',
         'HTTP_404': 'O modelo configurado não foi encontrado ou não está disponível para este projeto. Confira GEMINI_MODEL.',
+        'NO_COMPATIBLE_MODEL': 'O modelo configurado não está disponível, e a lista retornada pelo Google não trouxe uma alternativa Gemini de uso geral com generateContent. Confira o acesso a modelos no Google AI Studio.',
         'HTTP_429': 'A cota ou o limite de requisições do Google foi atingido. Confira os limites e o faturamento no Google AI Studio antes de tentar novamente.',
         'SERVICE_DISABLED': 'A Generative Language API está desativada no projeto da chave. Ative-a no Google Cloud Console.',
         'BILLING_DISABLED': 'O Google informou que o faturamento do projeto está desativado. Confira o projeto vinculado à chave.',
@@ -571,6 +634,8 @@ class AutoBudgetHandler(http.server.SimpleHTTPRequestHandler):
             except ValueError:
                 self.send_json_error('A IA retornou uma análise sem evidências válidas. Tente novas fotos.', 502)
                 return
+            response['modelUsed'] = ai_result.get('_providerModel', '')
+            response['modelChanged'] = ai_result.get('_modelChanged', False)
             self.send_json(response)
             return
 

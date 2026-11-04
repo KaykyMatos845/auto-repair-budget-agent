@@ -42,6 +42,13 @@ O histórico permanece no navegador: não há banco de dados compartilhado.
 ## Análise visual e revisão
 
 O modelo padrão é `gemini-2.5-flash`; configure `GEMINI_MODEL` se necessário.
+Se esse modelo responder HTTP 404, o backend consulta a lista de modelos da
+mesma chave e tenta uma única alternativa Gemini de uso geral com `generateContent`.
+Prioriza versões estáveis e Flash, excluindo modelos especializados em áudio,
+geração de imagem e uso de computador. A lista não garante suporte a toda combinação
+de entrada: a chamada e a validação do resultado ainda precisam ter sucesso.
+A interface mostra o modelo efetivamente utilizado e quando houve substituição.
+Se não houver alternativa ou a nova tentativa falhar, retorna erro explícito.
 Envie 1 a 4 fotos JPEG, PNG ou WebP, até 8 MB por foto, com visão geral e detalhes,
 boa iluminação e foco. A qualidade é avaliada pelo próprio modelo: não é uma
 medição independente de nitidez ou luminosidade.

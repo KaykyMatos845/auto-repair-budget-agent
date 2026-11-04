@@ -942,6 +942,7 @@ function App() {
           </div>}
           <section className="glass-panel" style={{ padding: 18, marginBottom: 20 }} aria-label="Revisão da análise">
             <strong>{reviewLabel}</strong>
+            {analysis?.modelUsed && <p>Modelo utilizado: {analysis.modelUsed}{analysis.modelChanged ? ' — alternativa selecionada após indisponibilidade do modelo configurado.' : ''}</p>}
             <p>Fotografe com boa luz e foco, incluindo visão geral e detalhes. Fotos não confirmam danos internos nem segurança para circulação.</p>
             <p>Preços são referências por regras locais, sem estoque ou compatibilidade verificados. Confirme cotações, decisão de reparo e horas de serviço.</p>
             {analysis?.damageAnalysis?.summary && <p>{analysis.damageAnalysis.summary}</p>}

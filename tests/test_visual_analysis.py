@@ -24,6 +24,11 @@ def observation():
 
 
 class VisualContractTests(unittest.TestCase):
+    def setUp(self):
+        model_env = patch.dict(server.os.environ, {'GEMINI_MODEL': 'gemini-2.5-flash'})
+        model_env.start()
+        self.addCleanup(model_env.stop)
+
     def test_missing_key_does_not_call_provider(self):
         with patch.object(server, 'get_gemini_api_key', return_value=''), patch.object(server.urllib.request, 'urlopen') as remote:
             self.assertEqual(server.call_gemini_vision([PNG]), (None, 'NO_API_KEY'))
@@ -88,6 +93,9 @@ class VisualContractTests(unittest.TestCase):
         with patch.object(server.urllib.request, 'urlopen', return_value=response) as remote:
             result, error = server.call_gemini_vision([PNG], api_key='test-only-key')
         self.assertIsNone(error)
+        self.assertEqual(result['_providerModel'], 'gemini-2.5-flash')
+        self.assertFalse(result.pop('_modelChanged'))
+        result.pop('_providerModel')
         self.assertEqual(result, observation())
         request = remote.call_args.args[0]
         self.assertNotIn('test-only-key', request.full_url)
@@ -111,6 +119,40 @@ class VisualContractTests(unittest.TestCase):
     def test_connection_failure_has_its_own_code(self):
         with patch.object(server.urllib.request, 'urlopen', side_effect=urllib.error.URLError('private connection details')):
             self.assertEqual(server.call_gemini_vision([PNG], api_key='test-only-key'), (None, 'CONNECTION_ERROR'))
+
+    def test_missing_model_discovers_and_retries_once(self):
+        missing = urllib.error.HTTPError('https://example.invalid', 404, 'missing', {}, io.BytesIO(b''))
+        listing = {'models': [
+            {'name': 'models/gemini-2.5-flash', 'supportedGenerationMethods': ['generateContent']},
+            {'name': 'models/gemini-3.1-flash', 'supportedGenerationMethods': ['generateContent']},
+            {'name': 'models/gemini-3.1-flash-tts', 'supportedGenerationMethods': ['generateContent']},
+            {'name': 'models/gemini-9-pro', 'supportedGenerationMethods': ['embedContent']}]}
+        answer = {'candidates': [{'finishReason': 'STOP', 'content': {'parts': [{'text': json.dumps(observation())}]}}]}
+        with patch.object(server.urllib.request, 'urlopen', side_effect=[
+            missing, io.BytesIO(json.dumps(listing).encode()), io.BytesIO(json.dumps(answer).encode())
+        ]) as remote:
+            result, error = server.call_gemini_vision([PNG], api_key='test-only-key')
+        self.assertIsNone(error)
+        self.assertEqual(result['_providerModel'], 'gemini-3.1-flash')
+        self.assertTrue(result['_modelChanged'])
+        self.assertEqual(remote.call_count, 3)
+        self.assertIn('/v1beta/models?', remote.call_args_list[1].args[0].full_url)
+        self.assertIn('/gemini-3.1-flash:generateContent', remote.call_args_list[2].args[0].full_url)
+
+    def test_no_available_model_does_not_guess_or_simulate(self):
+        missing = urllib.error.HTTPError('https://example.invalid', 404, 'missing', {}, io.BytesIO(b''))
+        with patch.object(server.urllib.request, 'urlopen', side_effect=[missing, io.BytesIO(b'{"models": []}')]) as remote:
+            self.assertEqual(server.call_gemini_vision([PNG], api_key='test-only-key'), (None, 'NO_COMPATIBLE_MODEL'))
+        self.assertEqual(remote.call_count, 2)
+
+    def test_model_discovery_reads_next_page(self):
+        first = {'models': [], 'nextPageToken': 'next'}
+        second = {'models': [{'name': 'models/gemini-3-flash', 'supportedGenerationMethods': ['generateContent']}]}
+        with patch.object(server.urllib.request, 'urlopen', side_effect=[
+            io.BytesIO(json.dumps(first).encode()), io.BytesIO(json.dumps(second).encode())
+        ]) as remote:
+            self.assertEqual(server.discover_vision_model('test-only-key', 'old'), 'gemini-3-flash')
+        self.assertIn('pageToken=next', remote.call_args.args[0].full_url)
 
 
 class ApiTests(unittest.TestCase):
