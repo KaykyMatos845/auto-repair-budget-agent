@@ -155,6 +155,47 @@ class VisualContractTests(unittest.TestCase):
         self.assertIn('pageToken=next', remote.call_args.args[0].full_url)
 
 
+class OpenAIVisionTests(unittest.TestCase):
+    def test_request_images_json_and_no_storage(self):
+        fixture = {'status': 'completed', 'output': [{'type': 'message', 'content': [{'type': 'output_text', 'text': json.dumps(observation())}]}]}
+        with patch.dict(server.os.environ, {'OPENAI_MODEL': 'gpt-4.1'}), patch.object(server.urllib.request, 'urlopen', return_value=io.BytesIO(json.dumps(fixture).encode())) as remote:
+            result, error = server.call_openai_vision([PNG], api_key='test-only-key')
+        self.assertIsNone(error)
+        self.assertEqual(result['_providerModel'], 'gpt-4.1')
+        request = remote.call_args.args[0]
+        self.assertEqual(request.full_url, 'https://api.openai.com/v1/responses')
+        body = json.loads(request.data)
+        self.assertFalse(body['store'])
+        self.assertEqual(body['text']['format']['type'], 'json_object')
+        self.assertTrue(body['input'][0]['content'][1]['image_url'].startswith('data:image/png;base64,'))
+        self.assertEqual(request.get_header('Authorization'), 'Bearer test-only-key')
+
+    def test_missing_key_has_no_remote_call(self):
+        with patch.dict(server.os.environ, {'OPENAI_API_KEY': ''}), patch.object(server.urllib.request, 'urlopen') as remote:
+            self.assertEqual(server.call_openai_vision([PNG]), (None, 'OPENAI_NO_KEY'))
+        remote.assert_not_called()
+
+    def test_quota_error_is_sanitized(self):
+        error = urllib.error.HTTPError('https://example.invalid', 429, '', {}, io.BytesIO(b'{"error":{"code":"insufficient_quota","message":"private"}}'))
+        with patch.object(server.urllib.request, 'urlopen', side_effect=error):
+            self.assertEqual(server.call_openai_vision([PNG], api_key='test-only-key'), (None, 'OPENAI_QUOTA'))
+        self.assertIn('cota', server.vision_error_message('OPENAI_QUOTA'))
+
+    def test_refusal_or_incomplete_response_never_becomes_findings(self):
+        for response in [{'status': 'incomplete'}, {'status': 'completed', 'output': [{'type': 'message', 'content': [{'type': 'refusal', 'refusal': 'no'}]}]}]:
+            with patch.object(server.urllib.request, 'urlopen', return_value=io.BytesIO(json.dumps(response).encode())):
+                result, error = server.call_openai_vision([PNG], api_key='test-only-key')
+            self.assertIsNone(result)
+            self.assertTrue(error.startswith('OPENAI_'))
+
+    def test_explicit_provider_uses_only_its_own_adapter(self):
+        with patch.object(server, 'call_openai_vision', return_value=({}, None)) as openai, patch.object(server, 'call_gemini_vision') as gemini:
+            server.call_vision([PNG], provider='openai', api_key='test-only-key')
+            openai.assert_called_once()
+            gemini.assert_not_called()
+        self.assertEqual(server.call_vision([PNG], provider='unknown'), (None, 'INVALID_PROVIDER'))
+
+
 class ApiTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -170,6 +211,8 @@ class ApiTests(unittest.TestCase):
         cls.thread.join()
 
     def post(self, body):
+        if isinstance(body, dict):
+            body.setdefault('provider', 'gemini')
         request = urllib.request.Request(self.url + '/api/analyze', json.dumps(body).encode(), {'Content-Type': 'application/json'})
         try:
             response = urllib.request.urlopen(request)
@@ -197,6 +240,15 @@ class ApiTests(unittest.TestCase):
     def test_malformed_model_response_is_not_success(self):
         with patch.object(server, 'call_gemini_vision', return_value=({'damageAnalysis': {}}, None)):
             self.assertEqual(self.post({'images': [PNG]})[0], 502)
+
+    def test_openai_http_route(self):
+        result = observation()
+        result['_providerModel'] = 'gpt-4.1'
+        with patch.object(server, 'call_openai_vision', return_value=(result, None)):
+            status, data = self.post({'provider': 'openai', 'images': [PNG]})
+        self.assertEqual(status, 200)
+        self.assertEqual(data['provider'], 'openai')
+        self.assertEqual(data['modelUsed'], 'gpt-4.1')
 
     def test_valid_model_response(self):
         with patch.object(server, 'call_gemini_vision', return_value=(copy.deepcopy(observation()), None)):

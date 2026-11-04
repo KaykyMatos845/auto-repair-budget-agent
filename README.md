@@ -31,7 +31,7 @@ componentes importados por eles pertencem à interface anterior e não entram no
 bundle atual. Foram preservados nesta revisão, assim como suas dependências.
 Scripts antigos de patch que editam JSX dentro de `index.html` não se aplicam à nova estrutura.
 
-Sem `GEMINI_API_KEY`, a análise retorna erro explícito (HTTP 503), sem inventar danos.
+Sem a chave do provedor selecionado, a análise retorna erro explícito (HTTP 503), sem inventar danos.
 Somente os botões de amostra carregam dados simulados, marcados como DEMONSTRAÇÃO.
 Use variável de ambiente ou `.env` local ignorado. A chave de contingência que
 estava embutida no servidor foi removida. A chave informada na interface segue em
@@ -39,9 +39,41 @@ cada requisição de análise, sem depender de sessão no nó do Swarm. Não é 
 chamar `/api/set-key`, uma rota legada que ainda existe para compatibilidade.
 O histórico permanece no navegador: não há banco de dados compartilhado.
 
+## Configurar a API de visão
+
+OpenAI é a seleção inicial na interface. Em **Configurar API**, escolha OpenAI,
+abra o link para criar uma chave e salve-a na sessão do navegador. Não cole uma
+chave Gemini no campo OpenAI: as credenciais são separadas. As fotos são enviadas
+ao serviço selecionado pelo backend, sem troca automática de provedor.
+
+A API OpenAI exige conta e faturamento/créditos próprios; a assinatura do ChatGPT
+não inclui uso da API. Não há chave compartilhada embutida no projeto.
+
+Para configurar no servidor, crie `.env` (não enviar ao Git):
+
+```dotenv
+AI_PROVIDER=openai
+OPENAI_API_KEY=sua_chave
+OPENAI_MODEL=gpt-4.1
+```
+
+Reinicie o Python depois de alterar `.env`. O modelo é configurável conforme o
+acesso do projeto. A integração usa a Responses API com imagens em alta definição,
+saída JSON e `store: false`, mantendo a validação de evidências e a revisão humana.
+As chaves digitadas na interface ficam em `sessionStorage`, por provedor, e são
+enviadas apenas ao backend da aplicação. A preferência do provedor fica em
+`localStorage`; a chave antiga Gemini armazenada por versões anteriores não é
+reutilizada como chave OpenAI. Use a API apenas de uma instalação confiável.
+
+Para continuar no Gemini, selecione Google Gemini na interface e use sua chave
+Gemini, ou configure `AI_PROVIDER=gemini` em clientes que não informam o provedor.
+O healthcheck mostra apenas presença de configuração, não validade ou saldo.
+O novo tema usa fontes de sistema, fundo claro e azul escuro, sem CDNs de fontes,
+gradientes decorativos ou efeitos de vidro.
+
 ## Análise visual e revisão
 
-O modelo padrão é `gemini-2.5-flash`; configure `GEMINI_MODEL` se necessário.
+Para o provedor Gemini, o modelo padrão é `gemini-2.5-flash`; configure `GEMINI_MODEL` se necessário.
 Se esse modelo responder HTTP 404, o backend consulta a lista de modelos da
 mesma chave e tenta uma única alternativa Gemini de uso geral com `generateContent`.
 Prioriza versões estáveis e Flash, excluindo modelos especializados em áudio,
@@ -137,7 +169,7 @@ No ambiente gerenciado, o build frontend precisa também de
 `--secret id=proxy_ca,src="$CODEX_PROXY_CERT"`. Não desative verificação TLS.
 `.env` e arquivos de credenciais não são copiados para as imagens.
 
-Para IA no cluster, forneça `GEMINI_API_KEY` no ambiente do comando de deploy,
+Para IA no cluster, forneça `OPENAI_API_KEY` (OpenAI) ou `GEMINI_API_KEY` (Gemini) no ambiente do comando de deploy,
 sem gravá-la no compose. Esse valor passa a fazer parte da configuração do serviço,
 legível aos administradores Docker; restrinja o acesso. A imagem backend executa
 sem root. TLS público deve ser terminado em um balanceador/proxy autorizado.

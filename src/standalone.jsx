@@ -4,11 +4,11 @@ import './styles.css';
 
 const LABOR_RATE = 80;
 const OPS = [
-  { id: 'fun', label: 'Funilaria', icon: '🔨' },
-  { id: 'pin', label: 'Pintura', icon: '🎨' },
-  { id: 'tap', label: 'Tapeçaria/Vid.', icon: '🪟' },
-  { id: 'mec', label: 'Mecânica', icon: '⚙️' },
-  { id: 'rec', label: 'Recuperação', icon: '🔄' }
+  { id: 'fun', label: 'Funilaria', icon: '' },
+  { id: 'pin', label: 'Pintura', icon: '' },
+  { id: 'tap', label: 'Tapeçaria/Vid.', icon: '' },
+  { id: 'mec', label: 'Mecânica', icon: '' },
+  { id: 'rec', label: 'Recuperação', icon: '' }
 ];
 const DEFAULT_OPS = { fun: 0, pin: 0, tap: 0, mec: 0, rec: 0 };
 
@@ -311,9 +311,11 @@ function App() {
   useEffect(() => { setReviewConfirmed(false); }, [parts, vehicle, thirdParty, analysis, images]);
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState('');
-  const [apiKey, setApiKey] = useState(true);
+  const [provider, setProvider] = useState(() => localStorage.getItem('autobudget_provider') === 'gemini' ? 'gemini' : 'openai');
+  const providerLabel = provider === 'openai' ? 'OpenAI' : 'Gemini';
+  const [apiKey, setApiKey] = useState(false);
   const [showKeyModal, setShowKeyModal] = useState(false);
-  const [keyInput, setKeyInput] = useState(() => localStorage.getItem('autobudget_gemini_key') || '');
+  const [keyInput, setKeyInput] = useState(() => sessionStorage.getItem('autobudget_key_' + provider) || '');
   const [showPdf, setShowPdf] = useState(false);
   const [showAddPart, setShowAddPart] = useState(false);
   const [newPart, setNewPart] = useState({
@@ -343,27 +345,31 @@ function App() {
   const fileRef = useRef();
 
   useEffect(() => {
-    const saved = localStorage.getItem('autobudget_gemini_key');
-    fetch('/api/health')
-      .then(r => r.json())
-      .then(d => {
-        setApiKey(Boolean(d.geminiKeyConfigured || saved));
-      })
-      .catch(() => {
-        setApiKey(Boolean(saved));
-      });
-  }, []);
+    let active = true;
+    const saved = sessionStorage.getItem('autobudget_key_' + provider) || '';
+    setKeyInput(saved);
+    setApiKey(!!saved);
+    fetch('/api/health').then(r => r.json()).then(data => {
+      if (active) setApiKey(!!saved || !!data.providers?.[provider]?.configured);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [provider]);
+
+  const changeProvider = (value) => {
+    setProvider(value);
+    localStorage.setItem('autobudget_provider', value);
+  };
 
   const handleSaveKey = async () => {
     const k = (keyInput || '').trim();
     if (!k) {
-      alert('Por favor digite ou cole sua chave do Gemini.');
+      alert('Informe sua chave de API do provedor selecionado.');
       return;
     }
-    localStorage.setItem('autobudget_gemini_key', k);
+    sessionStorage.setItem('autobudget_key_' + provider, k);
     setApiKey(true);
     setShowKeyModal(false);
-    alert('✅ Chave Gemini AI configurada e salva com sucesso!');
+    alert('Chave salva nesta sessão. A conexão será verificada ao analisar as fotos.');
   };
 
   const setVField = (field, value) => {
@@ -489,7 +495,7 @@ function App() {
   const budgetSel = totSelected + totalLabor;
   const saving = Math.max(0, budgetNew - budgetSel);
   const savingPct = budgetNew > 0 ? ((saving / budgetNew) * 100).toFixed(1) : '0.0';
-  
+
   const fipeVal = parseFloat(vehicle.fipeValue) || 0;
   const fipePct = fipeVal > 0 ? ((budgetSel / fipeVal) * 100).toFixed(1) : '0.0';
   const isTotalLoss = fipeVal > 0 && parseFloat(fipePct) >= 75.0;
@@ -521,16 +527,17 @@ function App() {
     if (!images.length) return;
     setAnalysisError('');
     setLoading(true);
-    setLoadingMsg('Inspecionando lataria, mecânica/suspensão e iluminação com IA...');
+    setLoadingMsg('Analisando danos externos visíveis...');
     try {
-      const savedKey = localStorage.getItem('autobudget_gemini_key') || keyInput || '';
+      const savedKey = sessionStorage.getItem('autobudget_key_' + provider) || keyInput || '';
       const resp = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          images: images.map(i => i.base64), 
+        body: JSON.stringify({
+          images: images.map(i => i.base64),
           vehicle,
-          apiKey: savedKey 
+          provider,
+          apiKey: savedKey
         })
       });
       const data = await resp.json();
@@ -595,7 +602,7 @@ function App() {
     const updated = [newOs, ...osList].slice(0, 50);
     setOsList(updated);
     localStorage.setItem('autobudget_os_list', JSON.stringify(updated));
-    alert('✅ Ordem de Serviço ' + newOs.id + ' salva com sucesso!');
+    alert(' Ordem de Serviço ' + newOs.id + ' salva com sucesso!');
   };
 
   const shareWhatsApp = () => {
@@ -612,23 +619,23 @@ function App() {
       .map(t => '  • ' + t.name + ': ' + fmt(t.value)).join('\n');
 
     const lines = [
-      '🏎️ *ORÇAMENTO DE REPAROS AUTOMOTIVOS*',
+      ' *ORÇAMENTO DE REPAROS AUTOMOTIVOS*',
       reviewLabel,
       'Preços estimados; confirmar cotação. Fotos não confirmam danos internos.',
-      '📅 Data: ' + new Date().toLocaleDateString('pt-BR'),
-      '🚗 Veículo: ' + (vehicle.brand || '') + ' ' + (vehicle.model || '') + ' (' + (vehicle.year || '') + ')',
-      '🏷️ Placa: ' + (vehicle.plate || 'N/I') + ' | Cliente: ' + (vehicle.clientName || 'Cliente'),
-      (fipeVal > 0 ? '📊 FIPE: ' + fmt(fipeVal) + ' | Comprometimento: ' + fipePct + '% ' + (isTotalLoss ? '🚨 RISCO PERDA TOTAL' : '') : '📊 FIPE: Não informada'),
+      ' Data: ' + new Date().toLocaleDateString('pt-BR'),
+      ' Veículo: ' + (vehicle.brand || '') + ' ' + (vehicle.model || '') + ' (' + (vehicle.year || '') + ')',
+      ' Placa: ' + (vehicle.plate || 'N/I') + ' | Cliente: ' + (vehicle.clientName || 'Cliente'),
+      (fipeVal > 0 ? ' FIPE: ' + fmt(fipeVal) + ' | Comprometimento: ' + fipePct + '% ' + (isTotalLoss ? ' RISCO PERDA TOTAL' : '') : ' FIPE: Não informada'),
       '',
-      '📋 *PEÇAS & COMPONENTES:*',
+      ' *PEÇAS & COMPONENTES:*',
       pList,
       '',
-      '🔧 *MÃO DE OBRA (Taxa linear R$ 80,00/h):*',
+      ' *MÃO DE OBRA (Taxa linear R$ 80,00/h):*',
       '  Subtotal Operações: ' + fmt(totalLaborParts),
-      (tpList ? '\n🔗 *SERVIÇOS DE TERCEIROS:*\n' + tpList + '\n  Subtotal: ' + fmt(totalThirdPartyVal) : ''),
+      (tpList ? '\n *SERVIÇOS DE TERCEIROS:*\n' + tpList + '\n  Subtotal: ' + fmt(totalThirdPartyVal) : ''),
       '',
-      '💰 *TOTAL GERAL: ' + fmt(budgetSel) + '*',
-      '🎉 Economia estimada: ' + fmt(saving) + ' (' + savingPct + '% OFF)',
+      ' *TOTAL GERAL: ' + fmt(budgetSel) + '*',
+      ' Economia estimada: ' + fmt(saving) + ' (' + savingPct + '% OFF)',
       '',
       'Status: ' + osStatus,
       '_AutoBudget AI v3.0 — Vistoria Computacional_'
@@ -640,14 +647,14 @@ function App() {
 
   return (
     <div className="wrap">
-      
+
       {/* HEADER */}
-      <header className="glass-panel" style={{ padding: '18px 24px', marginBottom: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
+      <header className="panel" style={{ padding: '18px 24px', marginBottom: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', boxShadow: '0 4px 16px rgba(245, 158, 11, 0.3)' }}>🏎️</div>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', color: '#fff', fontWeight: 700 }}>AB</div>
           <div>
             <h1 style={{ fontSize: '1.25rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ background: 'linear-gradient(135deg, #fbbf24, #f43f5e, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>AutoBudget AI</span>
+              <span style={{ color: 'var(--text-main)' }}>AutoBudget AI</span>
               <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: 4 }}>v3.0 PRO</span>
             </h1>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
@@ -655,49 +662,49 @@ function App() {
             </p>
           </div>
         </div>
-        
+
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          <button className="btn btn-ghost" onClick={newInspection} title="Limpar tudo e iniciar novo orçamento" style={{ borderColor: 'rgba(245,158,11,0.4)', color: 'var(--gold-light)' }}>
-            🔄 Nova Vistoria
+          <button className="btn btn-ghost" onClick={newInspection} title="Limpar tudo e iniciar novo orçamento" style={{ borderColor: 'rgba(36,77,115,0.4)', color: 'var(--accent-light)' }}>
+             Nova Vistoria
           </button>
           <button className="btn btn-ghost" onClick={() => setActiveTab(activeTab === 'history' ? 'budget' : 'history')}>
-            📋 Histórico ({osList.length})
+             Histórico ({osList.length})
           </button>
-          <a href="/slides.html" target="_blank" rel="noopener noreferrer" className="btn btn-ghost" style={{ textDecoration: 'none', borderColor: 'rgba(6,182,212,0.4)', color: '#38bdf8' }} title="Abrir slides de apresentação do projeto">
-            📊 Slides
+          <a href="/slides.html" target="_blank" rel="noopener noreferrer" className="btn btn-ghost" style={{ textDecoration: 'none', borderColor: 'rgba(36,77,115,0.4)', color: '#244d73' }} title="Abrir slides de apresentação do projeto">
+             Slides
           </a>
           {apiKey === false && (
-            <button 
-              className="badge" 
+            <button
+              className="badge"
               onClick={() => setShowKeyModal(true)}
-              style={{ 
+              style={{
                 cursor: 'pointer',
-                background: 'rgba(244,63,94,0.18)', 
-                color: 'var(--rose-light)', 
-                border: '1px solid rgba(244,63,94,0.4)',
+                background: 'rgba(177,62,62,0.18)',
+                color: 'var(--danger-light)',
+                border: '1px solid rgba(177,62,62,0.4)',
                 padding: '6px 12px',
                 fontWeight: 700,
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 6
               }}
-              title="Clique para configurar sua chave da API do Gemini">
-              ⚠️ Sem API Key • Inserir Chave
+              title="Configurar provedor e chave de API">
+              {providerLabel} • Configurar API
             </button>
           )}
           {apiKey === true && (
-            <button 
-              className="badge badge-ai" 
+            <button
+              className="badge badge-ai"
               onClick={() => setShowKeyModal(true)}
-              style={{ 
+              style={{
                 cursor: 'pointer',
                 padding: '6px 12px',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 6
               }}
-              title="Clique para gerenciar ou alterar a chave do Gemini">
-              ✨ Gemini AI Ativo • ⚙️ Chave
+              title="Configurar provedor e chave de API">
+              {providerLabel} • Configurar API
             </button>
           )}
         </div>
@@ -709,7 +716,7 @@ function App() {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
               <div>
-                <label className="form-label" style={{ color: 'var(--gold-light)' }}>VALOR TABELA FIPE (MANUAL)</label>
+                <label className="form-label" style={{ color: 'var(--accent-light)' }}>VALOR TABELA FIPE (MANUAL)</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.9rem' }}>R$</span>
                   <input
@@ -718,7 +725,7 @@ function App() {
                     placeholder="0,00 (Manual)"
                     value={vehicle.fipeValue ? vehicle.fipeValue : ''}
                     onChange={e => setVField('fipeValue', Math.max(0, parseFloat(e.target.value) || 0))}
-                    style={{ width: 140, fontWeight: 800, fontSize: '1.05rem', color: '#fff', padding: '6px 12px' }}
+                    style={{ width: 140, fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-main)', padding: '6px 12px' }}
                   />
                 </div>
               </div>
@@ -730,31 +737,31 @@ function App() {
 
               <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: 20 }}>
                 <div className="form-label">M.O. + Terceiros</div>
-                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--violet-light)' }}>{fmt(totalLabor)}</div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--secondary-light)' }}>{fmt(totalLabor)}</div>
               </div>
 
               <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: 20 }}>
                 <div className="form-label">Total Orçamento</div>
-                <div style={{ fontSize: '1.45rem', fontWeight: 900, color: 'var(--gold-light)' }}>{fmt(budgetSel)}</div>
+                <div style={{ fontSize: '1.45rem', fontWeight: 900, color: 'var(--accent-light)' }}>{fmt(budgetSel)}</div>
               </div>
 
               <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: 20 }}>
                 <div className="form-label">% da FIPE</div>
-                <div style={{ fontSize: '1.45rem', fontWeight: 900, color: isTotalLoss ? 'var(--rose-light)' : (fipeVal > 0 ? 'var(--emerald-light)' : 'var(--text-dim)') }}>
+                <div style={{ fontSize: '1.45rem', fontWeight: 900, color: isTotalLoss ? 'var(--danger-light)' : (fipeVal > 0 ? 'var(--success-light)' : 'var(--text-dim)') }}>
                   {fipeVal > 0 ? (fipePct + '%') : '—'}
                 </div>
               </div>
             </div>
 
             {isTotalLoss && (
-              <div style={{ background: 'rgba(244,63,94,0.18)', border: '1px solid var(--rose)', borderRadius: 'var(--radius-sm)', padding: '8px 16px', color: 'var(--rose-light)', fontWeight: 800, fontSize: '0.84rem', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>🚨</span> ALERTA DE PERDA TOTAL (Atinge {'>'} 75% da FIPE)
+              <div style={{ background: 'rgba(177,62,62,0.18)', border: '1px solid var(--danger)', borderRadius: 'var(--radius-sm)', padding: '8px 16px', color: 'var(--danger-light)', fontWeight: 800, fontSize: '0.84rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+                 ALERTA DE PERDA TOTAL (Atinge {'>'} 75% da FIPE)
               </div>
             )}
-            
+
             {fipeVal === 0 && (
               <div style={{ color: 'var(--text-dim)', fontSize: '0.78rem', background: 'rgba(255,255,255,0.03)', padding: '6px 12px', borderRadius: 'var(--radius-sm)', border: '1px dashed var(--border)' }}>
-                💡 Digite o valor da FIPE ao lado para calcular o % de perda total
+                 Digite o valor da FIPE ao lado para calcular o % de perda total
               </div>
             )}
           </div>
@@ -763,9 +770,9 @@ function App() {
 
       {/* TAB: OS HISTORY */}
       {activeTab === 'history' && (
-        <div className="glass-panel" style={{ padding: 24, marginBottom: 24 }}>
+        <div className="panel" style={{ padding: 24, marginBottom: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 800 }}>📋 Histórico de Ordens de Serviço</h2>
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 800 }}> Histórico de Ordens de Serviço</h2>
             <button className="btn btn-ghost" onClick={() => setActiveTab('budget')}>← Voltar ao Orçamento</button>
           </div>
           {osList.length === 0 ? (
@@ -788,13 +795,13 @@ function App() {
                 <tbody>
                   {osList.map(os => (
                     <tr key={os.id}>
-                      <td style={{ fontWeight: 800, color: 'var(--gold-light)' }}>{os.id}</td>
+                      <td style={{ fontWeight: 800, color: 'var(--accent-light)' }}>{os.id}</td>
                       <td>{os.date}</td>
                       <td>{os.vehicle}<div>{os.reviewStatus || 'Registro anterior — origem não verificada'}</div></td>
                       <td><code style={{ background: 'rgba(255,255,255,0.06)', padding: '2px 6px', borderRadius: 4 }}>{os.plate}</code></td>
                       <td>{os.client || '—'}</td>
                       <td style={{ fontWeight: 800 }}>{fmt(os.total)}</td>
-                      <td style={{ fontWeight: 800, color: parseFloat(os.fipePct) >= 75 ? 'var(--rose-light)' : 'var(--emerald-light)' }}>
+                      <td style={{ fontWeight: 800, color: parseFloat(os.fipePct) >= 75 ? 'var(--danger-light)' : 'var(--success-light)' }}>
                         {os.fipePct !== 'N/A' ? (os.fipePct + '%') : '—'}
                       </td>
                       <td><span className="badge badge-repair">{os.status}</span></td>
@@ -812,13 +819,13 @@ function App() {
         <div>
 
           {/* 1. SAMPLES PRESETS */}
-          <div className="glass-panel" style={{ padding: '18px 22px', marginBottom: 20 }}>
+          <div className="panel" style={{ padding: '18px 22px', marginBottom: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                ⚡ Carregar Vistoria Rápida de Exemplo
+                 Carregar Vistoria Rápida de Exemplo
               </div>
               <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: '0.72rem' }} onClick={newInspection}>
-                🔄 Limpar Campos
+                 Limpar Campos
               </button>
             </div>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -830,25 +837,24 @@ function App() {
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '10px 16px', gap: 2 }}
                 >
                   <span style={{ fontWeight: 800, fontSize: '0.88rem', color: 'var(--text-main)' }}>{s.label}</span>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>{s.sub}</span>
-                </button>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>{s.sub}</span>Remover</button>
               ))}
             </div>
           </div>
 
           {/* 2. PHOTOS UPLOAD & BOUNDING BOXES */}
-          <div className="glass-panel" style={{ padding: '20px 24px', marginBottom: 20 }}>
+          <div className="panel" style={{ padding: '20px 24px', marginBottom: 20 }}>
             <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12 }}>
-              📷 Fotos da Avaria / Vistoria Computacional
+               Fotos da Avaria / Vistoria Computacional
             </div>
-            
+
             <div
               className="upload-box"
               onClick={() => fileRef.current.click()}
               onDragOver={e => e.preventDefault()}
               onDrop={e => { e.preventDefault(); processFiles(e.dataTransfer.files); }}
             >
-              <div style={{ fontSize: '2.2rem', marginBottom: 6 }}>📸</div>
+              <div style={{ fontSize: '2.2rem', marginBottom: 6 }}></div>
               <div style={{ fontWeight: 800, fontSize: '0.95rem', marginBottom: 4 }}>Selecione até 4 fotos: visão geral, lados e detalhes dos danos</div>
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Formatos: JPG, PNG, WEBP (A IA identifica automaticamente o veículo e as avarias)</div>
               <input ref={fileRef} type="file" multiple accept="image/*" style={{ display: 'none' }} onChange={e => processFiles(e.target.files)} />
@@ -875,19 +881,19 @@ function App() {
           </div>
 
           {/* 3. VEHICLE DATA (Auto-filled by AI) */}
-          <div className="glass-panel" style={{ padding: '20px 24px', marginBottom: 20 }}>
+          <div className="panel" style={{ padding: '20px 24px', marginBottom: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <div>
                 <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  🚗 Dados do Veículo & Cliente (Preenchidos pela IA ou Manual)
+                   Dados do Veículo & Cliente (Preenchidos pela IA ou Manual)
                 </div>
                 <p style={{ fontSize: '0.74rem', color: 'var(--text-dim)' }}>A IA detecta automaticamente Marca, Modelo, Ano e Cor a partir das fotos</p>
               </div>
               <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: '0.72rem' }} onClick={newInspection}>
-                🔄 Nova Vistoria
+                 Nova Vistoria
               </button>
             </div>
-            
+
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
               {[
                 ['brand', 'Marca', 'Detectada por IA ou digite'],
@@ -907,27 +913,27 @@ function App() {
                   />
                 </div>
               ))}
-              
+
               <div>
-                <label className="form-label" style={{ color: 'var(--gold-light)' }}>Valor FIPE (R$)</label>
+                <label className="form-label" style={{ color: 'var(--accent-light)' }}>Valor FIPE (R$)</label>
                 <input
                   type="number"
                   className="form-inp"
                   placeholder="0,00 (Manual)"
                   value={vehicle.fipeValue ? vehicle.fipeValue : ''}
                   onChange={e => setVField('fipeValue', Math.max(0, parseFloat(e.target.value) || 0))}
-                  style={{ fontWeight: 800, color: 'var(--gold-light)' }}
+                  style={{ fontWeight: 800, color: 'var(--accent-light)' }}
                 />
               </div>
             </div>
 
             <div style={{ marginTop: 16, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
               <button
-                className="btn btn-gold"
+                className="btn btn-primary"
                 disabled={!images.length || loading || images.some(img => !img.base64)}
                 onClick={analyze}
               >
-                {loading ? (loadingMsg || 'Analisando com IA...') : '🤖 Analisar Avarias com Gemini AI'}
+                {loading ? (loadingMsg || 'Analisando com IA...') : 'Analisar fotos com ' + providerLabel}
               </button>
               {analysis && (
                 <span className="badge badge-ai">
@@ -937,11 +943,12 @@ function App() {
             </div>
           </div>
 
-          {analysisError && <div role="alert" className="glass-panel" style={{ padding: 18, color: '#fda4af' }}>
+          {analysisError && <div role="alert" className="panel" style={{ padding: 18, color: '#a73232' }}>
             Análise não concluída: {analysisError} Os itens anteriores, se houver, não são resultado desta tentativa.
           </div>}
-          <section className="glass-panel" style={{ padding: 18, marginBottom: 20 }} aria-label="Revisão da análise">
+          <section className="panel" style={{ padding: 18, marginBottom: 20 }} aria-label="Revisão da análise">
             <strong>{reviewLabel}</strong>
+            {analysis?.provider && <p>Provedor: {analysis.provider === 'openai' ? 'OpenAI' : 'Gemini'}</p>}
             {analysis?.modelUsed && <p>Modelo utilizado: {analysis.modelUsed}{analysis.modelChanged ? ' — alternativa selecionada após indisponibilidade do modelo configurado.' : ''}</p>}
             <p>Fotografe com boa luz e foco, incluindo visão geral e detalhes. Fotos não confirmam danos internos nem segurança para circulação.</p>
             <p>Preços são referências por regras locais, sem estoque ou compatibilidade verificados. Confirme cotações, decisão de reparo e horas de serviço.</p>
@@ -955,30 +962,30 @@ function App() {
               onChange={e => setReviewConfirmed(e.target.checked)} /> Revisei todos os itens, as horas, os preços e os dados do veículo.</label>
           </section>
           {/* 4. PARTS & LABOR BREAKDOWN */}
-          <div className="glass-panel" style={{ padding: '22px 24px', marginBottom: 20 }}>
+          <div className="panel" style={{ padding: '22px 24px', marginBottom: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
               <div>
                 <h2 style={{ fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span>⚙️</span> Peças Avariadas & Operações de Mão de Obra
+                   Peças Avariadas & Operações de Mão de Obra
                   <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: 4, color: 'var(--text-dim)' }}>
                     {parts.length} item(ns)
                   </span>
                 </h2>
                 <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                  Taxa fixa de mão de obra linear: <strong style={{ color: 'var(--gold-light)' }}>R$ 80,00/hora</strong> • Mecânica, Iluminação, Lataria e Plásticos
+                  Taxa fixa de mão de obra linear: <strong style={{ color: 'var(--accent-light)' }}>R$ 80,00/hora</strong> • Mecânica, Iluminação, Lataria e Plásticos
                 </p>
               </div>
 
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                 <button
-                  className="btn btn-gold"
+                  className="btn btn-primary"
                   style={{ padding: '7px 16px', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: 6 }}
                   onClick={() => setShowAddPart(true)}
                 >
-                  <span>➕</span> Adicionar Peça / Item Manual
+                   Adicionar Peça / Item Manual
                 </button>
                 {parts.length > 0 && (
-                  <div style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid var(--border-accent)', borderRadius: 'var(--radius-sm)', padding: '6px 14px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--gold-light)' }}>
+                  <div style={{ background: 'rgba(36,77,115,0.1)', border: '1px solid var(--border-accent)', borderRadius: 'var(--radius-sm)', padding: '6px 14px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--accent-light)' }}>
                     Total M.O. Peças: {fmt(totalLaborParts)}
                   </div>
                 )}
@@ -987,11 +994,11 @@ function App() {
 
             {parts.length === 0 && (
               <div style={{ textAlign: 'center', padding: '36px 20px', color: 'var(--text-dim)', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)' }}>
-                <div style={{ fontSize: '2rem', marginBottom: 8 }}>📋</div>
+                <div style={{ fontSize: '2rem', marginBottom: 8 }}></div>
                 <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-muted)', marginBottom: 4 }}>Nenhuma peça adicionada ainda</div>
                 <div style={{ fontSize: '0.8rem', marginBottom: 14 }}>Carregue um exemplo acima, analise fotos com a IA ou adicione peças manualmente.</div>
-                <button className="btn btn-gold" onClick={() => setShowAddPart(true)}>
-                  ➕ Adicionar Primeira Peça Manual
+                <button className="btn btn-primary" onClick={() => setShowAddPart(true)}>
+                   Adicionar Primeira Peça Manual
                 </button>
               </div>
             )}
@@ -1007,7 +1014,7 @@ function App() {
 
               return (
                 <div key={part.id} className="part-card">
-                  
+
                   {/* Header: Part name + category + action badge + delete button */}
                   <div className="part-header">
                     <div>
@@ -1044,7 +1051,7 @@ function App() {
                       <div className="part-summary-pill">
                         <div>
                           <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Mão de Obra</div>
-                          <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--violet-light)' }}>{fmt(totalMO)}</div>
+                          <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--secondary-light)' }}>{fmt(totalMO)}</div>
                           <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)' }}>{totalH.toFixed(1)}h</div>
                         </div>
                         {selPrice > 0 && (
@@ -1054,18 +1061,18 @@ function App() {
                           </div>
                         )}
                         <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: 12 }}>
-                          <div style={{ fontSize: '0.68rem', color: 'var(--gold-light)', textTransform: 'uppercase', fontWeight: 700 }}>Total Item</div>
-                          <div style={{ fontSize: '1.15rem', fontWeight: 900, color: 'var(--gold-light)' }}>{fmt(totalItemCost)}</div>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--accent-light)', textTransform: 'uppercase', fontWeight: 700 }}>Total Item</div>
+                          <div style={{ fontSize: '1.15rem', fontWeight: 900, color: 'var(--accent-light)' }}>{fmt(totalItemCost)}</div>
                         </div>
                       </div>
 
                       <button
                         className="btn btn-ghost"
-                        style={{ padding: '6px 10px', color: 'var(--rose-light)', borderColor: 'rgba(244,63,94,0.3)', fontSize: '0.78rem' }}
+                        style={{ padding: '6px 10px', color: 'var(--danger-light)', borderColor: 'rgba(177,62,62,0.3)', fontSize: '0.78rem' }}
                         title="Excluir esta peça do orçamento"
                         onClick={() => removePart(part.id)}
                       >
-                        🗑️ Excluir
+                         Excluir
                       </button>
                     </div>
                   </div>
@@ -1095,7 +1102,7 @@ function App() {
                               title="Diminuir 0.5h"
                               onClick={() => stepPartOp(part.id, op.id, -0.5)}
                             >−</button>
-                            
+
                             <input
                               type="number"
                               step="0.5"
@@ -1124,24 +1131,24 @@ function App() {
                   {/* Part replacement choices: Nova OEM vs Usada DETRAN */}
                   {part.newPrice && part.newPrice.price > 0 && (
                     <div className="pricing-grid">
-                      
+
                       {/* Nova OEM */}
                       <div
                         className={'price-option-card' + (part.selectedChoice === 'new' ? ' selected-new' : '')}
                         onClick={() => toggleChoice(part.id, 'new')}
                       >
                         <div className="price-option-header">
-                          <span className="badge badge-new">🟣 Nova Genuína OEM</span>
+                          <span className="badge badge-new"> Nova Genuína OEM</span>
                           <span style={{ fontSize: '0.78rem', color: 'var(--text-dim)', fontWeight: 700 }}>
-                            {part.selectedChoice === 'new' ? '✓ Selecionada' : 'Selecionar'}
+                            {part.selectedChoice === 'new' ? ' Selecionada' : 'Selecionar'}
                           </span>
                         </div>
                         <div className="price-val">{fmt(part.newPrice.price)}</div>
                         <div className="price-brand">{part.newPrice.brandName}</div>
-                        
+
                         {/* Validation Badge */}
-                        <div style={{ marginTop: 6, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: 'var(--emerald-light)', background: 'rgba(16,185,129,0.08)', padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(16,185,129,0.25)' }}>
-                          <span>🛡️</span>
+                        <div style={{ marginTop: 6, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: 'var(--success-light)', background: 'rgba(35,112,77,0.08)', padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(35,112,77,0.25)' }}>
+
                           <span>{part.newPrice.compatibility || 'Compatibilidade e estoque não verificados'}</span>
                         </div>
 
@@ -1150,10 +1157,10 @@ function App() {
                             href={part.newPrice.link}
                             target="_blank"
                             className="ml-link"
-                            style={{ color: 'var(--violet-light)' }}
+                            style={{ color: 'var(--secondary-light)' }}
                             onClick={e => e.stopPropagation()}
                           >
-                            🛒 Ver Peça Disponível no Mercado Livre ↗
+                             Pesquisar referência no Mercado Livre ↗
                           </a>
                         )}
                       </div>
@@ -1166,19 +1173,19 @@ function App() {
                         <div className="price-option-header">
                           <span className="badge badge-used">Usada — confirmar procedência</span>
                           {part.newPrice.price > part.usedPrice.price && (
-                            <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--emerald-light)', background: 'rgba(16,185,129,0.15)', padding: '2px 6px', borderRadius: 4 }}>
+                            <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--success-light)', background: 'rgba(35,112,77,0.15)', padding: '2px 6px', borderRadius: 4 }}>
                               −{(((part.newPrice.price - part.usedPrice.price) / part.newPrice.price) * 100).toFixed(0)}% OFF
                             </span>
                           )}
                         </div>
-                        <div className="price-val" style={{ color: 'var(--emerald-light)' }}>
+                        <div className="price-val" style={{ color: 'var(--success-light)' }}>
                           {fmt(part.usedPrice ? part.usedPrice.price : 0)}
                         </div>
                         <div className="price-brand">{part.usedPrice ? part.usedPrice.brandName : 'Desmanche Credenciado'}</div>
-                        
+
                         {/* Validation Badge */}
-                        <div style={{ marginTop: 6, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: 'var(--emerald-light)', background: 'rgba(16,185,129,0.08)', padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(16,185,129,0.25)' }}>
-                          <span>🛡️</span>
+                        <div style={{ marginTop: 6, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: 'var(--success-light)', background: 'rgba(35,112,77,0.08)', padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(35,112,77,0.25)' }}>
+
                           <span>{part.usedPrice.compatibility || 'Compatibilidade e estoque não verificados'}</span>
                         </div>
 
@@ -1187,10 +1194,10 @@ function App() {
                             href={part.usedPrice.link}
                             target="_blank"
                             className="ml-link"
-                            style={{ color: 'var(--emerald-light)' }}
+                            style={{ color: 'var(--success-light)' }}
                             onClick={e => e.stopPropagation()}
                           >
-                            🛒 Ver Peça Disponível no Mercado Livre ↗
+                             Pesquisar referência no Mercado Livre ↗
                           </a>
                         )}
                       </div>
@@ -1199,8 +1206,8 @@ function App() {
 
                   {/* Notice if recovery */}
                   {isRepair && (!part.newPrice || part.newPrice.price === 0) && (
-                    <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.82rem', padding: '10px 14px', background: 'rgba(245,158,11,0.04)', borderRadius: 'var(--radius-sm)', border: '1px dashed var(--border-accent)', marginTop: 8 }}>
-                      🔧 <strong>Serviço de Recuperação</strong> — Sem necessidade de aquisição de peça de reposição.
+                    <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.82rem', padding: '10px 14px', background: 'rgba(36,77,115,0.04)', borderRadius: 'var(--radius-sm)', border: '1px dashed var(--border-accent)', marginTop: 8 }}>
+                       <strong>Serviço de Recuperação</strong> — Sem necessidade de aquisição de peça de reposição.
                     </div>
                   )}
 
@@ -1216,17 +1223,17 @@ function App() {
               onClick={() => setShowAddPart(false)}
             >
               <div
-                style={{ background: '#111827', color: '#fff', borderRadius: 14, padding: '28px 32px', maxWidth: 640, width: '100%', maxHeight: '90vh', overflowY: 'auto', border: '1px solid var(--border-accent)', boxShadow: '0 20px 50px rgba(0,0,0,0.7)' }}
+                style={{ background: 'var(--card-bg)', color: 'var(--text-main)', borderRadius: 14, padding: '28px 32px', maxWidth: 640, width: '100%', maxHeight: '90vh', overflowY: 'auto', border: '1px solid var(--border-accent)', boxShadow: '0 20px 50px rgba(0,0,0,0.7)' }}
                 onClick={e => e.stopPropagation()}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--gold-light)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span>➕</span> Adicionar Peça / Item Manual ao Orçamento
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--accent-light)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                     Adicionar Peça / Item Manual ao Orçamento
                   </h3>
                   <button
                     onClick={() => setShowAddPart(false)}
                     style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}
-                  >✕</button>
+                  >Fechar</button>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -1249,12 +1256,12 @@ function App() {
                         value={newPart.category}
                         onChange={e => setNewPart({ ...newPart, category: e.target.value })}
                       >
-                        <option value="Mecânica / Suspensão">⚙️ Mecânica / Suspensão</option>
-                        <option value="Iluminação">💡 Iluminação</option>
-                        <option value="Lataria / Carroceria">🚗 Lataria / Carroceria</option>
-                        <option value="Acabamento / Plásticos">🛡️ Acabamento / Plásticos</option>
-                        <option value="Vidros">🪟 Vidros</option>
-                        <option value="Elétrica">⚡ Elétrica</option>
+                        <option value="Mecânica / Suspensão"> Mecânica / Suspensão</option>
+                        <option value="Iluminação"> Iluminação</option>
+                        <option value="Lataria / Carroceria"> Lataria / Carroceria</option>
+                        <option value="Acabamento / Plásticos"> Acabamento / Plásticos</option>
+                        <option value="Vidros"> Vidros</option>
+                        <option value="Elétrica"> Elétrica</option>
                       </select>
                     </div>
 
@@ -1345,7 +1352,7 @@ function App() {
 
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 10 }}>
                     <button className="btn btn-ghost" onClick={() => setShowAddPart(false)}>Cancelar</button>
-                    <button className="btn btn-gold" onClick={saveManualPart}>💾 Salvar Peça no Orçamento</button>
+                    <button className="btn btn-primary" onClick={saveManualPart}> Salvar Peça no Orçamento</button>
                   </div>
                 </div>
               </div>
@@ -1354,10 +1361,10 @@ function App() {
 
           {/* 5. THIRD PARTY SERVICES */}
           {parts.length > 0 && (
-            <div className="glass-panel" style={{ padding: '20px 24px', marginBottom: 20 }}>
+            <div className="panel" style={{ padding: '20px 24px', marginBottom: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                 <div>
-                  <h2 style={{ fontSize: '1rem', fontWeight: 800 }}>🔗 Serviços de Terceiros</h2>
+                  <h2 style={{ fontSize: '1rem', fontWeight: 800 }}> Serviços de Terceiros</h2>
                   <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>Alinhamento 3D, tapeçaria especializada, solda especial ou parceiros externos</p>
                 </div>
                 <button className="btn btn-ghost" style={{ padding: '6px 14px', fontSize: '0.78rem' }} onClick={addThirdParty}>
@@ -1393,15 +1400,13 @@ function App() {
                       </div>
                       <button
                         className="btn btn-ghost"
-                        style={{ padding: '9px 12px', color: 'var(--rose-light)', borderColor: 'rgba(244,63,94,0.3)' }}
+                        style={{ padding: '9px 12px', color: 'var(--danger-light)', borderColor: 'rgba(177,62,62,0.3)' }}
                         title="Remover serviço"
                         onClick={() => removeThirdParty(tp.id)}
-                      >
-                        ✕
-                      </button>
+                      >Remover</button>
                     </div>
                   ))}
-                  <div style={{ textAlign: 'right', fontWeight: 800, color: 'var(--violet-light)', fontSize: '0.9rem', marginTop: 4 }}>
+                  <div style={{ textAlign: 'right', fontWeight: 800, color: 'var(--secondary-light)', fontSize: '0.9rem', marginTop: 4 }}>
                     Subtotal Terceiros: {fmt(totalThirdPartyVal)}
                   </div>
                 </div>
@@ -1411,9 +1416,9 @@ function App() {
 
           {/* 6. LABOR SUMMARY TABLE */}
           {parts.length > 0 && (
-            <div className="glass-panel" style={{ padding: '22px 24px', marginBottom: 20 }}>
+            <div className="panel" style={{ padding: '22px 24px', marginBottom: 20 }}>
               <div style={{ marginBottom: 16 }}>
-                <h2 style={{ fontSize: '1rem', fontWeight: 800 }}>📊 Matriz de Mão de Obra por Especialidade</h2>
+                <h2 style={{ fontSize: '1rem', fontWeight: 800 }}> Matriz de Mão de Obra por Especialidade</h2>
                 <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>Demonstrativo consolidado de horas e valores por peça (R$ 80,00/h)</p>
               </div>
 
@@ -1422,12 +1427,12 @@ function App() {
                   <thead>
                     <tr>
                       <th>Item / Peça</th>
-                      <th>🔨 Funilaria</th>
-                      <th>🎨 Pintura</th>
-                      <th>🪟 Tapeç./Vid.</th>
-                      <th>⚙️ Mecânica</th>
-                      <th>🔄 Recuperação</th>
-                      <th style={{ color: 'var(--violet-light)', textAlign: 'right' }}>Total M.O.</th>
+                      <th> Funilaria</th>
+                      <th> Pintura</th>
+                      <th> Tapeç./Vid.</th>
+                      <th> Mecânica</th>
+                      <th> Recuperação</th>
+                      <th style={{ color: 'var(--secondary-light)', textAlign: 'right' }}>Total M.O.</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1449,7 +1454,7 @@ function App() {
                               </td>
                             );
                           })}
-                          <td style={{ fontWeight: 800, color: 'var(--violet-light)', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
+                          <td style={{ fontWeight: 800, color: 'var(--secondary-light)', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
                             {fmt(total)}
                           </td>
                         </tr>
@@ -1462,31 +1467,31 @@ function App() {
                         const colH = parts.reduce((s, p) => s + (parseFloat((p.ops || {})[op.id]) || 0), 0);
                         const colTotal = colH * LABOR_RATE;
                         return (
-                          <td key={op.id} style={{ fontWeight: 800, color: colTotal > 0 ? 'var(--gold-light)' : 'var(--text-dim)' }}>
+                          <td key={op.id} style={{ fontWeight: 800, color: colTotal > 0 ? 'var(--accent-light)' : 'var(--text-dim)' }}>
                             {colTotal > 0 ? (colH + 'h (' + fmt(colTotal) + ')') : '—'}
                           </td>
                         );
                       })}
-                      <td style={{ fontWeight: 900, color: 'var(--violet-light)', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
+                      <td style={{ fontWeight: 900, color: 'var(--secondary-light)', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
                         {fmt(totalLaborParts)}
                       </td>
                     </tr>
 
                     {totalThirdPartyVal > 0 && (
                       <tr>
-                        <td style={{ fontWeight: 700, color: 'var(--rose-light)' }}>Serviços de Terceiros</td>
+                        <td style={{ fontWeight: 700, color: 'var(--danger-light)' }}>Serviços de Terceiros</td>
                         <td colSpan={5} style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
                           {thirdParty.filter(t => t.name).map(t => t.name + ': ' + fmt(t.value)).join(' • ')}
                         </td>
-                        <td style={{ fontWeight: 800, color: 'var(--rose-light)', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
+                        <td style={{ fontWeight: 800, color: 'var(--danger-light)', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
                           {fmt(totalThirdPartyVal)}
                         </td>
                       </tr>
                     )}
 
-                    <tr style={{ borderTop: '2px solid var(--gold)', background: 'rgba(245,158,11,0.06)' }}>
+                    <tr style={{ borderTop: '2px solid var(--accent)', background: 'rgba(36,77,115,0.06)' }}>
                       <td colSpan={6} style={{ fontWeight: 900, fontSize: '0.95rem' }}>TOTAL CONSOLIDADO MÃO DE OBRA + TERCEIROS</td>
-                      <td style={{ fontWeight: 900, fontSize: '1.15rem', color: 'var(--gold-light)', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
+                      <td style={{ fontWeight: 900, fontSize: '1.15rem', color: 'var(--accent-light)', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
                         {fmt(totalLabor)}
                       </td>
                     </tr>
@@ -1498,19 +1503,19 @@ function App() {
 
           {/* 7. FINAL BUDGET CARD */}
           {parts.length > 0 && (
-            <div className="glass-panel" id="pdf-area" style={{ padding: '26px 28px', marginBottom: 28, border: '2px solid var(--gold)', boxShadow: 'var(--shadow-glow)' }}>
+            <div className="panel" id="pdf-area" style={{ padding: '26px 28px', marginBottom: 28, border: '2px solid var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
                 <div>
                   <h2 style={{ fontSize: '1.25rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span>💰</span> Resumo Executivo do Orçamento Final
+                     Resumo Executivo do Orçamento Final
                   </h2>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                     Veículo: {(vehicle.brand || 'Veículo')} {(vehicle.model || '')} {(vehicle.year ? '(' + vehicle.year + ')' : '')} • Placa: {vehicle.plate || 'N/I'} • Cliente: {vehicle.clientName || 'Cliente'}
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <span className="badge" style={{ background: isTotalLoss ? 'rgba(244,63,94,0.2)' : (fipeVal > 0 ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.08)'), color: isTotalLoss ? 'var(--rose-light)' : (fipeVal > 0 ? 'var(--emerald-light)' : 'var(--text-dim)'), border: '1px solid ' + (isTotalLoss ? 'var(--rose)' : (fipeVal > 0 ? 'var(--emerald)' : 'var(--border)')) }}>
-                    {isTotalLoss ? '🚨 RISCO PERDA TOTAL' : (fipeVal > 0 ? '✅ REPARO VIÁVEL' : '📋 FIPE NÃO INFORMADA')}
+                  <span className="badge" style={{ background: isTotalLoss ? 'rgba(177,62,62,0.2)' : (fipeVal > 0 ? 'rgba(35,112,77,0.2)' : 'rgba(255,255,255,0.08)'), color: isTotalLoss ? 'var(--danger-light)' : (fipeVal > 0 ? 'var(--success-light)' : 'var(--text-dim)'), border: '1px solid ' + (isTotalLoss ? 'var(--danger)' : (fipeVal > 0 ? 'var(--success)' : 'var(--border)')) }}>
+                    {isTotalLoss ? ' RISCO PERDA TOTAL' : (fipeVal > 0 ? ' REPARO VIÁVEL' : ' FIPE NÃO INFORMADA')}
                   </span>
                 </div>
               </div>
@@ -1522,31 +1527,31 @@ function App() {
                   <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: 2 }}>Nova OEM Total: {fmt(totNew)}</div>
                 </div>
 
-                <div style={{ background: 'var(--violet-glow)', borderRadius: 'var(--radius-sm)', padding: '14px 16px', border: '1px solid rgba(139,92,246,0.3)' }}>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--violet-light)', fontWeight: 700, textTransform: 'uppercase' }}>Mão de Obra Total</div>
-                  <div style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--violet-light)', marginTop: 4 }}>{fmt(totalLaborParts)}</div>
+                <div style={{ background: 'var(--secondary-glow)', borderRadius: 'var(--radius-sm)', padding: '14px 16px', border: '1px solid rgba(82,97,116,0.3)' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--secondary-light)', fontWeight: 700, textTransform: 'uppercase' }}>Mão de Obra Total</div>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--secondary-light)', marginTop: 4 }}>{fmt(totalLaborParts)}</div>
                   <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>Taxa R$ 80,00/h fixo</div>
                 </div>
 
                 {totalThirdPartyVal > 0 && (
-                  <div style={{ background: 'var(--rose-glow)', borderRadius: 'var(--radius-sm)', padding: '14px 16px', border: '1px solid rgba(244,63,94,0.3)' }}>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--rose-light)', fontWeight: 700, textTransform: 'uppercase' }}>Terceiros</div>
-                    <div style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--rose-light)', marginTop: 4 }}>{fmt(totalThirdPartyVal)}</div>
+                  <div style={{ background: 'var(--danger-glow)', borderRadius: 'var(--radius-sm)', padding: '14px 16px', border: '1px solid rgba(177,62,62,0.3)' }}>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--danger-light)', fontWeight: 700, textTransform: 'uppercase' }}>Terceiros</div>
+                    <div style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--danger-light)', marginTop: 4 }}>{fmt(totalThirdPartyVal)}</div>
                     <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>{thirdParty.filter(t => t.name).length} serviço(s)</div>
                   </div>
                 )}
 
-                <div style={{ background: 'var(--gold-glow)', borderRadius: 'var(--radius-sm)', padding: '14px 16px', border: '2px solid var(--gold)' }}>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--gold-light)', fontWeight: 700, textTransform: 'uppercase' }}>TOTAL FINAL</div>
-                  <div style={{ fontSize: '1.65rem', fontWeight: 900, color: 'var(--gold-light)', marginTop: 4 }}>{fmt(budgetSel)}</div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--emerald-light)', fontWeight: 700, marginTop: 2 }}>
+                <div style={{ background: 'var(--accent-glow)', borderRadius: 'var(--radius-sm)', padding: '14px 16px', border: '2px solid var(--accent)' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--accent-light)', fontWeight: 700, textTransform: 'uppercase' }}>TOTAL FINAL</div>
+                  <div style={{ fontSize: '1.65rem', fontWeight: 900, color: 'var(--accent-light)', marginTop: 4 }}>{fmt(budgetSel)}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--success-light)', fontWeight: 700, marginTop: 2 }}>
                     Economia: {fmt(saving)} ({savingPct}%)
                   </div>
                 </div>
 
-                <div style={{ background: isTotalLoss ? 'var(--rose-glow)' : (fipeVal > 0 ? 'var(--emerald-glow)' : 'rgba(255,255,255,0.02)'), borderRadius: 'var(--radius-sm)', padding: '14px 16px', border: '1px solid ' + (isTotalLoss ? 'rgba(244,63,94,0.4)' : (fipeVal > 0 ? 'rgba(16,185,129,0.4)' : 'var(--border)')) }}>
-                  <div style={{ fontSize: '0.72rem', color: isTotalLoss ? 'var(--rose-light)' : (fipeVal > 0 ? 'var(--emerald-light)' : 'var(--text-dim)'), fontWeight: 700, textTransform: 'uppercase' }}>% Tabela FIPE</div>
-                  <div style={{ fontSize: '1.65rem', fontWeight: 900, color: isTotalLoss ? 'var(--rose-light)' : (fipeVal > 0 ? 'var(--emerald-light)' : 'var(--text-dim)'), marginTop: 4 }}>
+                <div style={{ background: isTotalLoss ? 'var(--danger-glow)' : (fipeVal > 0 ? 'var(--success-glow)' : 'rgba(255,255,255,0.02)'), borderRadius: 'var(--radius-sm)', padding: '14px 16px', border: '1px solid ' + (isTotalLoss ? 'rgba(177,62,62,0.4)' : (fipeVal > 0 ? 'rgba(35,112,77,0.4)' : 'var(--border)')) }}>
+                  <div style={{ fontSize: '0.72rem', color: isTotalLoss ? 'var(--danger-light)' : (fipeVal > 0 ? 'var(--success-light)' : 'var(--text-dim)'), fontWeight: 700, textTransform: 'uppercase' }}>% Tabela FIPE</div>
+                  <div style={{ fontSize: '1.65rem', fontWeight: 900, color: isTotalLoss ? 'var(--danger-light)' : (fipeVal > 0 ? 'var(--success-light)' : 'var(--text-dim)'), marginTop: 4 }}>
                     {fipeVal > 0 ? (fipePct + '%') : '—'}
                   </div>
                   <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>
@@ -1556,10 +1561,10 @@ function App() {
               </div>
 
               {isTotalLoss && (
-                <div style={{ background: 'rgba(244,63,94,0.14)', border: '1px solid rgba(244,63,94,0.5)', borderRadius: 'var(--radius-sm)', padding: '14px 18px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <span style={{ fontSize: '1.8rem' }}>🚨</span>
+                <div style={{ background: 'rgba(177,62,62,0.14)', border: '1px solid rgba(177,62,62,0.5)', borderRadius: 'var(--radius-sm)', padding: '14px 18px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <span style={{ fontSize: '1.8rem' }}></span>
                   <div>
-                    <div style={{ fontWeight: 800, color: 'var(--rose-light)' }}>ALERTA DE PERDA TOTAL DETECTADA</div>
+                    <div style={{ fontWeight: 800, color: 'var(--danger-light)' }}>ALERTA DE PERDA TOTAL DETECTADA</div>
                     <div style={{ fontSize: '0.84rem', color: 'var(--text-muted)', marginTop: 2 }}>
                       O custo acumulado de reparos ({fmt(budgetSel)}) atinge <strong>{fipePct}%</strong> da Tabela FIPE ({fmt(fipeVal)}). Em casos acima de 75%, as seguradoras tipicamente indenizam integralmente o veículo.
                     </div>
@@ -1569,12 +1574,12 @@ function App() {
 
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
                 <button className="btn btn-whatsapp" onClick={shareWhatsApp}>
-                  💬 Enviar Orçamento no WhatsApp
+                   Enviar Orçamento no WhatsApp
                 </button>
-                <button className="btn btn-gold" onClick={() => { if (requireReview()) setShowPdf(true); }}>
-                  📄 Imprimir / Exportar PDF
+                <button className="btn btn-primary" onClick={() => { if (requireReview()) setShowPdf(true); }}>
+                   Imprimir / Exportar PDF
                 </button>
-                
+
                 <div style={{ marginLeft: 'auto', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                   <select
                     value={osStatus}
@@ -1586,8 +1591,8 @@ function App() {
                       <option key={s} value={s}>{s}</option>
                     ))}
                   </select>
-                  <button className="btn btn-emerald" onClick={saveOS}>
-                    💾 Salvar OS
+                  <button className="btn btn-success" onClick={saveOS}>
+                     Salvar OS
                   </button>
                 </div>
               </div>
@@ -1612,23 +1617,23 @@ function App() {
                 <h2 style={{ fontFamily: "'Outfit', sans-serif", color: '#0f172a', fontSize: '1.3rem', fontWeight: 900 }}>
                   AutoBudget AI — Estimativa de Reparos
                 </h2>
-                <p style={{ fontSize: '0.8rem', color: '#64748b' }}>{reviewLabel} • Valores estimados, sujeitos a cotação e inspeção presencial</p>
+                <p style={{ fontSize: '0.8rem', color: '#5d6b7d' }}>{reviewLabel} • Valores estimados, sujeitos a cotação e inspeção presencial</p>
               </div>
               <button
                 onClick={() => { if (requireReview()) window.print(); }}
-                style={{ background: '#f59e0b', color: '#000', border: 'none', padding: '9px 18px', borderRadius: 8, cursor: 'pointer', fontWeight: 800 }}
+                style={{ background: '#244d73', color: '#fff', border: 'none', padding: '9px 18px', borderRadius: 8, cursor: 'pointer', fontWeight: 800 }}
               >
-                🖨️ Imprimir Laudo
+                 Imprimir Laudo
               </button>
             </div>
 
-            <div style={{ background: '#f8fafc', padding: 14, borderRadius: 8, marginBottom: 18, fontSize: '0.86rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <div style={{ background: '#f5f7fa', padding: 14, borderRadius: 8, marginBottom: 18, fontSize: '0.86rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               <div><strong>Veículo:</strong> {(vehicle.brand || 'Veículo')} {(vehicle.model || '')} {(vehicle.year ? '(' + vehicle.year + ')' : '')}</div>
               <div><strong>Placa:</strong> {vehicle.plate || 'N/I'} • <strong>Cor:</strong> {vehicle.color || 'N/I'}</div>
               <div><strong>Cliente:</strong> {vehicle.clientName || 'N/I'}</div>
               <div><strong>Data:</strong> {new Date().toLocaleDateString('pt-BR')}</div>
               <div><strong>Valor FIPE:</strong> {fipeVal > 0 ? fmt(fipeVal) : 'Não informada'}</div>
-              <div><strong>Comprometimento:</strong> {fipeVal > 0 ? (fipePct + '%') : '—'} {isTotalLoss ? '(🚨 RISCO PERDA TOTAL)' : ''}</div>
+              <div><strong>Comprometimento:</strong> {fipeVal > 0 ? (fipePct + '%') : '—'} {isTotalLoss ? '( RISCO PERDA TOTAL)' : ''}</div>
             </div>
 
             <h3 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: 10, color: '#0f172a' }}>Demonstrativo por Peça e Especialidade:</h3>
@@ -1658,7 +1663,7 @@ function App() {
                       {OPS.map(op => {
                         const h = parseFloat(ops[op.id]) || 0;
                         return (
-                          <td key={op.id} style={{ padding: '8px 10px', color: h > 0 ? '#0f172a' : '#94a3b8' }}>
+                          <td key={op.id} style={{ padding: '8px 10px', color: h > 0 ? '#0f172a' : '#526174' }}>
                             {h > 0 ? (h + 'h') : '—'}
                           </td>
                         );
@@ -1702,12 +1707,12 @@ function App() {
                 )}
                 <div>
                   <div style={{ fontSize: '0.72rem', color: '#92400e', fontWeight: 700 }}>TOTAL GERAL</div>
-                  <div style={{ fontWeight: 900, fontSize: '1.3rem', color: '#d97706' }}>{fmt(budgetSel)}</div>
+                  <div style={{ fontWeight: 900, fontSize: '1.3rem', color: '#244d73' }}>{fmt(budgetSel)}</div>
                 </div>
               </div>
             </div>
 
-            <p style={{ marginTop: 16, fontSize: '0.75rem', color: '#94a3b8', textAlign: 'center' }}>
+            <p style={{ marginTop: 16, fontSize: '0.75rem', color: '#526174', textAlign: 'center' }}>
               Mão de Obra tabelada: R$ 80,00/hora em todas as operações • AutoBudget AI v3.0
             </p>
 
@@ -1736,46 +1741,54 @@ function App() {
           padding: 20
         }}>
           <div style={{
-            background: 'var(--surface, #1e293b)',
-            border: '1px solid rgba(245,158,11,0.3)',
+            background: 'var(--card-bg)',
+            border: '1px solid rgba(36,77,115,0.3)',
             borderRadius: 16,
             maxWidth: 540,
             width: '100%',
             padding: 24,
             boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
-            color: 'var(--text, #f8fafc)'
+            color: 'var(--text-main)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
-                🔑 Configuração da Chave Google Gemini AI
+                Configurar análise de imagens
               </h3>
-              <button 
+              <button
                 onClick={() => setShowKeyModal(false)}
-                style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '1.4rem', cursor: 'pointer' }}>
-                ✕
-              </button>
+                style={{ background: 'transparent', border: 'none', color: '#526174', fontSize: '1.4rem', cursor: 'pointer' }}>Fechar</button>
             </div>
 
-            <p style={{ fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.5, marginBottom: 16 }}>
-              A chave do Gemini é utilizada para o <strong>agente pericial automatizado</strong> (visão computacional, identificação do modelo do veículo e mapeamento de avarias).
+            <p style={{ fontSize: '0.88rem', color: '#526174', lineHeight: 1.5, marginBottom: 16 }}>
+              Selecione o serviço que analisará as fotos. As imagens serão enviadas ao provedor escolhido. A chave fica nesta sessão do navegador; você também pode configurá-la no servidor.
+              {provider === 'openai' && <span> A API OpenAI exige faturamento próprio. A assinatura do ChatGPT não inclui créditos da API.</span>}
             </p>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#fbbf24', marginBottom: 6 }}>
-                SUA CHAVE API GEMINI
+              <label className="form-label" htmlFor="ai-provider">Provedor de análise</label>
+              <select id="ai-provider" className="form-inp" value={provider} onChange={e => changeProvider(e.target.value)}>
+                <option value="openai">OpenAI</option><option value="gemini">Google Gemini</option>
+              </select>
+              <a href={provider === 'openai' ? 'https://platform.openai.com/api-keys' : 'https://aistudio.google.com/api-keys'} target="_blank" rel="noopener noreferrer">Criar chave no provedor</a>
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <label htmlFor="ai-key" style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#244d73', marginBottom: 6 }}>
+                Chave da API {providerLabel}
               </label>
               <input
-                type="text"
+                id="ai-key"
+                type="password"
+                autoComplete="off"
                 value={keyInput}
                 onChange={e => setKeyInput(e.target.value)}
-                placeholder="Cole sua chave aqui (ex: AQ.Ab8... ou AIza...)"
+                placeholder="Cole a chave do provedor selecionado"
                 style={{
                   width: '100%',
-                  background: 'rgba(15,23,42,0.8)',
+                  background: '#ffffff',
                   border: '1px solid rgba(255,255,255,0.15)',
                   borderRadius: 8,
                   padding: '12px 14px',
-                  color: '#fff',
+                  color: 'var(--text-main)',
                   fontSize: '0.9rem',
                   fontFamily: 'monospace'
                 }}
@@ -1793,15 +1806,15 @@ function App() {
                 onClick={handleSaveKey}
                 className="btn btn-primary"
                 style={{
-                  background: 'linear-gradient(135deg, #fbbf24, #d97706)',
-                  color: '#0f172a',
+                  background: 'var(--accent)',
+                  color: '#fff',
                   fontWeight: 800,
                   border: 'none',
                   padding: '8px 20px',
                   borderRadius: 8,
                   cursor: 'pointer'
                 }}>
-                💾 Salvar e Ativar IA
+                 Salvar chave nesta sessão
               </button>
             </div>
           </div>

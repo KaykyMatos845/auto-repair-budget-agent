@@ -6,6 +6,9 @@ services:
     image: ${BACKEND_IMAGE:?Set BACKEND_IMAGE to a shared registry image with version tag}
     environment:
       PORT: '5000'
+      AI_PROVIDER: ${AI_PROVIDER:-openai}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4.1}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
     networks:
