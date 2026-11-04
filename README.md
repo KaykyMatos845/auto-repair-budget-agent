@@ -31,12 +31,46 @@ componentes importados por eles pertencem à interface anterior e não entram no
 bundle atual. Foram preservados nesta revisão, assim como suas dependências.
 Scripts antigos de patch que editam JSX dentro de `index.html` não se aplicam à nova estrutura.
 
-Sem `GEMINI_API_KEY`, análises retornam dados simulados. Isso não valida IA real.
+Sem `GEMINI_API_KEY`, a análise retorna erro explícito (HTTP 503), sem inventar danos.
+Somente os botões de amostra carregam dados simulados, marcados como DEMONSTRAÇÃO.
 Use variável de ambiente ou `.env` local ignorado. A chave de contingência que
 estava embutida no servidor foi removida. A chave informada na interface segue em
 cada requisição de análise, sem depender de sessão no nó do Swarm. Não é necessário
 chamar `/api/set-key`, uma rota legada que ainda existe para compatibilidade.
 O histórico permanece no navegador: não há banco de dados compartilhado.
+
+## Análise visual e revisão
+
+O modelo padrão é `gemini-2.5-flash`; configure `GEMINI_MODEL` se necessário.
+Envie 1 a 4 fotos JPEG, PNG ou WebP, até 8 MB por foto, com visão geral e detalhes,
+boa iluminação e foco. A qualidade é avaliada pelo próprio modelo: não é uma
+medição independente de nitidez ou luminosidade.
+
+A IA retorna achados visíveis com evidência textual, foto de origem e localização
+quando disponível. Não preenche danos de contingência nem coordenadas fictícias.
+Dados do veículo informados pelo usuário são preservados. Respostas fora do contrato
+são rejeitadas; imagens insuficientes pedem novas fotos, sem sugerir reparos.
+Não há uma garantia automática de que cada observação seja verdadeira: o contrato
+valida estrutura e evidências declaradas, não substitui avaliação profissional.
+
+A IA não calcula preços ou horas. Preços iniciais são referências estimadas por
+regras locais; não representam cotação, estoque, procedência ou compatibilidade
+verificados. Horas começam em zero, decisão em "Avaliação presencial". Revise as
+evidências e ajuste decisão, modalidade de compra, preços e horas por item.
+Marque a revisão de cada item e confirme a revisão geral antes de salvar OS,
+compartilhar ou imprimir. Alterações posteriores invalidam a confirmação.
+Demonstrações continuam identificadas no documento e na OS.
+
+Falhas de autenticação, cota, rede e formato não viram sucesso simulado. As fotos
+não confirmam danos internos, segurança para circulação ou necessidade de troca.
+Para medir precisão, use casos reais com diagnóstico profissional de referência;
+os testes automatizados abaixo não medem acurácia do modelo em veículos reais.
+
+```sh
+python3 -m unittest discover -s tests -v
+# Com a aplicação na porta 3000, sem chave: valida também erros explícitos
+python3 stress_test.py
+```
 
 ## Swarm em duas VMs
 

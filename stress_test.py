@@ -199,29 +199,21 @@ def test_search_parts_invalid():
     log_result("partName com XSS e string longa (2000+ chars)", passed,
                f"HTTP {s} — servidor sobreviveu", lat)
 
+def visual_outcome(status, data):
+    # Distinguish actual AI success from an explicit provider error; never accept synthetic success.
+    return isinstance(data, dict) and (
+        (status == 200 and data.get('success') and data.get('aiPowered') is True) or
+        (status == 503 and data.get('success') is False and data.get('analysisMode') == 'error'))
+
+
 def test_analyze_damage():
-    print(f"\n{BOLD}{CYAN}━━━ Suite 4: /api/analyze-damage — Casos Válidos ━━━{RESET}")
-
-    # With real image (tiny PNG)
-    s, d, lat = post('/api/analyze-damage', {"images":[TINY_PNG], "vehicleInfo":{"brand":"Honda","model":"Civic","year":"2021"}})
-    passed = s == 200 and isinstance(d, dict) and d.get('success')
-    ai = "🤖 IA" if (isinstance(d, dict) and d.get('aiPowered')) else "📋 Fallback"
-    log_result(f"analyze-damage com imagem real → {ai}", passed, f"HTTP {s}", lat)
-
-    # Without images (empty array)
-    s, d, lat = post('/api/analyze-damage', {"images":[], "vehicleInfo":{"brand":"Toyota","model":"Corolla","year":"2020"}})
-    passed = s == 200 and isinstance(d, dict) and d.get('success')
-    log_result("analyze-damage sem imagens (array vazio) → fallback gracioso", passed, f"HTTP {s}", lat)
-
-    # Missing images key
-    s, d, lat = post('/api/analyze-damage', {"vehicleInfo":{"brand":"Fiat","model":"Argo","year":"2022"}})
-    passed = s == 200 and isinstance(d, dict) and d.get('success')
-    log_result("analyze-damage sem campo 'images' → fallback gracioso", passed, f"HTTP {s}", lat)
-
-    # No vehicle info
-    s, d, lat = post('/api/analyze-damage', {"images":[TINY_PNG]})
-    passed = s == 200 and isinstance(d, dict) and d.get('success')
-    log_result("analyze-damage sem vehicleInfo → 200 OK", passed, f"HTTP {s}", lat)
+    print('\nAnálise visual: sem fallback silencioso')
+    for vehicle in [{"brand": "Honda", "model": "Civic", "year": "2021"}, {}]:
+        s, d, lat = post('/api/analyze-damage', {"images": [TINY_PNG], "vehicleInfo": vehicle}, timeout=60)
+        log_result('Foto → IA real ou erro explícito (sem IA validada em caso de erro)', visual_outcome(s, d), f'HTTP {s}', lat)
+    for body in [{"images": []}, {"vehicleInfo": {}}]:
+        s, d, lat = post('/api/analyze-damage', body)
+        log_result('Sem fotos → 400, sem diagnóstico inventado', s == 400 and not d.get('success'), f'HTTP {s}', lat)
 
 def test_analyze_damage_invalid():
     print(f"\n{BOLD}{CYAN}━━━ Suite 5: /api/analyze-damage — Inputs Inválidos ━━━{RESET}")
@@ -238,8 +230,8 @@ def test_analyze_damage_invalid():
 
     # Imagem base64 inválida (string curta)
     s, d, lat = post('/api/analyze-damage', {"images":["abc","def","xyz"]})
-    passed = s == 200 and isinstance(d, dict) and d.get('success')
-    log_result("Imagens base64 inválidas/curtas → filtradas, fallback gracioso", passed, f"HTTP {s}", lat)
+    passed = s == 400 and isinstance(d, dict) and not d.get('success')
+    log_result("Imagens base64 inválidas → 400 sem fallback", passed, f"HTTP {s}", lat)
 
     # Body nulo
     s, d, lat = post('/api/analyze-damage', raw_body=b'', timeout=5)
@@ -320,7 +312,7 @@ def test_concurrent_requests():
     def analyze_worker():
         barrier2.wait()
         s, d, lat = post('/api/analyze-damage', {"images":[TINY_PNG], "vehicleInfo":{"brand":"Chevrolet","model":"Onix","year":"2021"}}, timeout=20)
-        ok = s == 200 and isinstance(d, dict) and d.get('success')
+        ok = visual_outcome(s, d)
         with LOCK:
             analyze_results.append((ok, lat))
 
@@ -329,7 +321,7 @@ def test_concurrent_requests():
     for t in threads2: t.join()
     p = sum(1 for ok,_ in analyze_results if ok)
     avg2 = sum(l for _,l in analyze_results) / len(analyze_results) if analyze_results else 0
-    log_result(f"5 analyze-damage simultâneas → {p}/5 sucesso",
+    log_result(f"5 analyze-damage simultâneas → {p}/5 respostas explícitas",
                p == 5, f"Avg: {avg2:.0f}ms")
 
 def test_response_times():

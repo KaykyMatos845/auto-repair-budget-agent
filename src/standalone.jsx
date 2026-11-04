@@ -306,6 +306,9 @@ function App() {
   const [parts, setParts] = useState([]);
   const [thirdParty, setThirdParty] = useState([]);
   const [analysis, setAnalysis] = useState(null);
+  const [analysisError, setAnalysisError] = useState('');
+  const [reviewConfirmed, setReviewConfirmed] = useState(false);
+  useEffect(() => { setReviewConfirmed(false); }, [parts, vehicle, thirdParty, analysis, images]);
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState('');
   const [apiKey, setApiKey] = useState(true);
@@ -328,6 +331,15 @@ function App() {
   const [osList, setOsList] = useState(() => {
     try { return JSON.parse(localStorage.getItem('autobudget_os_list') || '[]'); } catch(e) { return []; }
   });
+  const reviewComplete = !loading && !analysisError && parts.length > 0 &&
+    parts.every(p => p.reviewed) && reviewConfirmed;
+  const reviewLabel = analysis?.analysisMode === 'demo' ? 'DEMONSTRAÇÃO — dados simulados' :
+    reviewComplete ? 'Estimativa revisada pelo usuário' : 'RASCUNHO — revisão pendente';
+  const requireReview = () => {
+    if (reviewComplete) return true;
+    alert('Revise cada item, a decisão de reparo, as horas e os preços; depois confirme a revisão do orçamento.');
+    return false;
+  };
   const fileRef = useRef();
 
   useEffect(() => {
@@ -359,6 +371,7 @@ function App() {
   };
 
   const newInspection = () => {
+    setAnalysisError('');
     setImages([]);
     setVehicle({ brand: '', model: '', year: '', plate: '', color: '', clientName: '', fipeValue: 0 });
     setParts([]);
@@ -371,7 +384,7 @@ function App() {
     const num = Math.max(0, parseFloat(val) || 0);
     setParts(prev => prev.map(p => {
       if (p.id !== partId) return p;
-      return { ...p, ops: { ...(p.ops || DEFAULT_OPS), [opId]: num } };
+      return { ...p, reviewed: false, ops: { ...(p.ops || DEFAULT_OPS), [opId]: num } };
     }));
   };
 
@@ -380,14 +393,14 @@ function App() {
       if (p.id !== partId) return p;
       const current = parseFloat((p.ops || {})[opId]) || 0;
       const next = Math.max(0, parseFloat((current + delta).toFixed(1)));
-      return { ...p, ops: { ...(p.ops || DEFAULT_OPS), [opId]: next } };
+      return { ...p, reviewed: false, ops: { ...(p.ops || DEFAULT_OPS), [opId]: next } };
     }));
   };
 
   const toggleChoice = (partId, choice) => {
     setParts(prev => prev.map(p => {
       if (p.id !== partId) return p;
-      return { ...p, selectedChoice: p.selectedChoice === choice ? 'repair' : choice };
+      return { ...p, reviewed: false, selectedChoice: p.selectedChoice === choice ? 'repair' : choice };
     }));
   };
 
@@ -414,17 +427,18 @@ function App() {
       side: newPart.side,
       position: 'Manual',
       notes: newPart.notes || 'Adicionado manualmente pelo perito.',
-      box: [25, 25, 65, 65],
+      box: null,
+      reviewed: false,
       selectedChoice: isRepair ? 'repair' : (pUsed > 0 ? 'used' : 'new'),
       ops: { ...newPart.ops },
       newPrice: {
         brandName: (vehicle.brand || 'Veículo') + ' Original OEM',
         price: pNew,
         link: 'https://lista.mercadolivre.com.br/pecas-carros/' + slug + '-novo_OrderId_PRICE_ASC_NoIndex_True',
-        compatibility: 'Lado ' + newPart.side + ' • Em Estoque • Manual'
+        compatibility: 'Lado ' + newPart.side + ' • Valor informado manualmente'
       },
       usedPrice: {
-        brandName: 'Usada Certificada DETRAN (' + newPart.category + ')',
+        brandName: 'Peça usada — procedência a confirmar',
         price: pUsed,
         link: 'https://lista.mercadolivre.com.br/pecas-carros/' + slug + '-usado-original_OrderId_PRICE_ASC_NoIndex_True',
         compatibility: 'Lado ' + newPart.side + ' • Desmanche Credenciado DETRAN'
@@ -481,8 +495,17 @@ function App() {
   const isTotalLoss = fipeVal > 0 && parseFloat(fipePct) >= 75.0;
 
   const processFiles = async (files) => {
+    const selected = Array.from(files);
+    if (!selected.length) return;
+    if (selected.length > 4 || selected.some(f => !['image/jpeg', 'image/png', 'image/webp'].includes(f.type) || f.size > 8 * 1024 * 1024)) {
+      setAnalysisError('Selecione de 1 a 4 fotos JPEG, PNG ou WebP, com até 8 MB cada.');
+      return;
+    }
+    setAnalysisError('');
+    setParts([]);
+    setAnalysis(null);
     const imgs = [];
-    for (const f of Array.from(files)) {
+    for (const f of selected) {
       const blobUrl = URL.createObjectURL(f);
       const b64 = await new Promise(resolve => {
         const reader = new FileReader();
@@ -496,6 +519,7 @@ function App() {
 
   const analyze = async () => {
     if (!images.length) return;
+    setAnalysisError('');
     setLoading(true);
     setLoadingMsg('Inspecionando lataria, mecânica/suspensão e iluminação com IA...');
     try {
@@ -509,8 +533,8 @@ function App() {
           apiKey: savedKey 
         })
       });
-      if (!resp.ok) throw new Error('Falha no servidor: ' + resp.status);
       const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'A IA não concluiu a análise. Tente novamente.');
       if (data.error) throw new Error(data.error);
 
       // AUTO-FILL VEHICLE DATA IDENTIFIED BY AI
@@ -529,14 +553,15 @@ function App() {
       const enriched = rawParts.map((p, i) => ({
         ...p,
         id: p.id || ('p' + Date.now().toString().slice(-6) + i),
-        ops: p.ops || { fun: 0, pin: 0, tap: 0, mec: (p.category && p.category.includes('Mecânica') ? 2.5 : 0), rec: 0 },
-        selectedChoice: (p.actionRequired === 'Recuperação' || p.actionRequired === 'Pintura') ? 'repair' : 'used'
+        ops: { ...DEFAULT_OPS },
+        reviewed: false,
+        selectedChoice: p.selectedChoice || 'repair'
       }));
       setParts(enriched);
       setThirdParty([]);
-      setAnalysis({ aiPowered: data.aiPowered !== false });
+      setAnalysis(data);
     } catch(e) {
-      alert('Erro na análise: ' + e.message);
+      setAnalysisError(e.message);
     } finally {
       setLoading(false);
       setLoadingMsg('');
@@ -544,14 +569,16 @@ function App() {
   };
 
   const loadSample = (s) => {
+    setAnalysisError('');
     setImages([{ blobUrl: s.img, base64: '', name: 'sample.jpg' }]);
     setVehicle({ ...s.vehicle });
-    setParts(s.parts.map(p => ({ ...p, ops: p.ops || { ...DEFAULT_OPS } })));
+    setParts(s.parts.map(p => ({ ...p, reviewed: false, ops: p.ops || { ...DEFAULT_OPS } })));
     setThirdParty(s.thirdParty || []);
-    setAnalysis({ aiPowered: false });
+    setAnalysis({ aiPowered: false, analysisMode: 'demo' });
   };
 
   const saveOS = () => {
+    if (!requireReview()) return;
     const newOs = {
       id: 'OS-' + Date.now().toString().slice(-6),
       date: new Date().toLocaleDateString('pt-BR'),
@@ -561,6 +588,8 @@ function App() {
       total: budgetSel,
       fipePct: fipeVal > 0 ? fipePct : 'N/A',
       isTotalLoss: isTotalLoss,
+      analysisMode: analysis?.analysisMode || 'manual',
+      reviewStatus: reviewLabel,
       status: osStatus
     };
     const updated = [newOs, ...osList].slice(0, 50);
@@ -570,6 +599,7 @@ function App() {
   };
 
   const shareWhatsApp = () => {
+    if (!requireReview()) return;
     const pList = parts.map((p, i) => {
       const v = p.selectedChoice === 'new' ? (p.newPrice ? p.newPrice.price : 0) :
                 p.selectedChoice === 'used' ? (p.usedPrice ? p.usedPrice.price : 0) : 0;
@@ -583,6 +613,8 @@ function App() {
 
     const lines = [
       '🏎️ *ORÇAMENTO DE REPAROS AUTOMOTIVOS*',
+      reviewLabel,
+      'Preços estimados; confirmar cotação. Fotos não confirmam danos internos.',
       '📅 Data: ' + new Date().toLocaleDateString('pt-BR'),
       '🚗 Veículo: ' + (vehicle.brand || '') + ' ' + (vehicle.model || '') + ' (' + (vehicle.year || '') + ')',
       '🏷️ Placa: ' + (vehicle.plate || 'N/I') + ' | Cliente: ' + (vehicle.clientName || 'Cliente'),
@@ -758,7 +790,7 @@ function App() {
                     <tr key={os.id}>
                       <td style={{ fontWeight: 800, color: 'var(--gold-light)' }}>{os.id}</td>
                       <td>{os.date}</td>
-                      <td>{os.vehicle}</td>
+                      <td>{os.vehicle}<div>{os.reviewStatus || 'Registro anterior — origem não verificada'}</div></td>
                       <td><code style={{ background: 'rgba(255,255,255,0.06)', padding: '2px 6px', borderRadius: 4 }}>{os.plate}</code></td>
                       <td>{os.client || '—'}</td>
                       <td style={{ fontWeight: 800 }}>{fmt(os.total)}</td>
@@ -817,7 +849,7 @@ function App() {
               onDrop={e => { e.preventDefault(); processFiles(e.dataTransfer.files); }}
             >
               <div style={{ fontSize: '2.2rem', marginBottom: 6 }}>📸</div>
-              <div style={{ fontWeight: 800, fontSize: '0.95rem', marginBottom: 4 }}>Arraste fotos do veículo aqui ou clique para selecionar</div>
+              <div style={{ fontWeight: 800, fontSize: '0.95rem', marginBottom: 4 }}>Selecione até 4 fotos: visão geral, lados e detalhes dos danos</div>
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Formatos: JPG, PNG, WEBP (A IA identifica automaticamente o veículo e as avarias)</div>
               <input ref={fileRef} type="file" multiple accept="image/*" style={{ display: 'none' }} onChange={e => processFiles(e.target.files)} />
             </div>
@@ -829,7 +861,7 @@ function App() {
                     <img src={img.blobUrl} style={{ width: '100%', height: 'auto', display: 'block' }} alt={'Foto ' + (idx + 1)} />
                     {parts.map((p, pi) => {
                       const boxStyle = getBoxStyle(p.box);
-                      if (!boxStyle) return null;
+                      if (!boxStyle || (analysis?.aiPowered && p.imageIndex !== idx)) return null;
                       return (
                         <div key={p.id} className="bbox-overlay" style={boxStyle} title={p.name + ': ' + p.notes}>
                           <span className="bbox-label">#{pi + 1} {p.name.split(' ')[0]}</span>
@@ -892,19 +924,35 @@ function App() {
             <div style={{ marginTop: 16, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
               <button
                 className="btn btn-gold"
-                disabled={!images.length || loading}
+                disabled={!images.length || loading || images.some(img => !img.base64)}
                 onClick={analyze}
               >
                 {loading ? (loadingMsg || 'Analisando com IA...') : '🤖 Analisar Avarias com Gemini AI'}
               </button>
               {analysis && (
                 <span className="badge badge-ai">
-                  {analysis.aiPowered ? '✨ Laudo Gerado por IA' : '📂 Vistoria Carregada'}
+                  {analysis.analysisMode === 'demo' ? 'DEMONSTRAÇÃO — dados simulados' : 'Análise visual preliminar — requer revisão'}
                 </span>
               )}
             </div>
           </div>
 
+          {analysisError && <div role="alert" className="glass-panel" style={{ padding: 18, color: '#fda4af' }}>
+            Análise não concluída: {analysisError} Os itens anteriores, se houver, não são resultado desta tentativa.
+          </div>}
+          <section className="glass-panel" style={{ padding: 18, marginBottom: 20 }} aria-label="Revisão da análise">
+            <strong>{reviewLabel}</strong>
+            <p>Fotografe com boa luz e foco, incluindo visão geral e detalhes. Fotos não confirmam danos internos nem segurança para circulação.</p>
+            <p>Preços são referências por regras locais, sem estoque ou compatibilidade verificados. Confirme cotações, decisão de reparo e horas de serviço.</p>
+            {analysis?.damageAnalysis?.summary && <p>{analysis.damageAnalysis.summary}</p>}
+            {analysis?.imageQuality?.issues?.map((issue, i) => <p key={'q'+i}>Qualidade: {issue}</p>)}
+            {analysis?.limitations?.map((item, i) => <p key={'l'+i}>Limitação: {item}</p>)}
+            {analysis?.analysisMode === 'insufficient_images' && <p role="alert">Envie novas fotos com melhor iluminação, foco e ângulos. Nenhum dano foi confirmado.</p>}
+            {analysis?.analysisMode === 'visual' && parts.length === 0 && <p>Nenhum dano visível foi identificado. Isso não comprova ausência de danos.</p>}
+            <label><input type="checkbox" checked={reviewConfirmed}
+              disabled={!parts.length || !parts.every(p => p.reviewed) || !!analysisError || loading}
+              onChange={e => setReviewConfirmed(e.target.checked)} /> Revisei todos os itens, as horas, os preços e os dados do veículo.</label>
+          </section>
           {/* 4. PARTS & LABOR BREAKDOWN */}
           <div className="glass-panel" style={{ padding: '22px 24px', marginBottom: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
@@ -969,7 +1017,26 @@ function App() {
                           {part.actionRequired}
                         </span>
                       </div>
-                      {part.notes && <div className="part-notes">{part.notes}</div>}
+                      {part.notes && <div className="part-notes">{part.evidence ? 'Evidência: ' : ''}{part.notes}</div>}
+                      {part.evidence && <p>Foto {part.imageIndex + 1} • Achado visual, sem diagnóstico de danos internos.</p>}
+                      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                        {['newPrice', 'usedPrice'].map(priceKey => <label key={priceKey}>
+                          {priceKey === 'newPrice' ? 'Cotação nova (R$)' : 'Cotação usada (R$)'}
+                          <input type="number" min="0" step="0.01" value={part[priceKey]?.price || 0}
+                            aria-label={(priceKey === 'newPrice' ? 'Preço nova: ' : 'Preço usada: ') + part.name}
+                            onChange={e => setParts(prev => prev.map(p => p.id === part.id ? {
+                              ...p, reviewed: false, priceSource: 'user_entered',
+                              [priceKey]: { ...p[priceKey], price: Math.max(0, Number(e.target.value) || 0) }
+                            } : p))} />
+                        </label>)}
+                      </div>
+                      <label>Decisão após revisão: <select aria-label={'Decisão para ' + part.name}
+                        value={part.actionRequired}
+                        onChange={e => setParts(prev => prev.map(p => p.id === part.id ? { ...p, actionRequired: e.target.value, reviewed: false } : p))}>
+                        {['Avaliação presencial', 'Substituição', 'Recuperação', 'Pintura', 'Alinhamento'].map(action => <option key={action}>{action}</option>)}
+                      </select></label>
+                      <label style={{ display: 'block' }}><input type="checkbox" checked={!!part.reviewed}
+                        onChange={e => setParts(prev => prev.map(p => p.id === part.id ? { ...p, reviewed: e.target.checked } : p))} /> Revisei a evidência, a decisão, os valores e as horas deste item</label>
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -1074,7 +1141,7 @@ function App() {
                         {/* Validation Badge */}
                         <div style={{ marginTop: 6, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: 'var(--emerald-light)', background: 'rgba(16,185,129,0.08)', padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(16,185,129,0.25)' }}>
                           <span>🛡️</span>
-                          <span>{part.newPrice.compatibility || 'Lado Validado • Em Estoque Ativo'}</span>
+                          <span>{part.newPrice.compatibility || 'Compatibilidade e estoque não verificados'}</span>
                         </div>
 
                         {part.newPrice.link && part.newPrice.link !== '#' && (
@@ -1096,7 +1163,7 @@ function App() {
                         onClick={() => toggleChoice(part.id, 'used')}
                       >
                         <div className="price-option-header">
-                          <span className="badge badge-used">🟢 Usada Certificada DETRAN</span>
+                          <span className="badge badge-used">Usada — confirmar procedência</span>
                           {part.newPrice.price > part.usedPrice.price && (
                             <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--emerald-light)', background: 'rgba(16,185,129,0.15)', padding: '2px 6px', borderRadius: 4 }}>
                               −{(((part.newPrice.price - part.usedPrice.price) / part.newPrice.price) * 100).toFixed(0)}% OFF
@@ -1111,7 +1178,7 @@ function App() {
                         {/* Validation Badge */}
                         <div style={{ marginTop: 6, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: 'var(--emerald-light)', background: 'rgba(16,185,129,0.08)', padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(16,185,129,0.25)' }}>
                           <span>🛡️</span>
-                          <span>{part.usedPrice.compatibility || 'Lado Validado • Em Estoque Ativo'}</span>
+                          <span>{part.usedPrice.compatibility || 'Compatibilidade e estoque não verificados'}</span>
                         </div>
 
                         {part.usedPrice && part.usedPrice.link && part.usedPrice.link !== '#' && (
@@ -1503,7 +1570,7 @@ function App() {
                 <button className="btn btn-whatsapp" onClick={shareWhatsApp}>
                   💬 Enviar Orçamento no WhatsApp
                 </button>
-                <button className="btn btn-gold" onClick={() => setShowPdf(true)}>
+                <button className="btn btn-gold" onClick={() => { if (requireReview()) setShowPdf(true); }}>
                   📄 Imprimir / Exportar PDF
                 </button>
                 
@@ -1542,12 +1609,12 @@ function App() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <div>
                 <h2 style={{ fontFamily: "'Outfit', sans-serif", color: '#0f172a', fontSize: '1.3rem', fontWeight: 900 }}>
-                  AutoBudget AI — Laudo & Orçamento de Reparos
+                  AutoBudget AI — Estimativa de Reparos
                 </h2>
-                <p style={{ fontSize: '0.8rem', color: '#64748b' }}>Documento de Vistoria Técnica e Precificação</p>
+                <p style={{ fontSize: '0.8rem', color: '#64748b' }}>{reviewLabel} • Valores estimados, sujeitos a cotação e inspeção presencial</p>
               </div>
               <button
-                onClick={() => window.print()}
+                onClick={() => { if (requireReview()) window.print(); }}
                 style={{ background: '#f59e0b', color: '#000', border: 'none', padding: '9px 18px', borderRadius: 8, cursor: 'pointer', fontWeight: 800 }}
               >
                 🖨️ Imprimir Laudo

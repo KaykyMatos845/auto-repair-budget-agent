@@ -525,3 +525,5 @@
       }
       .no-print { display: none !important; }
     }
+
+.badge-replace { background: var(--rose-glow); color: var(--rose-light); border: 1px solid rgba(244,63,94,0.35); }
