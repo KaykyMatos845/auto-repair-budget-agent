@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
+import { requestJson } from './api.js';
 import './styles.css';
 
 const LABOR_RATE = 80;
@@ -340,8 +341,12 @@ function App() {
   };
   const fileRef = useRef();
 
+  const refreshLocalStatus = () => requestJson('/api/health')
+    .then(setLocalStatus)
+    .catch(error => setLocalStatus({ connectionError: error.message }));
+
   useEffect(() => {
-    fetch('/api/health').then(r => r.json()).then(setLocalStatus).catch(() => {});
+    refreshLocalStatus();
   }, []);
 
   const setVField = (field, value) => {
@@ -501,7 +506,7 @@ function App() {
     setLoading(true);
     setLoadingMsg('Analisando danos externos visíveis...');
     try {
-      const resp = await fetch('/api/analyze', {
+      const data = await requestJson('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -509,9 +514,6 @@ function App() {
           vehicle
         })
       });
-      const data = await resp.json();
-      if (!resp.ok) throw new Error((data.error || 'O detector local não concluiu a análise. Tente novamente.') + (data.code ? ' (Código: ' + data.code + ')' : ''));
-      if (data.error) throw new Error(data.error);
 
       // AUTO-FILL VEHICLE DATA IDENTIFIED BY AI
       if (data.vehicle) {
@@ -541,7 +543,7 @@ function App() {
     } finally {
       setLoading(false);
       setLoadingMsg('');
-      fetch('/api/health').then(r => r.json()).then(setLocalStatus).catch(() => {});
+      refreshLocalStatus();
     }
   };
 
@@ -880,7 +882,13 @@ function App() {
             </div>
           </div>
 
-          {localStatus && (!localStatus.dependenciesInstalled || !localStatus.modelInstalled) &&
+          {localStatus?.connectionError &&
+            <section className="panel" style={{ padding: 18, marginBottom: 20 }} role="alert">
+              <strong>Sem comunicação com o servidor de análise</strong>
+              <p>{localStatus.connectionError}</p>
+              <button className="btn-primary" onClick={refreshLocalStatus}>Verificar conexão novamente</button>
+            </section>}
+          {localStatus && !localStatus.connectionError && (!localStatus.dependenciesInstalled || !localStatus.modelInstalled) &&
             <section className="panel" style={{ padding: 18, marginBottom: 20 }} aria-label="Instalação do detector">
               <strong>Prepare o detector local uma vez</strong>
               <p>Na pasta do projeto, com o ambiente Python ativo:</p>

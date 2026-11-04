@@ -9,20 +9,35 @@ abrindo sites externos quando você clicar neles.
 ## Instalar no Windows
 
 Instale **Python 3.12 de 64 bits** e **Node.js 22 ou superior**. Extraia o ZIP,
-abra o terminal dentro da pasta do projeto e execute:
+abra o terminal dentro da pasta do projeto e execute um comando por vez. Se um
+comando falhar, resolva esse erro antes de continuar.
+
+Confira primeiro `py -3.12 --version`. Se aparecer “No suitable Python runtime
+found”, instale com `winget install --exact --id Python.Python.3.12`, reabra o
+PowerShell e confira a versão novamente. A criação do ambiente deve terminar sem
+erros; depois, `Test-Path .\.venv\Scripts\python.exe` deve retornar `True`.
+
+Execute:
 
 ```powershell
 py -3.12 -m venv .venv
-.venv\Scripts\python.exe -m pip install -r requirements.txt
-.venv\Scripts\python.exe scripts\download_model.py
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe scripts\download_model.py
 npm ci
 npm run build
-.venv\Scripts\python.exe server.py
+.\.venv\Scripts\python.exe server.py
 ```
 
 Abra **http://localhost:5000**. Para iniciar nas próximas vezes, basta executar
-`.venv\Scripts\python.exe server.py` na mesma pasta. Não é necessário ativar o
+`.\.venv\Scripts\python.exe server.py` na mesma pasta. Não é necessário ativar o
 ambiente no PowerShell nem alterar a política de execução.
+
+Se o front abrir, mas a análise não responder, acesse
+**http://localhost:5000/api/health**. Essa página deve mostrar um JSON. Se não
+abrir, confira o terminal do Python: `npm run dev` sozinho inicia apenas o front.
+No modo de desenvolvimento, mantenha dois terminais abertos: um com o servidor
+Python acima e outro com `npm run dev`, acessando a URL indicada pelo Vite.
+No modo de produção, após o build, o Python serve front e análise juntos em 5000.
 
 ## Instalar no Linux/macOS
 
@@ -103,7 +118,7 @@ Para testar com dependências e pesos instalados:
 
 ```sh
 .venv/bin/python -m unittest discover -s tests -v
-# no Windows, use .venv\Scripts\python.exe no lugar de .venv/bin/python
+# no Windows, use .\.venv\Scripts\python.exe no lugar de .venv/bin/python
 # com o servidor na porta 3000 (PORT=3000 no .env):
 .venv/bin/python stress_test.py
 ```
