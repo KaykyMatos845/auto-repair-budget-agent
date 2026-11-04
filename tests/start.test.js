@@ -1,6 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { findPython, pythonCandidates } from '../scripts/start.mjs';
+import { findPython, pythonCandidates, supportedNode } from '../scripts/start.mjs';
+
+test('startup reports an incompatible Node version before trying the build', () => {
+  assert.equal(supportedNode('20.19.0'), false);
+  assert.equal(supportedNode('22.0.0'), false);
+  assert.equal(supportedNode('22.12.0'), true);
+  assert.equal(supportedNode('24.22.1'), true);
+});
 
 test('Windows prefers the project environment and passes paths with spaces without a shell', () => {
   const directory = 'C:/Users/Kayky Matos/AutoBudget';

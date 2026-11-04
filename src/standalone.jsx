@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
+import { Wrench, Plus, History, Camera, Upload, ArrowRight, Check, ShieldCheck, FileText, X, LoaderCircle, ImagePlus, Layers } from 'lucide-react';
 import { requestJson } from './api.js';
 import './styles.css';
 
@@ -12,6 +13,13 @@ const OPS = [
   { id: 'rec', label: 'Recuperação', icon: '' }
 ];
 const DEFAULT_OPS = { fun: 0, pin: 0, tap: 0, mec: 0, rec: 0 };
+
+function scrollToSection(id) {
+  document.getElementById(id)?.scrollIntoView({
+    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    block: 'start'
+  });
+}
 
 function fmt(v) {
   if (typeof v !== 'number' || isNaN(v)) return 'R$ 0,00';
@@ -312,8 +320,15 @@ function App() {
   useEffect(() => { setReviewConfirmed(false); }, [parts, vehicle, thirdParty, analysis, images]);
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState('');
+  useEffect(() => { if (analysis && !loading) scrollToSection('inspection-result'); }, [analysis, loading]);
   const [localStatus, setLocalStatus] = useState(null);
   const [detailedAnalysis, setDetailedAnalysis] = useState(true);
+  const [notice, setNotice] = useState(null);
+  useEffect(() => {
+    if (!notice) return;
+    const timer = setTimeout(() => setNotice(null), 6000);
+    return () => clearTimeout(timer);
+  }, [notice]);
   const [showPdf, setShowPdf] = useState(false);
   const [showAddPart, setShowAddPart] = useState(false);
   const [newPart, setNewPart] = useState({
@@ -338,10 +353,22 @@ function App() {
     reviewComplete ? 'Estimativa revisada pelo usuário' : 'RASCUNHO — revisão pendente';
   const requireReview = () => {
     if (reviewComplete) return true;
-    alert('Revise cada item, a decisão de reparo, as horas e os preços; depois confirme a revisão do orçamento.');
+    setNotice({ text: 'Revise os itens, as horas e os preços antes de finalizar o orçamento.', type: 'info' });
+    scrollToSection('review-confirmation');
     return false;
   };
   const fileRef = useRef();
+  const analysisRequest = useRef(null);
+  const cancelAnalysis = () => {
+    analysisRequest.current?.abort();
+    analysisRequest.current = null;
+    setLoading(false);
+    setLoadingMsg('');
+  };
+  useEffect(() => () => { analysisRequest.current?.abort(); }, []);
+  useEffect(() => () => {
+    images.forEach(image => { if (image.blobUrl.startsWith('blob:')) URL.revokeObjectURL(image.blobUrl); });
+  }, [images]);
 
   const refreshLocalStatus = () => requestJson('/api/health')
     .then(setLocalStatus)
@@ -356,6 +383,7 @@ function App() {
   };
 
   const newInspection = () => {
+    cancelAnalysis();
     setAnalysisError('');
     setImages([]);
     setVehicle({ brand: '', model: '', year: '', plate: '', color: '', clientName: '', fipeValue: 0 });
@@ -395,7 +423,7 @@ function App() {
 
   const saveManualPart = () => {
     if (!newPart.name.trim()) {
-      alert('Por favor informe o nome da peça.');
+      setNotice({ text: 'Informe o nome da peça para continuar.', type: 'info' });
       return;
     }
 
@@ -486,6 +514,7 @@ function App() {
       setAnalysisError('Selecione de 1 a 4 fotos JPEG, PNG ou WebP, com até 8 MB cada.');
       return;
     }
+    cancelAnalysis();
     setAnalysisError('');
     setParts([]);
     setAnalysis(null);
@@ -504,11 +533,15 @@ function App() {
 
   const analyze = async () => {
     if (!images.length) return;
+    analysisRequest.current?.abort();
+    const controller = new AbortController();
+    analysisRequest.current = controller;
     setAnalysisError('');
     setLoading(true);
     setLoadingMsg('Analisando danos externos visíveis...');
     try {
       const data = await requestJson('/api/analyze', {
+        signal: controller.signal,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -517,18 +550,7 @@ function App() {
           vehicle
         })
       });
-
-      // AUTO-FILL VEHICLE DATA IDENTIFIED BY AI
-      if (data.vehicle) {
-        setVehicle(prev => ({
-          ...prev,
-          brand: data.vehicle.brand && data.vehicle.brand !== 'Veículo Identificado' ? data.vehicle.brand : (prev.brand || data.vehicle.brand || ''),
-          model: data.vehicle.model && data.vehicle.model !== 'Modelo Identificado' ? data.vehicle.model : (prev.model || data.vehicle.model || ''),
-          year: data.vehicle.year && data.vehicle.year !== 'N/A' ? data.vehicle.year : (prev.year || data.vehicle.year || ''),
-          color: data.vehicle.color && data.vehicle.color !== 'N/A' ? data.vehicle.color : (prev.color || data.vehicle.color || ''),
-          fipeValue: prev.fipeValue || 0
-        }));
-      }
+      if (analysisRequest.current !== controller) return;
 
       const rawParts = data.parts || (data.damageAnalysis && data.damageAnalysis.parts) || [];
       const enriched = rawParts.map((p, i) => ({
@@ -542,15 +564,19 @@ function App() {
       setThirdParty([]);
       setAnalysis(data);
     } catch(e) {
-      setAnalysisError(e.message);
+      if (!controller.signal.aborted && analysisRequest.current === controller) setAnalysisError(e.message);
     } finally {
-      setLoading(false);
-      setLoadingMsg('');
-      refreshLocalStatus();
+      if (analysisRequest.current === controller) {
+        analysisRequest.current = null;
+        setLoading(false);
+        setLoadingMsg('');
+        refreshLocalStatus();
+      }
     }
   };
 
   const loadSample = (s) => {
+    cancelAnalysis();
     setAnalysisError('');
     setImages([{ blobUrl: s.img, base64: '', name: 'sample.jpg' }]);
     setVehicle({ ...s.vehicle });
@@ -575,9 +601,13 @@ function App() {
       status: osStatus
     };
     const updated = [newOs, ...osList].slice(0, 50);
-    setOsList(updated);
-    localStorage.setItem('autobudget_os_list', JSON.stringify(updated));
-    alert(' Ordem de Serviço ' + newOs.id + ' salva com sucesso!');
+    try {
+      localStorage.setItem('autobudget_os_list', JSON.stringify(updated));
+      setOsList(updated);
+      setNotice({ text: 'Ordem de serviço ' + newOs.id + ' salva no histórico.', type: 'success' });
+    } catch {
+      setNotice({ text: 'O navegador não permitiu salvar. Exporte o orçamento em PDF.', type: 'info' });
+    }
   };
 
   const shareWhatsApp = () => {
@@ -624,33 +654,46 @@ function App() {
     <div className="wrap">
 
       {/* HEADER */}
-      <header className="panel" style={{ padding: '18px 24px', marginBottom: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', color: '#fff', fontWeight: 700 }}>AB</div>
-          <div>
-            <h1 style={{ fontSize: '1.25rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ color: 'var(--text-main)' }}>AutoBudget AI</span>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: 4 }}>v3.0 PRO</span>
-            </h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
-              Vistoria Computacional • Mão de Obra R$ 80,00/h fixo • FIPE Integrada • Peças Mercado Livre
-            </p>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          <button className="btn btn-ghost" onClick={newInspection} title="Limpar tudo e iniciar novo orçamento" style={{ borderColor: 'rgba(36,77,115,0.4)', color: 'var(--accent-light)' }}>
-             Nova Vistoria
-          </button>
-          <button className="btn btn-ghost" onClick={() => setActiveTab(activeTab === 'history' ? 'budget' : 'history')}>
-             Histórico ({osList.length})
-          </button>
-          <a href="/slides.html" target="_blank" rel="noopener noreferrer" className="btn btn-ghost" style={{ textDecoration: 'none', borderColor: 'rgba(36,77,115,0.4)', color: '#244d73' }} title="Abrir slides de apresentação do projeto">
-             Slides
-          </a>
-          <span className="badge badge-ai">Análise local • CPU</span>
-        </div>
+      <header className="app-header">
+        <a className="brand" href="#" onClick={e => { e.preventDefault(); setActiveTab('budget'); }} aria-label="AutoBudget, início">
+          <span className="brand-mark"><Wrench size={23} strokeWidth={2} /></span>
+          <span><strong>AutoBudget<span> AI</span></strong><small>Vistorias & orçamentos</small></span>
+        </a>
+        <nav className="app-nav" aria-label="Navegação principal">
+          <button className={activeTab === 'budget' ? 'nav-link active' : 'nav-link'} onClick={() => setActiveTab('budget')} aria-current={activeTab === 'budget' ? 'page' : undefined}><Layers size={17} /> Vistoria</button>
+          <button className={activeTab === 'history' ? 'nav-link active' : 'nav-link'} onClick={() => setActiveTab('history')} aria-current={activeTab === 'history' ? 'page' : undefined}><History size={17} /> Histórico <span className="nav-count">{osList.length}</span></button>
+        </nav>
+        <button className="btn btn-primary" onClick={() => { newInspection(); setActiveTab('budget'); }}><Plus size={17} /> Nova Vistoria</button>
       </header>
+
+      {activeTab === 'budget' && <>
+        <section className="workspace-hero" aria-label="Visão geral da vistoria">
+          <div className="hero-copy">
+            <span className="hero-kicker"><span /> Sua oficina, mais organizada</span>
+            <h1>Do primeiro detalhe<br />ao próximo reparo.</h1>
+            <p>Reúna as fotos, revise os danos e monte um orçamento claro para o seu cliente.</p>
+            <div className="hero-footnote"><ShieldCheck size={16} /> Análise local <span>·</span> Fotos sob seu controle</div>
+          </div>
+          <div className="hero-overview">
+            <span className="hero-overview-title">Esta vistoria <span className="live-indicator" /></span>
+            <div className="hero-metrics">
+              <div><span><Camera size={16} /> Fotos</span><strong>{String(images.length).padStart(2, '0')}<small> / 04</small></strong></div>
+              <div><span><Wrench size={16} /> Itens</span><strong>{String(parts.length).padStart(2, '0')}<small> para revisar</small></strong></div>
+            </div>
+            <div className="hero-estimate"><span>Estimativa atual</span><strong>{fmt(budgetSel)}</strong><small>{reviewComplete ? 'Revisada por você' : 'Em elaboração · valores sujeitos a revisão'}</small></div>
+          </div>
+        </section>
+        <ol className="workflow" aria-label="Etapas da vistoria">
+          {[
+            ['Fotos', 'inspection-photos', images.length > 0],
+            ['Veículo', 'vehicle-data', !!vehicle.brand && !!vehicle.model],
+            ['Revisão', 'inspection-items', parts.length > 0 && parts.every(p => p.reviewed)],
+            ['Orçamento', 'review-confirmation', reviewComplete]
+          ].map(([label, target, complete], index) => <li key={target} className={complete ? 'complete' : ''}>
+            <a href={'#' + target}><span>{complete ? <Check size={14} /> : '0' + (index + 1)}</span>{label}</a>
+          </li>)}
+        </ol>
+      </>}
 
       {/* FIPE & BUDGET SUMMARY BAR (Top persistent) */}
       {parts.length > 0 && (
@@ -761,51 +804,46 @@ function App() {
         <div>
 
           {/* 1. SAMPLES PRESETS */}
-          <div className="panel" style={{ padding: '18px 22px', marginBottom: 20 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                 Carregar exemplo simulado (demonstração)
-              </div>
-              <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: '0.72rem' }} onClick={newInspection}>
-                 Limpar Campos
-              </button>
-            </div>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <details className="sample-library">
+            <summary><Layers size={16} /> Conheça o fluxo com exemplos simulados <span>Demonstração</span></summary>
+            <p>Estes orçamentos são fictícios. Para analisar suas fotos, use o envio abaixo.</p>
+            <div className="sample-grid">
               {SAMPLES.map(s => (
                 <button
                   key={s.id}
-                  className="btn btn-ghost"
+                  className="sample-card"
                   onClick={() => loadSample(s)}
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '10px 16px', gap: 2 }}
                 >
-                  <span style={{ fontWeight: 800, fontSize: '0.88rem', color: 'var(--text-main)' }}>{s.label}</span>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>{s.sub}</span></button>
+                  <img src={s.img} alt="" loading="lazy" /><span><strong>{s.label}</strong><small>Carregar orçamento de demonstração</small></span><ArrowRight size={17} /></button>
               ))}
             </div>
-          </div>
+          </details>
 
+          <div className="inspection-workspace">
           {/* 2. PHOTOS UPLOAD & BOUNDING BOXES */}
-          <div className="panel" style={{ padding: '20px 24px', marginBottom: 20 }}>
-            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12 }}>
-               Fotos do veículo
-            </div>
+          <section className={'panel photo-panel' + (loading ? ' is-scanning' : '')} id="inspection-photos" aria-label="Fotos do veículo">
+            <div className="panel-heading"><span className="section-icon"><Camera size={19} /></span><div><h2>Fotos do veículo</h2><p>Uma visão geral e os detalhes fazem a diferença.</p></div><span className="photo-counter">{images.length}/4</span></div>
 
             <div
               className="upload-box"
+              role="button" tabIndex={0} aria-label="Selecionar fotos do veículo"
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileRef.current.click(); } }}
               onClick={() => fileRef.current.click()}
               onDragOver={e => e.preventDefault()}
               onDrop={e => { e.preventDefault(); processFiles(e.dataTransfer.files); }}
             >
-              <div style={{ fontSize: '2.2rem', marginBottom: 6 }}></div>
-              <div style={{ fontWeight: 800, fontSize: '0.95rem', marginBottom: 4 }}>Selecione até 4 fotos: visão geral, lados e detalhes dos danos</div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>JPG, PNG ou WebP • Até 8 MB e 24 megapixels por foto. Use imagens próximas, com boa luz e foco.</div>
+              <span className="upload-icon"><ImagePlus size={30} strokeWidth={1.5} /></span>
+              <strong>{images.length ? 'Trocar fotos da vistoria' : 'Solte suas fotos aqui'}</strong>
+              <span>ou <b>escolha os arquivos</b> no computador</span>
+              <small>Até 4 fotos · JPG, PNG ou WebP · 8 MB e 24 MP por foto</small>
               <input ref={fileRef} type="file" multiple accept="image/*" style={{ display: 'none' }} onChange={e => processFiles(e.target.files)} />
             </div>
 
             {images.length > 0 && (
-              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 18 }}>
+              <div className="photo-gallery">
                 {images.map((img, idx) => (
-                  <div key={idx} className="img-box-container" style={{ position: 'relative', width: '100%', maxWidth: 540, borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border-accent)', background: '#000' }}>
+                  <div key={idx} id={'inspection-photo-' + idx} className="img-box-container" style={{ position: 'relative', width: '100%', maxWidth: 540, borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border-accent)', background: '#000' }}>
                     <img src={img.blobUrl} style={{ width: '100%', height: 'auto', display: 'block' }} alt={'Foto ' + (idx + 1)} />
                     {parts.map((p, pi) => {
                       const boxStyle = getBoxStyle(p.box);
@@ -820,23 +858,19 @@ function App() {
                 ))}
               </div>
             )}
-          </div>
+            {loading && <div className="analysis-progress" role="status"><LoaderCircle size={16} className="spin" /><span>Procurando regiões de dano nas fotos…</span></div>}
+            <div className="photo-tip"><ShieldCheck size={16} /><span>Use boa luz e evite reflexos. As fotos são processadas neste servidor.</span></div>
+          </section>
 
           {/* 3. VEHICLE DATA (Auto-filled by AI) */}
-          <div className="panel" style={{ padding: '20px 24px', marginBottom: 20 }}>
+          <section className="panel vehicle-panel" id="vehicle-data" aria-label="Dados do veículo">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <div>
-                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                   Dados do Veículo e Cliente (Preenchimento manual)
-                </div>
-                <p style={{ fontSize: '0.74rem', color: 'var(--text-dim)' }}>Preencha marca, modelo, ano e cor. O detector local identifica somente regiões suspeitas de danos.</p>
+                <div className="panel-heading"><span className="section-icon"><Wrench size={19} /></span><div><h2>Dados da vistoria</h2><p>Identifique o veículo e o cliente.</p></div></div>
               </div>
-              <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: '0.72rem' }} onClick={newInspection}>
-                 Nova Vistoria
-              </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+            <div className="vehicle-fields">
               {[
                 ['brand', 'Marca', 'Informe a marca'],
                 ['model', 'Modelo', 'Informe o modelo'],
@@ -846,8 +880,9 @@ function App() {
                 ['clientName', 'Cliente', 'Nome do proprietário']
               ].map(([key, label, placeholder]) => (
                 <div key={key}>
-                  <label className="form-label">{label}</label>
+                  <label className="form-label" htmlFor={'vehicle-' + key}>{label}</label>
                   <input
+                    id={'vehicle-' + key}
                     className="form-inp"
                     placeholder={placeholder}
                     value={vehicle[key] || ''}
@@ -880,13 +915,14 @@ function App() {
                 <small>O modo detalhado procura também em áreas ampliadas e usa mais CPU.</small>
               </label>
               <button
-                className="btn btn-primary"
+                className="btn btn-primary analyze-button"
                 disabled={!images.length || loading || images.some(img => !img.base64)}
                 onClick={analyze}
               >
-                {loading ? (loadingMsg || 'Analisando com IA...') : 'Analisar fotos neste servidor'}
+                {loading ? <><LoaderCircle size={18} className="spin" />{loadingMsg || 'Analisando fotos...'}</> : <><Upload size={17} />Analisar fotos neste servidor<ArrowRight size={17} /></>}
               </button>
             </div>
+          </section>
           </div>
 
           {localStatus?.connectionError &&
@@ -904,7 +940,7 @@ function App() {
           {analysisError && <div role="alert" className="panel" style={{ padding: 18, color: '#a73232' }}>
             Análise não concluída: {analysisError} Os itens anteriores, se houver, não são resultado desta tentativa.
           </div>}
-          {(analysis || parts.length > 0) && <section className="panel inspection-result" aria-label="Resultado da análise">
+          {(analysis || parts.length > 0) && <section className="panel inspection-result" id="inspection-result" aria-label="Resultado da análise">
             <div className="inspection-result-heading">
               <div>
                 <p className="section-eyebrow">{analysis?.analysisMode === 'demo' ? 'Demonstração · dados simulados' : 'Resultado da vistoria'}</p>
@@ -934,7 +970,7 @@ function App() {
             </details>
           </section>}
           {/* 4. PARTS & LABOR BREAKDOWN */}
-          <div className="panel" style={{ padding: '22px 24px', marginBottom: 20 }}>
+          <div className="panel items-panel" id="inspection-items" style={{ padding: '22px 24px', marginBottom: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
               <div>
                 <h2 style={{ fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -957,7 +993,7 @@ function App() {
                    Adicionar Peça / Item Manual
                 </button>
                 {parts.length > 0 && (
-                  <div style={{ background: 'rgba(36,77,115,0.1)', border: '1px solid var(--border-accent)', borderRadius: 'var(--radius-sm)', padding: '6px 14px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--accent-light)' }}>
+                  <div style={{ background: 'rgba(11,120,108,0.1)', border: '1px solid var(--border-accent)', borderRadius: 'var(--radius-sm)', padding: '6px 14px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--accent-light)' }}>
                     Total M.O. Peças: {fmt(totalLaborParts)}
                   </div>
                 )}
@@ -998,10 +1034,10 @@ function App() {
                         </span>
                       </div>
                       {part.evidence && images[part.imageIndex] && <div className="finding-preview">
-                        <div className="finding-photo">
+                        <a className="finding-photo" href={'#inspection-photo-' + part.imageIndex} aria-label={'Ver foto ' + (part.imageIndex + 1) + ': ' + part.name} title="Ver a foto maior">
                           <img src={images[part.imageIndex].blobUrl} alt={'Região sugerida: ' + part.name} />
                           {getBoxStyle(part.box) && <span className="bbox-overlay" style={getBoxStyle(part.box)} />}
-                        </div>
+                        </a>
                         <div>
                           <strong>Foto {part.imageIndex + 1} · região sugerida</strong>
                           <p>{part.detectedName ? `Identificação corrigida por você. Sugestão original: ${part.detectedName}.` : 'Confira na foto se a peça e o dano correspondem à sugestão.'}</p>
@@ -1100,6 +1136,7 @@ function App() {
                               step="0.5"
                               min="0"
                               className="op-num-input"
+                              aria-label={op.label + ' para ' + part.name}
                               value={ops[op.id] !== undefined ? ops[op.id] : 0}
                               onChange={e => setPartOp(part.id, op.id, e.target.value)}
                             />
@@ -1198,7 +1235,7 @@ function App() {
 
                   {/* Notice if recovery */}
                   {isRepair && (!part.newPrice || part.newPrice.price === 0) && (
-                    <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.82rem', padding: '10px 14px', background: 'rgba(36,77,115,0.04)', borderRadius: 'var(--radius-sm)', border: '1px dashed var(--border-accent)', marginTop: 8 }}>
+                    <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.82rem', padding: '10px 14px', background: 'rgba(11,120,108,0.04)', borderRadius: 'var(--radius-sm)', border: '1px dashed var(--border-accent)', marginTop: 8 }}>
                        <strong>Serviço de Recuperação</strong> — Sem necessidade de aquisição de peça de reposição.
                     </div>
                   )}
@@ -1208,7 +1245,7 @@ function App() {
             })}
           </div>
 
-          {parts.length > 0 && <section className="panel review-confirmation" aria-label="Revisão da análise">
+          {parts.length > 0 && <section className="panel review-confirmation" id="review-confirmation" aria-label="Revisão da análise">
             <div>
               <h3>{reviewComplete ? 'Orçamento revisado' : 'Concluir revisão'}</h3>
               <p>{reviewedCount < parts.length ? `Revise os ${parts.length - reviewedCount} itens pendentes antes de finalizar.` :
@@ -1223,10 +1260,13 @@ function App() {
           {/* MODAL: ADD MANUAL PART */}
           {showAddPart && (
             <div
+              className="modal-overlay"
               style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
               onClick={() => setShowAddPart(false)}
             >
               <div
+                className="modal-card" role="dialog" aria-modal="true" aria-label="Adicionar peça"
+                onKeyDown={e => { if (e.key === 'Escape') setShowAddPart(false); }}
                 style={{ background: 'var(--card-bg)', color: 'var(--text-main)', borderRadius: 14, padding: '28px 32px', maxWidth: 640, width: '100%', maxHeight: '90vh', overflowY: 'auto', border: '1px solid var(--border-accent)', boxShadow: '0 20px 50px rgba(0,0,0,0.7)' }}
                 onClick={e => e.stopPropagation()}
               >
@@ -1242,8 +1282,10 @@ function App() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                   <div>
-                    <label className="form-label">NOME DA PEÇA / COMPONENTE *</label>
+                    <label className="form-label" htmlFor="manual-name">Nome da peça / componente *</label>
                     <input
+                      id="manual-name"
+                      autoFocus
                       className="form-inp"
                       placeholder="Ex: Eixo Traseiro, Lanterna Traseira Esquerda, Parabarro..."
                       value={newPart.name}
@@ -1252,10 +1294,11 @@ function App() {
                     />
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div className="manual-fields">
                     <div>
-                      <label className="form-label">CATEGORIA</label>
+                      <label className="form-label" htmlFor="manual-category">Categoria</label>
                       <select
+                        id="manual-category"
                         className="form-inp"
                         value={newPart.category}
                         onChange={e => setNewPart({ ...newPart, category: e.target.value })}
@@ -1270,8 +1313,9 @@ function App() {
                     </div>
 
                     <div>
-                      <label className="form-label">TIPO DE AÇÃO REQUERIDA</label>
+                      <label className="form-label" htmlFor="manual-action">Decisão de reparo</label>
                       <select
+                        id="manual-action"
                         className="form-inp"
                         value={newPart.actionRequired}
                         onChange={e => setNewPart({ ...newPart, actionRequired: e.target.value })}
@@ -1284,10 +1328,11 @@ function App() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div className="manual-fields">
                     <div>
-                      <label className="form-label">LADO / POSIÇÃO</label>
+                      <label className="form-label" htmlFor="manual-side">Lado / posição</label>
                       <select
+                        id="manual-side"
                         className="form-inp"
                         value={newPart.side}
                         onChange={e => setNewPart({ ...newPart, side: e.target.value })}
@@ -1299,8 +1344,9 @@ function App() {
                     </div>
 
                     <div>
-                      <label className="form-label">PREÇO ESTIMADO NOVA OEM (R$)</label>
+                      <label className="form-label" htmlFor="manual-price-new">Cotação da peça nova (R$)</label>
                       <input
+                        id="manual-price-new"
                         type="number"
                         className="form-inp"
                         placeholder="Ex: 850,00"
@@ -1311,8 +1357,9 @@ function App() {
                   </div>
 
                   <div>
-                    <label className="form-label">PREÇO ESTIMADO USADA DETRAN (R$ - Opcional)</label>
+                    <label className="form-label" htmlFor="manual-price-used">Cotação usada (R$ · opcional)</label>
                     <input
+                      id="manual-price-used"
                       type="number"
                       className="form-inp"
                       placeholder="Deixe em branco para 50% da nova"
@@ -1322,8 +1369,9 @@ function App() {
                   </div>
 
                   <div>
-                    <label className="form-label">OBSERVAÇÕES TÉCNICAS DO DANO</label>
+                    <label className="form-label" htmlFor="manual-notes">Observações do dano</label>
                     <input
+                      id="manual-notes"
                       className="form-inp"
                       placeholder="Ex: Eixo empenado no impacto / Lente quebrada..."
                       value={newPart.notes}
@@ -1333,11 +1381,12 @@ function App() {
 
                   <div>
                     <label className="form-label">HORAS INICIAIS DE MÃO DE OBRA (R$ 80,00/h)</label>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginTop: 4 }}>
+                    <div className="manual-hours">
                       {OPS.map(op => (
                         <div key={op.id} style={{ background: 'rgba(255,255,255,0.04)', padding: 8, borderRadius: 6, textAlign: 'center' }}>
-                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{op.label}</div>
+                          <label htmlFor={'manual-hours-' + op.id} style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{op.label}</label>
                           <input
+                            id={'manual-hours-' + op.id}
                             type="number"
                             step="0.5"
                             min="0"
@@ -1493,7 +1542,7 @@ function App() {
                       </tr>
                     )}
 
-                    <tr style={{ borderTop: '2px solid var(--accent)', background: 'rgba(36,77,115,0.06)' }}>
+                    <tr style={{ borderTop: '2px solid var(--accent)', background: 'rgba(11,120,108,0.06)' }}>
                       <td colSpan={6} style={{ fontWeight: 900, fontSize: '0.95rem' }}>TOTAL CONSOLIDADO MÃO DE OBRA + TERCEIROS</td>
                       <td style={{ fontWeight: 900, fontSize: '1.15rem', color: 'var(--accent-light)', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
                         {fmt(totalLabor)}
@@ -1628,7 +1677,7 @@ function App() {
               <button
                 className="no-print"
                 onClick={() => { if (requireReview()) window.print(); }}
-                style={{ background: '#244d73', color: '#fff', border: 'none', padding: '9px 18px', borderRadius: 8, cursor: 'pointer', fontWeight: 800 }}
+                style={{ background: '#0b786c', color: '#fff', border: 'none', padding: '9px 18px', borderRadius: 8, cursor: 'pointer', fontWeight: 800 }}
               >
                  Imprimir orçamento
               </button>
@@ -1714,7 +1763,7 @@ function App() {
                 )}
                 <div>
                   <div style={{ fontSize: '0.72rem', color: '#92400e', fontWeight: 700 }}>TOTAL GERAL</div>
-                  <div style={{ fontWeight: 900, fontSize: '1.3rem', color: '#244d73' }}>{fmt(budgetSel)}</div>
+                  <div style={{ fontWeight: 900, fontSize: '1.3rem', color: '#0b786c' }}>{fmt(budgetSel)}</div>
                 </div>
               </div>
             </div>
@@ -1735,6 +1784,8 @@ function App() {
       )}
 
 
+      {notice && <div className={'app-toast toast-' + notice.type} role="status"><span className="toast-icon">{notice.type === 'success' ? <Check size={19} /> : <FileText size={19} />}</span><p>{notice.text}</p><button aria-label="Fechar aviso" onClick={() => setNotice(null)}><X size={17} /></button></div>}
+      <footer className="app-footer"><span>AutoBudget AI <span>·</span> Seu próximo reparo começa com uma boa vistoria.</span><span>Processamento local · Revisão humana</span></footer>
     </div>
   );
 }

@@ -5,6 +5,11 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
+export function supportedNode(version) {
+  const [major, minor] = version.split('.').map(Number);
+  return major > 22 || (major === 22 && minor >= 12);
+}
+
 export function pythonCandidates(directory, platform = process.platform) {
   const envPython = path.join(directory, '.venv', platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
   return [[envPython], ...(platform === 'win32' ? [['py', '-3.12'], ['python'], ['python3']] : [['python3.12'], ['python3'], ['python']])];
@@ -17,6 +22,11 @@ export function findPython(directory, platform = process.platform, probe = spawn
 }
 
 export function main() {
+  if (!supportedNode(process.versions.node)) {
+    console.error('AutoBudget precisa de Node.js 22.12 ou superior. Atualize o Node.js e execute npm start novamente.');
+    process.exitCode = 1;
+    return;
+  }
   const python = findPython(root);
   if (!python) {
     console.error('AutoBudget precisa de Python 3.12 de 64 bits.');

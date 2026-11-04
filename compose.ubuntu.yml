@@ -1,0 +1,45 @@
+name: autobudget
+
+services:
+  backend:
+    image: ${BACKEND_IMAGE:-autobudget-backend:local}
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment:
+      LOCAL_CONFIDENCE: ${LOCAL_CONFIDENCE:-0.60}
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 768m
+    cpus: 1.0
+    stop_grace_period: 25s
+    networks: [app]
+
+  frontend:
+    image: ${FRONTEND_IMAGE:-autobudget-frontend:local}
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${APP_BIND:-0.0.0.0}:${APP_PORT:-8080}:8080"
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 128m
+    cpus: 0.25
+    stop_grace_period: 15s
+    networks: [app]
+
+networks:
+  app:
+    driver: bridge

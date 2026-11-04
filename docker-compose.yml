@@ -8,18 +8,18 @@ services:
       PORT: '5000'
       LOCAL_MODEL_DIR: /app/models
       LOCAL_CONFIDENCE: ${LOCAL_CONFIDENCE:-0.60}
-    volumes:
-      - type: bind
-        source: ${LOCAL_MODEL_HOST_DIR:-/opt/autobudget/models}
-        target: /app/models
-        read_only: true
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop: [ALL]
+    stop_grace_period: 25s
     networks:
       - autobudget-net
     healthcheck:
       test: [CMD, python, -c, "import json,urllib.request; assert json.load(urllib.request.urlopen('http://127.0.0.1:5000/api/health', timeout=3))['modelLoaded']"]
-      interval: 30s
+      interval: 15s
       timeout: 5s
-      start_period: 10s
+      start_period: 45s
       retries: 3
     deploy:
       replicas: 2
@@ -37,19 +37,29 @@ services:
         parallelism: 1
         order: stop-first
         failure_action: rollback
+        delay: 10s
+        monitor: 45s
+      rollback_config:
+        parallelism: 1
+        order: stop-first
 
   frontend:
     image: ${FRONTEND_IMAGE:?Set FRONTEND_IMAGE to a shared registry image with version tag}
     ports:
-      - target: 80
-        published: 80
+      - target: 8080
+        published: ${APP_PORT:-8080}
         protocol: tcp
         mode: ingress
     networks:
       - autobudget-net
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    cap_drop: [ALL]
+    stop_grace_period: 15s
     healthcheck:
-      test: [CMD, wget, -q, -O, /dev/null, 'http://127.0.0.1/']
-      interval: 30s
+      test: [CMD, wget, -Y, 'off', -q, -O, /dev/null, 'http://127.0.0.1:8080/healthz']
+      interval: 15s
       timeout: 5s
       retries: 3
     deploy:
@@ -59,7 +69,7 @@ services:
       resources:
         limits:
           cpus: '0.25'
-          memory: 64M
+          memory: 128M
         reservations:
           memory: 16M
       restart_policy:
@@ -68,6 +78,11 @@ services:
         parallelism: 1
         order: stop-first
         failure_action: rollback
+        delay: 10s
+        monitor: 45s
+      rollback_config:
+        parallelism: 1
+        order: stop-first
 
 networks:
   autobudget-net:

@@ -16,7 +16,9 @@
 serviço externo ou código remoto do autor. O backend usa ONNX Runtime para inferir,
 Pillow para orientação EXIF e redução da imagem e OpenCV para brilho/foco. Tamanho,
 SHA-256 e revisão são fixos. Nenhum script dos repositórios do modelo é executado.
-O runtime não baixa pesos ou faz chamadas a provedores de IA.
+O runtime não baixa pesos ou faz chamadas a provedores de IA. No Docker, o modelo
+é baixado e verificado durante a construção e incluído na imagem, somente leitura.
+Na instalação local, o iniciador prepara e confere os pesos antes de abrir o servidor.
 
 ## O que ele faz
 

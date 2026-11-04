@@ -8,7 +8,7 @@ abrindo sites externos quando você clicar neles.
 
 ## Instalar e abrir no Windows
 
-Requer **Python 3.12 de 64 bits** e **Node.js 22 ou superior**. Extraia o ZIP e abra
+Requer **Python 3.12 de 64 bits** e **Node.js 22.12 ou superior**. Extraia o ZIP e abra
 **iniciar.bat** com dois cliques, ou execute na pasta do projeto:
 
 ```powershell
@@ -49,7 +49,7 @@ carregaram. Feche servidores de tentativas anteriores antes de iniciar de novo.
 
 ## Instalar no Linux/macOS
 
-Requer Python 3.12 de 64 bits e Node.js 22+. Execute `npm start` na pasta do projeto.
+Requer Python 3.12 de 64 bits e Node.js 22.12+. Execute `npm start` na pasta do projeto.
 A preparação é a mesma, com Python em `.venv/bin/python`. Ambiente validado: Linux
 x86-64, Python 3.12, CPU. A seleção do interpretador Windows é coberta por testes e
 os wheels Windows x64 foram conferidos; não houve execução nativa em Windows/macOS.
@@ -141,81 +141,62 @@ explicitamente pulado se o peso não estiver instalado; não confunda o skip com
 validação do modelo. As demais verificações cobrem qualidade, NMS, coordenadas,
 integridade dos pesos, contrato HTTP e ausência dos endpoints de credenciais.
 
-## Swarm em duas VMs
+## Rodar no Ubuntu com Docker
 
-Topologia: **1 manager + 1 worker**. Ambos executam tarefas. Não há alta disponibilidade
-do controle: perder o manager impede agendamentos e atualizações. Há uma réplica de
-cada serviço por VM (`max_replicas_per_node: 1`); uma VM indisponível deixa as
-réplicas correspondentes pendentes. O histórico continua sendo local ao navegador.
+Não precisa instalar Node, Python, bibliotecas ou pesos na VM. As imagens incluem
+as dependências, o front compilado e o modelo com SHA-256 verificado. A análise
+continua local em CPU, sem chave de IA e sem download durante a execução.
 
-Pré-requisitos:
-
-- Linux com Docker Engine iniciado em ambas as VMs e IPs privados estáveis.
-- Entre as VMs: TCP 2377 (worker para manager), TCP/UDP 7946 e UDP 4789.
-  Restrinja essas portas aos IPs privados. Abra TCP 80 apenas aos clientes autorizados.
-- Acesso ao mesmo registro HTTPS de imagens. Faça `docker login` quando necessário.
-- Backend limitado a 768 MiB/1 CPU por VM; frontend a 64 MiB/0,25 CPU. Reserve
-  capacidade para Docker e o sistema; recomenda-se VM com pelo menos 2 GB de RAM,
-  preferencialmente 4 GB para desenvolver e construir imagens.
-
-### Associar os nós
-
-No manager:
+Após copiar ou clonar este projeto para o Ubuntu:
 
 ```sh
-bash scripts/swarm-node.sh manager IP_PRIVADO_MANAGER
-(umask 077; docker swarm join-token -q worker > worker-token.txt)
+# Só se o Docker ainda não estiver instalado:
+sudo bash scripts/install-docker-ubuntu.sh
+# Construir e iniciar o sistema:
+sudo bash scripts/ubuntu-up.sh
 ```
 
-Transfira o token por canal seguro ao worker. No worker:
+Abra **http://IP_DO_UBUNTU:8080**. O script espera os dois serviços ficarem
+saudáveis. Para atualizar, atualize o código e execute o mesmo script novamente.
+Para alterar a porta: `sudo APP_PORT=8090 bash scripts/ubuntu-up.sh`.
+
+Se Docker já estiver configurado para seu usuário, os scripts não precisam de
+`sudo`. O instalador usa o repositório apt assinado oficial do Docker e preserva
+uma instalação existente; requer Ubuntu com acesso à internet para a construção.
+
+Comandos úteis:
 
 ```sh
-bash scripts/swarm-node.sh worker IP_PRIVADO_WORKER IP_PRIVADO_MANAGER < worker-token.txt
-rm worker-token.txt
+sudo docker compose -f compose.ubuntu.yml ps
+sudo docker compose -f compose.ubuntu.yml logs --tail=100 backend frontend
+sudo docker compose -f compose.ubuntu.yml down
 ```
 
-Apague também a cópia do token no manager. `docker node ls` deve mostrar os dois
-nós `Ready/Active`. Não use `setup-swarm-dind.sh`: ele é uma simulação antiga em
-um único host que remove containers.
+Para duas VMs, siga **[o guia de Swarm no Ubuntu](docs/UBUNTU_SWARM.md)**. A stack
+usa duas réplicas por serviço, uma por nó, imagens de um registro compartilhado,
+healthchecks e rollback de atualização. Não é necessário copiar a pasta `models/`
+nas VMs: os pesos fazem parte da imagem do backend.
 
-### Instalar os pesos em ambas as VMs
+O histórico das OS continua no navegador. Acessar por IPs/domínios diferentes ou
+em outro dispositivo não compartilha o histórico. Os containers não armazenam
+fotos permanentemente nem oferecem autenticação de usuários. Para acesso pela
+internet, use um proxy com HTTPS e controle de acesso adequados à sua oficina.
 
-O modelo é montado **somente leitura** em cada réplica. Execute o instalador com
-`LOCAL_MODEL_DIR=/opt/autobudget/models`, ou copie a pasta `models/` já verificada
-para esse diretório **nas duas VMs**. O diretório deve ser acessível (0755) e o
-arquivo `model.onnx` legível (0644) pelo usuário 65534 dos containers. Na pasta
-exclusiva de pesos públicos, ajuste se necessário:
+## Visual e validação
 
-```sh
-sudo chmod 755 /opt/autobudget/models
-sudo chmod 644 /opt/autobudget/models/model.onnx
-```
+A interface usa azul petróleo e verde, etapas de vistoria, painel de fotos e
+veículo lado a lado no desktop, prévias por item e avisos na própria página. Os
+efeitos de entrada, foco e carregamento respeitam a preferência de movimento
+reduzido do navegador. Ícones são compilados junto do React; não há CDN ou fontes
+externas. Vite e o plugin React foram atualizados e duas bibliotecas de exportação
+não utilizadas foram removidas; a auditoria npm desta revisão não apontou vulnerabilidades. Fotos de uma análise cancelada não substituem uma nova vistoria.
 
-A imagem não contém nem baixa pesos ao iniciar. A variável `LOCAL_MODEL_HOST_DIR`
-(padrão `/opt/autobudget/models`) deve apontar para o mesmo caminho em ambas as VMs.
-O preload verifica SHA-256 e carrega ONNX antes de abrir a porta; modelo ausente ou
-inválido impede inicialização. O healthcheck exige que o modelo esteja carregado.
+As imagens são construídas em múltiplas etapas, executam sem root e usam sistema
+de arquivos somente leitura com `/tmp` temporário. Apenas o Nginx publica uma
+porta. O backend carrega e verifica o detector antes de abrir sua porta.
 
-### Construir e implantar
-
-```sh
-export BACKEND_IMAGE=SEU_REGISTRO/SEU_NAMESPACE/autobudget-backend:v2-local
-export FRONTEND_IMAGE=SEU_REGISTRO/SEU_NAMESPACE/autobudget-frontend:v2-local
-docker build -f Dockerfile.backend -t "$BACKEND_IMAGE" .
-docker build -f Dockerfile.frontend -t "$FRONTEND_IMAGE" .
-docker push "$BACKEND_IMAGE"
-docker push "$FRONTEND_IMAGE"
-# no manager, com as mesmas variáveis:
-bash scripts/deploy-swarm.sh
-```
-
-Não use `127.0.0.1:5000` como registro compartilhado: ele aponta para máquinas
-diferentes. No ambiente gerenciado, passe também ao build backend
-`--secret id=proxy_ca,src=/etc/ssl/certs/ca-certificates.crt` para o pip; no frontend,
-`--secret id=proxy_ca,src="$CODEX_PROXY_CERT"`. Mantenha TLS habilitado.
-
-Valide `docker stack services autobudget` e `docker stack ps autobudget`: espere
-`2/2` para cada serviço. Teste `/api/health` e uma análise real pelos dois IPs.
-Implantar uma stack não comprova que as réplicas iniciaram. TLS público deve ser
-terminado em um balanceador/proxy autorizado. Os IPs e o acesso remoto às VMs ainda
-não foram fornecidos; esta revisão não modificou nenhuma VM.
+Os testes locais incluem interface desktop/celular, inferência real através do
+Nginx e análise no backend sem rede externa. As duas VMs do usuário não foram
+acessadas: os IPs e acesso remoto ainda não foram fornecidos. Limites de CPU/RAM
+são configurados, mas a efetivação de cgroups no Docker aninhado deste ambiente
+não comprova a efetivação nas VMs de destino.
