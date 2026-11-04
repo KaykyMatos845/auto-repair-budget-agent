@@ -1,4 +1,4 @@
-# AutoBudget AI — análise local em CPU
+# Auto Repair — análise local em CPU
 
 O sistema agora usa **ONNX Runtime + OpenCV + Pillow**, sem OpenAI, Gemini ou outra
 API de IA. Fotos não são enviadas a provedores externos. Não há chave de IA nem
@@ -200,3 +200,17 @@ Nginx e análise no backend sem rede externa. As duas VMs do usuário não foram
 acessadas: os IPs e acesso remoto ainda não foram fornecidos. Limites de CPU/RAM
 são configurados, mas a efetivação de cgroups no Docker aninhado deste ambiente
 não comprova a efetivação nas VMs de destino.
+
+## Demonstração acadêmica
+
+A stack inclui a imagem Docker Visualizer no manager, na porta **8081**, e um
+proxy que permite somente consultas à API Docker. Defina também `MONITOR_IMAGE`
+para construir/enviar o terceiro Dockerfile. A aplicação continua em **8080**.
+
+Use `bash scripts/demo-replicas.sh` para demonstrar **1 → 2 → 1** réplicas. Leia
+o [roteiro da apresentação](docs/DEMONSTRACAO.md). Os slides atualizados ficam em
+`/slides.html`, com atalho no menu. As evidências reais devem ser coletadas nas
+suas duas VMs; o roteiro não gera capturas ou resultados fictícios.
+
+A marca exibida é Auto Repair. Identificadores internos e histórico existente
+foram mantidos para compatibilidade.

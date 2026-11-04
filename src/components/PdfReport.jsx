@@ -73,7 +73,7 @@ export default function PdfReport({ vehicle, parts, laborCosts, image, onClose }
                 Relatório de Orçamento Veicular
               </h1>
               <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>
-                AutoBudget AI • Sistema Inteligente de Vistoria e Cotação de Peças
+                Auto Repair • Sistema Inteligente de Vistoria e Cotação de Peças
               </p>
             </div>
 

@@ -24,3 +24,4 @@ dist/
 models/
 .venv/
 .autobudget-local.json
+artifacts/

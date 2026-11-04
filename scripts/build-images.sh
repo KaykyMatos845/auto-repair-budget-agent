@@ -9,7 +9,7 @@ push_images=false
 if [[ ${1:-} == --push ]]; then
   : "${BACKEND_IMAGE:?Defina uma imagem em registro HTTPS compartilhado}"
   : "${FRONTEND_IMAGE:?Defina uma imagem em registro HTTPS compartilhado}"
-  for image in "$backend_image" "$frontend_image"; do
+  for image in "$backend_image" "$frontend_image" ${MONITOR_IMAGE:+"$MONITOR_IMAGE"}; do
     registry=${image%%/*}
     [[ $image == */* && $registry != localhost* && $registry != 127.* && $image != *:latest && ${image##*/} == *:* ]] || {
       echo 'Use imagens de um registro compartilhado com tag de versão; não use localhost nem latest.' >&2; exit 2;
@@ -24,8 +24,12 @@ if [[ -n ${PROXY_CA_FILE:-} ]]; then
 fi
 docker build "${build_options[@]}" -f Dockerfile.backend -t "$backend_image" .
 docker build "${build_options[@]}" -f Dockerfile.frontend -t "$frontend_image" .
+if [[ -n ${MONITOR_IMAGE:-} ]]; then
+  docker build -f Dockerfile.monitor -t "$MONITOR_IMAGE" .
+fi
 if $push_images; then
   docker push "$backend_image"
   docker push "$frontend_image"
+  if [[ -n ${MONITOR_IMAGE:-} ]]; then docker push "$MONITOR_IMAGE"; fi
 fi
 echo 'Imagens prontas; modelo incluído e verificado no backend.'

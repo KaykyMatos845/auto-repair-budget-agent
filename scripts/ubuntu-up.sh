@@ -11,4 +11,4 @@ docker compose "${compose_files[@]}" build
 docker compose "${compose_files[@]}" up -d --no-build --wait --wait-timeout 180
 docker compose "${compose_files[@]}" ps
 binding=$(docker compose "${compose_files[@]}" port frontend 8080 | head -n 1)
-echo "AutoBudget disponível. Abra http://IP_DO_UBUNTU:${binding##*:}"
+echo "Auto Repair disponível. Abra http://IP_DO_UBUNTU:${binding##*:}"

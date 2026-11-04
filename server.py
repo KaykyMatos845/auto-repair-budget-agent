@@ -479,7 +479,7 @@ if __name__ == '__main__':
             sys.exit(1)
     os.makedirs(PUBLIC_DIR, exist_ok=True)
     print("=" * 58)
-    print("  AutoBudget AI -- Servidor v2.5 (FIPE & Bounding Boxes)")
+    print("  Auto Repair -- Servidor de análise local")
     print("=" * 58)
     print(f"  URL:       http://localhost:{PORT}")
     print('  MOTOR: ONNX Runtime / CPU, sem API de IA')

@@ -612,6 +612,7 @@ body { background-image: radial-gradient(ellipse at 15% 0%, #e7f2ef 0, transpare
 .nav-link { border: 0; background: transparent; padding: 11px 14px; border-radius: 9px; color: var(--text-muted); font: inherit; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: background .18s, color .18s; }
 .nav-link:hover, .nav-link.active { color: var(--accent); background: #e4efeb; }
 .nav-count { font-size: 11px; line-height: 18px; padding: 0 5px; background: #fff9; border-radius: 4px; }
+.nav-link { text-decoration: none; }
 .workspace-hero { display: grid; grid-template-columns: 1.35fr 1fr; gap: 60px; align-items: center; background: #122f3b; color: #fff; border-radius: 20px; padding: 34px 40px; margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: 0 10px 30px #122f3b12; animation: rise-in .4s ease-out both; }
 .workspace-hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 100% 0, #28796b55, transparent 70%); pointer-events: none; }
 .hero-copy, .hero-overview { position: relative; }
@@ -734,7 +735,7 @@ body { background-image: radial-gradient(ellipse at 15% 0%, #e7f2ef 0, transpare
   .brand-mark { width: 38px; height: 38px; }
   .app-header > .btn { margin-left: auto; padding: 9px 10px; font-size: 10px; }
   .app-nav { order: 3; width: 100%; margin: 0; }
-  .nav-link { flex: 1; justify-content: center; font-size: 11px; padding: 9px; }
+  .nav-link { flex: 1; justify-content: center; min-width: 0; font-size: 10px; padding: 9px 5px; gap: 4px; }
   .workspace-hero { grid-template-columns: 1fr; gap: 24px; padding: 25px 23px; border-radius: 15px; }
   .hero-copy h1 { font-size: 29px; }
   .hero-overview { padding: 15px 17px; }

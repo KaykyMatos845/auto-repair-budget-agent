@@ -54,7 +54,7 @@ def describe_issues(issues):
 
 
 def frontend_fingerprint():
-    files = [ROOT / name for name in ['index.html', 'vite.config.js', 'package.json', 'package-lock.json']]
+    files = [ROOT / name for name in ['index.html', 'slides.html', 'vite.config.js', 'package.json', 'package-lock.json']]
     for directory in ['src', 'public']:
         files.extend(path for path in (ROOT / directory).rglob('*') if path.is_file())
     digest = hashlib.sha256()

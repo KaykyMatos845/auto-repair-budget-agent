@@ -1,4 +1,4 @@
-# AutoBudget no Ubuntu: duas VMs com Docker Swarm
+# Auto Repair no Ubuntu: duas VMs com Docker Swarm
 
 Use **1 manager e 1 worker**, ambos Ubuntu 64 bits com Docker Engine, Compose v2
 e curl. Recomendação: 2 vCPUs e 4 GB de RAM por VM. Não exige placa de vídeo,
@@ -19,7 +19,7 @@ sudo bash scripts/install-docker-ubuntu.sh
 
 Permita entre **somente os IPs privados das VMs**: TCP 2377 (worker para manager),
 TCP/UDP 7946 e UDP 4789. Preserve o acesso SSH ao ajustar o firewall. A porta
-8080 deve estar acessível aos computadores que usarão o AutoBudget. O backend
+8080 deve estar acessível aos computadores que usarão o Auto Repair. O backend
 5000 não é publicado. O mesmo registro HTTPS de imagens deve ser acessível aos
 dois nós. Não use `localhost` ou `127.0.0.1` como registro entre VMs.
 
@@ -52,6 +52,7 @@ noutra máquina com Docker e o projeto:
 ```sh
 export BACKEND_IMAGE=ghcr.io/SEU_USUARIO/autobudget-backend:v4
 export FRONTEND_IMAGE=ghcr.io/SEU_USUARIO/autobudget-frontend:v4
+export MONITOR_IMAGE=ghcr.io/SEU_USUARIO/autobudget-monitor:v4
 docker login ghcr.io
 bash scripts/build-images.sh --push
 ```
@@ -138,3 +139,18 @@ bash scripts/ubuntu-up.sh
 
 O bundle entra somente como segredo de build, não fica nas imagens. Fora de redes
 com proxy, não é necessário configurar essa variável.
+
+## Visualizer e demonstração acadêmica
+
+O deploy inclui por padrão `docker-compose.demo.yml`: Docker Visualizer na porta
+8081 e proxy de consultas da API Docker, ambos no manager. A porta 2375 do proxy
+não é publicada. Restrinja 8081 à rede privada ou use um túnel SSH; o painel de
+exemplo não possui autenticação. O socket real só é montado no proxy.
+
+Defina MONITOR_IMAGE junto das outras duas imagens e execute
+`bash scripts/demo-replicas.sh` para aplicar **1 → 2 → 1** réplicas pelo Compose.
+O roteiro pausa para capturar cada gráfico e salva as saídas reais do Docker em
+`artifacts/swarm-demo/`. Veja [DEMONSTRACAO.md](DEMONSTRACAO.md).
+
+Use `WITH_VISUALIZER=0` para executar só a aplicação. Os nomes técnicos legados
+`autobudget_*` e a chave do histórico foram preservados; a marca é Auto Repair.

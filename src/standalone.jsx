@@ -643,7 +643,7 @@ function App() {
       ' Economia estimada: ' + fmt(saving) + ' (' + savingPct + '% OFF)',
       '',
       'Status: ' + osStatus,
-      '_AutoBudget AI v3.0 — Vistoria Computacional_'
+      '_Auto Repair v3.0 — Vistoria Computacional_'
     ].filter(l => l !== undefined);
 
     const msg = lines.join('\n');
@@ -655,13 +655,14 @@ function App() {
 
       {/* HEADER */}
       <header className="app-header">
-        <a className="brand" href="#" onClick={e => { e.preventDefault(); setActiveTab('budget'); }} aria-label="AutoBudget, início">
+        <a className="brand" href="#" onClick={e => { e.preventDefault(); setActiveTab('budget'); }} aria-label="Auto Repair, início">
           <span className="brand-mark"><Wrench size={23} strokeWidth={2} /></span>
-          <span><strong>AutoBudget<span> AI</span></strong><small>Vistorias & orçamentos</small></span>
+          <span><strong>Auto<span> Repair</span></strong><small>Vistorias & orçamentos</small></span>
         </a>
         <nav className="app-nav" aria-label="Navegação principal">
           <button className={activeTab === 'budget' ? 'nav-link active' : 'nav-link'} onClick={() => setActiveTab('budget')} aria-current={activeTab === 'budget' ? 'page' : undefined}><Layers size={17} /> Vistoria</button>
           <button className={activeTab === 'history' ? 'nav-link active' : 'nav-link'} onClick={() => setActiveTab('history')} aria-current={activeTab === 'history' ? 'page' : undefined}><History size={17} /> Histórico <span className="nav-count">{osList.length}</span></button>
+          <a className="nav-link" href="/slides.html" target="_blank" rel="noopener noreferrer"><FileText size={17} /> Apresentação</a>
         </nav>
         <button className="btn btn-primary" onClick={() => { newInspection(); setActiveTab('budget'); }}><Plus size={17} /> Nova Vistoria</button>
       </header>
@@ -1670,7 +1671,7 @@ function App() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <div>
                 <h2 style={{ fontFamily: "'Outfit', sans-serif", color: '#0f172a', fontSize: '1.3rem', fontWeight: 900 }}>
-                  AutoBudget AI — Estimativa de Reparos
+                  Auto Repair — Estimativa de Reparos
                 </h2>
                 <p style={{ fontSize: '0.8rem', color: '#5d6b7d' }}>{reviewLabel} • Valores estimados, sujeitos a cotação e inspeção presencial</p>
               </div>
@@ -1769,7 +1770,7 @@ function App() {
             </div>
 
             <p style={{ marginTop: 16, fontSize: '0.75rem', color: '#526174', textAlign: 'center' }}>
-              Mão de Obra tabelada: R$ 80,00/hora em todas as operações • AutoBudget AI v3.0
+              Mão de Obra tabelada: R$ 80,00/hora em todas as operações • Auto Repair v3.0
             </p>
 
             <button
@@ -1785,7 +1786,7 @@ function App() {
 
 
       {notice && <div className={'app-toast toast-' + notice.type} role="status"><span className="toast-icon">{notice.type === 'success' ? <Check size={19} /> : <FileText size={19} />}</span><p>{notice.text}</p><button aria-label="Fechar aviso" onClick={() => setNotice(null)}><X size={17} /></button></div>}
-      <footer className="app-footer"><span>AutoBudget AI <span>·</span> Seu próximo reparo começa com uma boa vistoria.</span><span>Processamento local · Revisão humana</span></footer>
+      <footer className="app-footer"><span>Auto Repair <span>·</span> Seu próximo reparo começa com uma boa vistoria.</span><span>Processamento local · Revisão humana</span></footer>
     </div>
   );
 }

@@ -44,7 +44,7 @@ class SwarmScriptTests(unittest.TestCase):
                       'registry.example:5000/backend', 'ghcr.io/example/backend:latest']:
             result = subprocess.run(['bash', str(ROOT/'scripts/build-images.sh'), '--push'], cwd=ROOT,
                                     env={**os.environ, 'BACKEND_IMAGE': image,
-                                         'FRONTEND_IMAGE': 'ghcr.io/example/frontend:v4'}, text=True, capture_output=True)
+                                         'FRONTEND_IMAGE': 'ghcr.io/example/frontend:v4', 'MONITOR_IMAGE': 'ghcr.io/example/monitor:v4'}, text=True, capture_output=True)
             self.assertEqual(result.returncode, 2, image)
 
     def test_rolled_back_update_is_not_reported_as_success(self):
@@ -62,6 +62,14 @@ class SwarmScriptTests(unittest.TestCase):
             result = subprocess.run(['bash', str(ROOT/'scripts/deploy-swarm.sh')], cwd=ROOT,
                                     env={**os.environ, 'PATH': directory + os.pathsep + os.environ['PATH'],
                                          'BACKEND_IMAGE': 'ghcr.io/example/backend:v4',
-                                         'FRONTEND_IMAGE': 'ghcr.io/example/frontend:v4'}, text=True, capture_output=True)
+                                         'FRONTEND_IMAGE': 'ghcr.io/example/frontend:v4', 'MONITOR_IMAGE': 'ghcr.io/example/monitor:v4'}, text=True, capture_output=True)
             self.assertEqual(result.returncode, 1, result.stderr)
             self.assertIn('rollback', result.stderr)
+
+    def test_three_replicas_are_rejected_for_the_two_node_demo(self):
+        result = subprocess.run(['bash', str(ROOT/'scripts/deploy-swarm.sh')], cwd=ROOT,
+                                env={**os.environ, 'APP_REPLICAS': '3',
+                                     'BACKEND_IMAGE': 'ghcr.io/example/backend:v5',
+                                     'FRONTEND_IMAGE': 'ghcr.io/example/frontend:v5'}, text=True, capture_output=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn('1 ou 2', result.stderr)

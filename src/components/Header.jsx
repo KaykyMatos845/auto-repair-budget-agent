@@ -23,7 +23,7 @@ export default function Header({ onReset, currentStep }) {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <h1 style={{ fontSize: '1.4rem', fontWeight: '800' }}>
-                AutoBudget <span className="gradient-text">AI</span>
+                Auto <span className="gradient-text">Repair</span>
               </h1>
               <span className="badge badge-new" style={{ fontSize: '0.65rem' }}>
                 <Sparkles size={12} /> Agente Vistoriador

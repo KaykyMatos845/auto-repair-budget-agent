@@ -23,13 +23,13 @@ export function findPython(directory, platform = process.platform, probe = spawn
 
 export function main() {
   if (!supportedNode(process.versions.node)) {
-    console.error('AutoBudget precisa de Node.js 22.12 ou superior. Atualize o Node.js e execute npm start novamente.');
+    console.error('Auto Repair precisa de Node.js 22.12 ou superior. Atualize o Node.js e execute npm start novamente.');
     process.exitCode = 1;
     return;
   }
   const python = findPython(root);
   if (!python) {
-    console.error('AutoBudget precisa de Python 3.12 de 64 bits.');
+    console.error('Auto Repair precisa de Python 3.12 de 64 bits.');
     console.error(process.platform === 'win32'
       ? 'Instale: winget install --exact --id Python.Python.3.12\nDepois reabra o terminal e execute npm start.'
       : 'Instale Python 3.12 de 64 bits e execute npm start novamente.');

@@ -1,0 +1,50 @@
+version: '3.8'
+# Academic monitoring overlay. Run only on a trusted/private network.
+services:
+  monitor-proxy:
+    image: ${MONITOR_IMAGE:?Set MONITOR_IMAGE to the shared registry monitor image}
+    read_only: true
+    cap_drop: [ALL]
+    volumes:
+      - /var/run/docker.sock:/host/docker.sock:ro
+    networks: [monitoring]
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      resources:
+        limits:
+          cpus: '0.15'
+          memory: 64M
+      restart_policy:
+        condition: on-failure
+
+  visualizer:
+    image: dockersamples/visualizer@sha256:530c863672e7830d7560483df66beb4cbbcd375a9f3ec174ff5376616686a619
+    user: '1000:1000'
+    read_only: true
+    cap_drop: [ALL]
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    environment:
+      DOCKER_HOST: monitor-proxy:2375
+    ports:
+      - target: 8080
+        published: ${VISUALIZER_PORT:-8081}
+        protocol: tcp
+        mode: host
+    networks: [monitoring]
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+      restart_policy:
+        condition: on-failure
+
+networks:
+  monitoring:
+    driver: overlay

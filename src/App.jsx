@@ -157,7 +157,7 @@ export default function App() {
 
       {/* Footer */}
       <footer style={{ textAlign: 'center', margin: '40px 0 20px 0', fontSize: '0.8rem', color: 'var(--text-dim)' }}>
-        AutoBudget AI © 2026 • Agente de IA para Vistoria, Orçamento de Reparos e Cotação de Peças Automotivas
+        Auto Repair © 2026 • Agente de IA para Vistoria, Orçamento de Reparos e Cotação de Peças Automotivas
       </footer>
 
     </div>
