@@ -143,6 +143,110 @@ txt(s,6.65,5.08,5.5,.45,'Visualizer · 192.168.165.135:8081',18,WHITE)
 txt(s,.65,6.19,12,.5,'Roteiro: docs/DEMONSTRACAO.md\nConclua a comprovação com registros e capturas coletados nas duas VMs.',16,MUTED)
 notes(s,'Finalize retomando os requisitos: Dockerfiles, Compose, Swarm em VMs, variação de réplicas e imagem Docker Visualizer. A configuração está preparada; só afirme resultados da execução após verificá-los nas VMs. O detector não confirma segurança para circulação nem danos internos. A apresentação é editável e os diagramas são formas nativas do PowerPoint.')
 
+# Additional slides deepen the application and the infrastructure presentation.
+s=base(9,'Objetivo da apresentação','Da aplicação ao ambiente distribuído')
+card(s,.65,2.0,5.86,1.8,'01','Entender o sistema','Como fotos se tornam sugestões revisáveis\ne um orçamento organizado para o cliente.')
+card(s,6.8,2.0,5.86,1.8,'02','Explicar a infraestrutura','Como as imagens, o Compose e o Swarm\norganizam a execução nas duas VMs.')
+box(s,.65,4.18,12.02,2.2,WHITE,BORDER)
+txt(s,.95,4.43,11.4,.4,'Três requisitos do trabalho',23,TEAL,True)
+txt(s,.95,5.05,11.2,1.05,'1. Dockerfiles dos serviços utilizados.\n2. Clusterização com Docker Swarm em VMs.\n3. Compose, variação de réplicas e Docker Visualizer.',20,INK)
+notes(s,'Explique o percurso da apresentação: primeiro o problema e a aplicação; depois as imagens e a arquitetura; por fim o cluster, o monitoramento e a demonstração de escala. Estes são os requisitos fornecidos para o trabalho, sem atribuir ao livro procedimentos que não foram consultados diretamente.')
+
+s=base(10,'Contexto do projeto','Organizar a vistoria antes de orçar')
+card(s,.65,2.0,5.86,1.85,'01','Fotos dispersas','Reunir visão geral e detalhes do veículo\nna mesma vistoria, com foto de origem por item.')
+card(s,6.8,2.0,5.86,1.85,'02','Identificação assistida','Usar o detector para sugerir regiões suspeitas.\nA confirmação continua com a pessoa responsável.')
+card(s,.65,4.08,5.86,1.85,'03','Revisão dos valores','Separar a sugestão visual das cotações,\ndas horas de trabalho e da decisão de reparo.')
+card(s,6.8,4.08,5.86,1.85,'04','Documento final','Consolidar itens revisados, mão de obra\ne serviços de terceiros em um orçamento.')
+txt(s,.65,6.3,12,.45,'Objetivo: apoiar a organização do trabalho, sem substituir uma inspeção profissional.',17,TEAL,True)
+notes(s,'Apresente estes pontos como objetivos do projeto, não como ganhos de produtividade medidos. Evite afirmar que a aplicação calcula custos reais pela foto: os valores iniciais são referências por regras locais e precisam ser cotados e revisados.')
+
+s=base(11,'Fluxo da aplicação','Quatro etapas até a revisão do orçamento')
+steps=[('01','Fotos','Visão geral e\ndetalhes próximos.'),('02','Análise','Checar qualidade\ne rodar o detector.'),('03','Revisão','Corrigir, descartar\nou incluir itens.'),('04','Orçamento','Ajustar preços,\nhoras e serviços.')]
+for i,(num,title,body) in enumerate(steps):
+ x=.65+i*3.12;box(s,x,2.3,2.65,2.65,WHITE,BORDER);tag(s,x+.22,2.55,.5,num)
+ txt(s,x+.22,3.18,2.21,.45,title,24,INK,True);txt(s,x+.22,3.91,2.21,.82,body,18,MUTED)
+ if i<3:txt(s,x+2.72,3.25,.35,.5,'→',25,TEAL,True)
+box(s,.65,5.5,12.02,.92,SOFT);txt(s,.95,5.74,11.4,.5,'Depois da confirmação: salvar OS, compartilhar o orçamento ou exportar o PDF.',19,TEAL,True)
+notes(s,'Faça uma passagem rápida pela interface. Mostre que cada sugestão mantém uma referência à imagem em que foi encontrada. Revise todos os itens e depois a confirmação geral antes de exportar. As demonstrações pré-carregadas são explicitamente simuladas e não devem ser apresentadas como uma análise nova.')
+
+s=base(12,'Entrada e qualidade','Uma boa foto é parte da análise')
+for x,value,label in [(.65,'4','fotos por tentativa'),(4.8,'8 MB','por arquivo'),(8.95,'24 MP','por imagem')]:
+ box(s,x,2.0,3.73,1.55,WHITE,BORDER);txt(s,x+.2,2.26,3.33,.6,value,35,TEAL,True,align=PP_ALIGN.CENTER);txt(s,x+.2,3.0,3.33,.3,label,17,MUTED,align=PP_ALIGN.CENTER)
+card(s,.65,3.9,5.86,2.1,'01','Antes da inferência','JPEG, PNG ou WebP. Correção da orientação\ne verificação de resolução, iluminação e foco.')
+card(s,6.8,3.9,5.86,2.1,'02','Preparação do modelo','RGB, redução da imagem e letterbox\npara entrada de 640 × 640 pixels.')
+txt(s,.65,6.35,12,.35,'Fotos recusadas por qualidade não se transformam em resultados de danos.',17,TEAL,True)
+notes(s,'O processamento usa Pillow para decodificação/orientação e OpenCV para verificações heurísticas de brilho e foco. A imagem é reduzida para no máximo 1600 pixels antes da inferência e preparada em 640 por 640. As verificações podem errar; elas são filtros de qualidade, não confirmação de que todos os danos são visíveis.')
+
+s=base(13,'Visão computacional local','O que o detector entrega — e seus limites')
+card(s,.65,2.0,5.86,1.9,'01','Motor de análise','ONNX Runtime em CPU, sem GPU ou PyTorch.\nPesos de 10,6 MB incluídos na imagem Docker.')
+card(s,6.8,2.0,5.86,1.9,'02','Saída do modelo','Sugestões em 14 classes de peças,\ncom caixas na foto correspondente.')
+card(s,.65,4.15,5.86,1.9,'03','Modo rápido','Uma leitura da foto inteira.\nMenor custo de processamento por imagem.')
+card(s,6.8,4.15,5.86,1.9,'04','Modo detalhado','Foto inteira e até quatro recortes sobrepostos.\nMais busca de detalhes e maior custo de CPU.')
+txt(s,.65,6.4,12,.32,'Mais caixas não comprovam maior precisão. O modelo pode perder danos e gerar falsos positivos.',15,MUTED)
+notes(s,'Exemplos de classes incluem farol, lanterna, retrovisor, capô, portas e para-choques. O detector não reconhece marca, modelo, ano, riscos finos nem defeitos internos ou mecânicos. Os recortes usam os mesmos pesos e limiar: não representam treinamento novo nem garantia de acurácia. A análise não envia fotos a provedores externos de IA.')
+
+s=base(14,'Revisão e custos','A foto não determina o valor do reparo')
+box(s,.65,2.0,5.86,4.35,WHITE,BORDER);txt(s,.95,2.3,5.2,.4,'Conferência por item',24,TEAL,True)
+for y,label in [(3.05,'Confirmar a região e o nome da peça.'),(3.75,'Corrigir ou descartar erros do detector.'),(4.45,'Definir o reparo e a forma de compra.'),(5.15,'Revisar cotações e horas de trabalho.')]:
+ txt(s,.95,y,5.2,.6,label,19,INK)
+code(s,6.8,2.0,5.86,2.55,'TOTAL DO ORÇAMENTO\n\nPeças selecionadas\n+ horas × R$ 80\n+ serviços de terceiros',20)
+box(s,6.8,4.85,5.86,1.5,SOFT);txt(s,7.08,5.12,5.3,1.0,'As referências iniciais não garantem\nestoque, compatibilidade ou procedência.\nConfirme as cotações antes de finalizar.',17,TEAL)
+notes(s,'Na análise real, as horas começam em zero e os preços iniciais são estimativas por regras locais. O valor FIPE é informado manualmente. Mostre a confirmação por item e a confirmação geral: elas se invalidam quando dados importantes mudam. Evite usar o termo laudo pericial para o documento emitido.')
+
+s=base(15,'Construção das imagens','Multi-stage separa build e execução')
+for y,title,left,right in [(2.0,'FRONTEND','Node + Vite\nCompilar a interface','Nginx\nServir os arquivos finais'),(4.25,'BACKEND','Download + SHA-256\nPreparar os pesos','Python + bibliotecas\nExecutar a análise local')]:
+ txt(s,.65,y,12,.3,title,13,TEAL,True)
+ box(s,.65,y+.55,5.4,1.2,WHITE,BORDER);txt(s,.95,y+.8,4.8,.8,left,21,INK)
+ txt(s,6.22,y+.85,.55,.5,'→',28,TEAL,True)
+ box(s,7.0,y+.55,5.67,1.2,NAVY);txt(s,7.3,y+.8,5.1,.8,right,21,WHITE)
+txt(s,.65,6.55,12,.25,'O runtime não precisa de Node para servir o front nem de internet para baixar o modelo.',15,MUTED)
+notes(s,'Mostre os estágios nos Dockerfiles. O frontend usa Node somente na construção, e o estágio final utiliza Nginx. No backend, um estágio obtém e verifica os pesos, que são copiados ao runtime Python. Bibliotecas são instaladas durante o build. Não diga que os Dockerfiles usam apenas um estágio ou que o modelo é baixado durante cada análise.')
+
+s=base(16,'Comunicação e portas','Separação entre acesso e rede interna')
+card(s,.65,2.0,5.86,2.7,'01','Acesso à aplicação','8080: interface e proxy /api/.\n8081: Visualizer, somente no manager.\nUse a rede privada para a demonstração.')
+card(s,6.8,2.0,5.86,2.7,'02','Serviços internos','5000: backend Python.\n2375: proxy de monitoramento.\nEssas portas não são publicadas no host.')
+box(s,.65,5.05,12.02,1.25,NAVY)
+txt(s,.95,5.27,11.4,.35,'COMUNICAÇÃO ENTRE AS VMs',13,MINT,True)
+txt(s,.95,5.78,11.4,.35,'2377/TCP  ·  7946/TCP e UDP  ·  4789/UDP',21,WHITE)
+notes(s,'Diferencie as portas da aplicação das portas usadas pelo Swarm. A rede overlay da aplicação liga frontend e backend entre os nós; a rede de monitoramento é separada. O Nginx encaminha /api/ ao backend. O Visualizer usa publicação em modo host no manager, enquanto a aplicação utiliza routing mesh. Não afirme que uma rede overlay é automaticamente criptografada.')
+
+s=base(17,'Responsabilidades dos nós','Manager coordena; worker executa')
+card(s,.65,2.0,5.86,2.8,'01','Manager','Gerencia serviços e o estado desejado.\nCoordena o agendamento das tarefas.\nTambém pode executar frontend e backend.\nHospeda Visualizer e proxy.')
+card(s,6.8,2.0,5.86,2.8,'02','Worker','Executa as tarefas atribuídas.\nParticipa da rede e do atendimento.\nNão gerencia o plano de controle.\nRecebe as mesmas imagens da aplicação.')
+box(s,.65,5.2,12.02,1.18,SOFT);txt(s,.95,5.43,11.4,.8,'Com uma réplica por serviço em cada nó, duas VMs comportam duas réplicas.\nSe um nó cair, as tarefas podem ficar pendentes por causa dessa restrição.',18,TEAL)
+notes(s,'O manager não é dedicado exclusivamente ao controle nesta configuração: está Active e pode executar tarefas. O Visualizer e o proxy são fixados por constraint node.role == manager. Com apenas um manager, sua perda impede novos agendamentos e atualizações até a recuperação, embora tarefas já existentes no worker possam continuar rodando.')
+
+s=base(18,'Entrega e implantação','Do código às imagens compartilhadas')
+for y,num,title,body in [(2.0,'01','Configurar o registro','Definir BACKEND_IMAGE, FRONTEND_IMAGE e MONITOR_IMAGE.'),(3.0,'02','Construir e enviar','Gerar as imagens no manager e enviá-las ao GHCR ou registro escolhido.'),(4.0,'03','Aplicar a stack','Executar o deploy no manager e aguardar convergência e saúde.')]:
+ tag(s,.65,y,.5,num);txt(s,1.4,y,10.9,.4,title,23,INK,True);txt(s,1.4,y+.47,10.9,.42,body,18,MUTED)
+code(s,.65,5.25,12.02,1.15,'source .env.swarm\nbash scripts/deploy-swarm.sh',20)
+notes(s,'As duas VMs precisam conseguir obter as mesmas imagens. Um registro localhost não é compartilhado entre elas. Use tags de versão e credenciais do seu registro; nunca mostre tokens nos slides ou nas capturas. O manager transmite a autorização de leitura às tarefas com --with-registry-auth. O arquivo .env.swarm contém nomes de imagens, não deve conter tokens.')
+
+s=base(19,'Saúde e atualização','Container em execução não basta')
+card(s,.65,2.0,5.86,1.95,'01','Prontidão do detector','Verificar e carregar o modelo antes\nde abrir a porta do backend.')
+card(s,6.8,2.0,5.86,1.95,'02','Healthchecks','Backend: API com modelLoaded true.\nFrontend: resposta do Nginx em /healthz.')
+card(s,.65,4.2,5.86,1.95,'03','Atualização gradual','Uma réplica de cada serviço por vez.\nAs demais tarefas podem manter atendimento.')
+card(s,6.8,4.2,5.86,1.95,'04','Rollback e diagnóstico','Falhas de atualização podem reverter a versão.\nConsulte tarefas e logs antes de concluir.')
+notes(s,'Não prometa interrupção zero: o modo stop-first encerra uma réplica antes de substituí-la. O deploy verifica contagem de réplicas, atualização e API. Um rollback não é sucesso da versão nova. Mostre docker stack ps --no-trunc autobudget e docker service logs --tail 60 autobudget_backend. Os limites declarados precisam ser efetivamente aplicados por cgroups nas VMs.')
+
+s=base(20,'Conferência dos requisitos','O que comprova cada parte do trabalho')
+rows=[('Dockerfiles','Frontend, backend e proxy próprios; Visualizer usa a imagem de exemplo.'),('Swarm em VMs','Dois nós Ready/Active em docker node ls: manager e worker.'),('Compose e escala','Estado declarativo aplicado em 1 → 2 → 1 réplicas.'),('Representação gráfica','Docker Visualizer aberto e capturado nas três etapas.')]
+for i,(title,body) in enumerate(rows):
+ y=2.0+i*1.03;box(s,.65,y,12.02,.86,WHITE,BORDER);txt(s,.93,y+.23,3.0,.4,title,18,TEAL,True);txt(s,4.3,y+.2,8.0,.55,body,16.5,INK)
+txt(s,.65,6.42,12,.3,'Configuração preparada não substitui as evidências da execução real nas duas VMs.',16,MUTED)
+notes(s,'Use esta conferência antes da entrega. Mostre os arquivos, o cluster em execução, o comando de demonstração e as capturas do Visualizer. Os slides de escala descrevem resultados esperados; só confirme a execução depois de observar a convergência. Não utilize imagens genéricas ou saídas fictícias como evidência da demonstração.')
+
+# Reorder existing slides and additions into a coherent 20-slide narrative.
+order=[0,8,9,10,11,12,13,1,14,3,15,2,16,17,4,5,18,6,19,7]
+ids=list(prs.slides._sldIdLst)
+assert len(ids)==20 and sorted(order)==list(range(20))
+for index in order:prs.slides._sldIdLst.append(ids[index])
+for number,slide in enumerate(prs.slides,1):
+ for sh in slide.shapes:
+  if sh.has_text_frame and sh.text.endswith(' / 08'):
+   sh.text_frame.paragraphs[0].runs[0].text=f'{number:02d} / 20'
+txt(prs.slides[0],11.65,6.87,1.0,.25,'01 / 20',11,'A9C1CB',align=PP_ALIGN.RIGHT)
+
 parser=argparse.ArgumentParser();parser.add_argument('--output',default=str(Path(__file__).resolve().parents[1]/'public/auto-repair-apresentacao.pptx'));args=parser.parse_args()
 output=Path(args.output);output.parent.mkdir(parents=True,exist_ok=True);prs.save(output)
 print(f'Created: {output} ({len(prs.slides)} editable slides)')
