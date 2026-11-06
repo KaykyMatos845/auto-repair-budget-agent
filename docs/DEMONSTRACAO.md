@@ -65,3 +65,7 @@ ao padrão de duas, execute `APP_REPLICAS=2 bash scripts/deploy-swarm.sh`.
 Critérios cobertos: Dockerfiles próprios, Swarm em VMs, infraestrutura declarada
 em Compose, roteiro de variação de réplicas e uso da imagem Docker Visualizer.
 A comprovação da execução depende dos registros e capturas coletados nas duas VMs.
+
+Para gravar a aplicação seguida do desligamento e recuperação da worker, consulte
+[ROTEIRO_GRAVACAO.md](ROTEIRO_GRAVACAO.md). Esse teste começa com duas réplicas e
+mostra a continuidade com capacidade reduzida; é distinto da escala 1 → 2 → 1.
