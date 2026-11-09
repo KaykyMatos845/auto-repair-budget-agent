@@ -68,22 +68,23 @@ Down, que informa o estado de comunicação do nó.
 |---|---|---|
 | Dockerfiles dos serviços | Frontend, backend e monitor próprios exibidos em V04; Visualizer oficial por digest no YAML | Evidência recebida e incorporada |
 | Swarm em VMs ou DinD | Duas VMs reais, manager e worker documentados | Não exige terceira VM |
-| Compose como infraestrutura como código | YAMLs e APP_REPLICAS configurados | Registrar escala aplicada pelo Compose |
-| Variação de réplicas | Estado 2/2, comando CLI de redução e Visualizer com uma réplica | Ciclo declarativo ainda não registrado |
+| Compose como infraestrutura como código | YAMLs e APP_REPLICAS; nova gravação executa scripts/demo-replicas.sh e conclui 1/1 | Redução declarativa documentada na versão final |
+| Variação de réplicas | Estado 2/2, redução via CLI e nova gravação do Compose/Visualizer de 2 para 1 | O ciclo completo 1 → 2 → 1 não foi registrado; não é necessário para comprovar a variação já vista |
 | Docker Visualizer | Prints originais de escala e falha incorporados | Requisito visual documentado |
 
 ## O que ainda falta
 
-1. **Escala pelo Compose:** os registros mostram `docker service scale`, que não
-   altera o YAML. Falta execução documentada de `scripts/demo-replicas.sh` ou
-   dos deploys com APP_REPLICAS variável.
-2. **Recuperação do worker:** n2 voltando a Ready, serviços 2/2 e gráfico recuperado.
-3. **Para tornar o teste de continuidade inequívoco:** captura conjunta de n2 Down
+A escala pelo Compose foi documentada na gravação mais recente, com aplicação
+de uma réplica e Visualizer passando de duas para uma. Restam complementos ao
+teste de falha:
+
+1. **Recuperação do worker:** n2 voltando a Ready, serviços 2/2 e gráfico recuperado.
+2. **Para tornar o teste de continuidade inequívoco:** captura conjunta de n2 Down
    e uma nova análise concluída, ou um vídeo contínuo alternando ambas as telas.
-4. **Para explicar a divergência de V02:** listar tarefas, estados e erros com
+3. **Para explicar a divergência de V02:** listar tarefas, estados e erros com
    `docker stack ps --no-trunc autobudget` e `docker service ps --no-trunc`.
 
-Os itens 2–4 complementam a demonstração de falha; não são requisitos extras
+Os itens acima complementam a demonstração de falha; não são requisitos extras
 impostos ao enunciado. Não há medição de indisponibilidade, prova da cronologia de
 migração ou redundância do controle: existe somente um manager.
 
@@ -148,3 +149,7 @@ python3 scripts/build_evidence_presentation.py
 
 O gerador lê a apresentação original e cria outro arquivo, sem sobrescrever a base.
 A versão atual contém os quatro vídeos, capturas extraídas e seis prints originais do ZIP. Não inclui tokens, chaves ou credenciais.
+
+## Entrega para apresentação
+
+A versão para o público está em `public/auto-repair-apresentacao-final.pptx` (33 slides). Inclui a demonstração editada da escala pelo Compose e exclui telas de preparação e orientações. A execução declarativa da redução 2 → 1 agora está documentada. A expansão e o retorno do worker não aparecem no novo ZIP. Ver [EDICAO_DEMONSTRACAO.md](EDICAO_DEMONSTRACAO.md) para os trechos aproveitados e a validação.
