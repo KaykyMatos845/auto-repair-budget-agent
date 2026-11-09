@@ -161,3 +161,16 @@ O roteiro pausa para capturar cada gráfico e salva as saídas reais do Docker e
 
 Use `WITH_VISUALIZER=0` para executar só a aplicação. Os nomes técnicos legados
 `autobudget_*` e a chave do histórico foram preservados; a marca é Auto Repair.
+
+### Proxy reiniciando por timeout do healthcheck
+
+Se `docker inspect` mostrar `Health check exceeded timeout (3s)` no monitor-proxy,
+atualize `docker-compose.demo.yml` e reaplique o deploy no manager. A stack agora
+define o healthcheck também para imagens existentes: teste HTTP direto, timeout
+de 10 s, período inicial de 20 s e limite de CPU de 0,50. A imagem nova recebe os
+mesmos tempos pelo Dockerfile; a correção via stack não exige reconstruir a v5.
+
+O timeout observado comprova que a verificação não terminou a tempo; não comprova
+falta de memória ou a causa exata da lentidão. Se persistir, confira CPU/memória da
+VM, `docker stats`, logs e a saída do healthcheck antes de aumentar outros limites.
+Após a atualização, confirme proxy `1/1`, contêiner `healthy` e Visualizer atualizando.
