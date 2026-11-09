@@ -19,7 +19,7 @@ for image in "$BACKEND_IMAGE" "$FRONTEND_IMAGE" ${MONITOR_IMAGE:+"$MONITOR_IMAGE
   }
 done
 [[ $(docker info --format '{{.Swarm.ControlAvailable}}') == true ]] || { echo 'Run on the manager VM' >&2; exit 1; }
-ready=$(docker node ls --filter status=ready --format '{{.Availability}}' | awk '$0=="Active" {n++} END {print n+0}')
+ready=$(docker node ls --format '{{.Status}} {{.Availability}}' | awk '$1=="Ready" && $2=="Active" {n++} END {print n+0}')
 [[ "$ready" -ge 2 ]] || { echo 'Need two Ready/Active nodes' >&2; exit 1; }
 command -v curl > /dev/null || { echo 'Instale curl para validar a API antes de concluir.' >&2; exit 1; }
 docker stack config "${compose_files[@]}" > /dev/null

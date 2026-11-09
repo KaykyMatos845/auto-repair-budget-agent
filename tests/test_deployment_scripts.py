@@ -52,7 +52,7 @@ class SwarmScriptTests(unittest.TestCase):
             docker = Path(directory) / 'docker'
             docker.write_text('#!/bin/sh\ncase "$*" in\n'
                               '*ControlAvailable*) echo true ;;\n'
-                              '"node ls"*) printf "Active\\nActive\\n" ;;\n'
+                              '"node ls"*) printf "Ready Active\\nReady Active\\n" ;;\n'
                               '"stack config"*|"stack deploy"*) exit 0 ;;\n'
                               '"stack services"*) printf "autobudget_backend 2/2\\nautobudget_frontend 2/2\\n" ;;\n'
                               '"service inspect"*) printf "rollback_completed\\ncompleted\\n" ;;\n'
@@ -73,3 +73,31 @@ class SwarmScriptTests(unittest.TestCase):
                                      'FRONTEND_IMAGE': 'ghcr.io/example/frontend:v5'}, text=True, capture_output=True)
         self.assertEqual(result.returncode, 2)
         self.assertIn('1 ou 2', result.stderr)
+
+    def test_readiness_requires_both_ready_and_active_without_status_filter(self):
+        cases = [('Ready Active\nReady Active\n', 17),
+                 ('Ready Active\nDown Active\n', 1),
+                 ('Ready Active\nReady Drain\n', 1),
+                 ('Ready Active\nReady Pause\n', 1)]
+        for states, expected in cases:
+            with self.subTest(states=states), tempfile.TemporaryDirectory() as directory:
+                docker = Path(directory) / 'docker'
+                docker.write_text('#!/bin/sh\ncase "$*" in\n'
+                                  '*"--filter status=ready"*) echo "invalid filter status" >&2; exit 99 ;;\n'
+                                  '*ControlAvailable*) echo true ;;\n'
+                                  '"node ls --format {{.Status}} {{.Availability}}") printf "%s" "$TEST_NODE_STATES" ;;\n'
+                                  '"stack config"*) exit 0 ;;\n'
+                                  '"stack deploy"*) echo DEPLOY_REACHED; exit 17 ;;\n'
+                                  '*) echo unexpected-command >&2; exit 98 ;;\nesac\n')
+                docker.chmod(0o755)
+                result = subprocess.run(['bash', str(ROOT/'scripts/deploy-swarm.sh')], cwd=ROOT,
+                                        env={**os.environ, 'PATH': directory + os.pathsep + os.environ['PATH'],
+                                             'TEST_NODE_STATES': states, 'WITH_VISUALIZER': '0',
+                                             'BACKEND_IMAGE': 'ghcr.io/example/backend:v5',
+                                             'FRONTEND_IMAGE': 'ghcr.io/example/frontend:v5'},
+                                        text=True, capture_output=True)
+                self.assertEqual(result.returncode, expected, result.stderr)
+                if expected == 17:
+                    self.assertIn('DEPLOY_REACHED', result.stdout)
+                else:
+                    self.assertNotIn('DEPLOY_REACHED', result.stdout)
