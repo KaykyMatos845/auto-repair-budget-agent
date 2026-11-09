@@ -24,8 +24,11 @@ services:
     user: '1000:1000'
     read_only: true
     cap_drop: [ALL]
-    tmpfs:
-      - /tmp:size=16m,mode=1777
+    volumes:
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 16777216
     environment:
       DOCKER_HOST: monitor-proxy:2375
     ports:

@@ -80,8 +80,15 @@ bash scripts/deploy-swarm.sh
 ```
 
 O script exige dois nós prontos, valida a stack e aguarda duas réplicas por
-serviço e API com modelo carregado. Se não convergir em 180 segundos, mostra os
+serviço e API com modelo carregado. Antes do deploy, consulta o registro para
+confirmar que as tags estão disponíveis; imagens em cache no manager não
+garantem que o worker consiga baixá-las. Se não convergir em 180 segundos, mostra os
 erros e sai com falha. Isso não substitui um teste com suas próprias fotos.
+
+As montagens de `/tmp` usam `volumes` com `type: tmpfs`, aceito pelo Swarm.
+A forma curta `tmpfs:` do Compose não é aplicada por `docker stack deploy` e,
+com `read_only: true`, impede a inicialização do Nginx. Preserve o sistema de
+arquivos somente leitura e atualize ambos os arquivos da stack.
 
 Abra **http://IP_DO_MANAGER:8080** ou **http://IP_DO_WORKER:8080**. A routing mesh
 encaminha as requisições às réplicas disponíveis. Prefira um IP/domínio fixo para

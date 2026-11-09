@@ -9,8 +9,11 @@ services:
       LOCAL_MODEL_DIR: /app/models
       LOCAL_CONFIDENCE: ${LOCAL_CONFIDENCE:-0.60}
     read_only: true
-    tmpfs:
-      - /tmp:size=64m,mode=1777
+    volumes:
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 67108864
     cap_drop: [ALL]
     stop_grace_period: 25s
     networks:
@@ -53,8 +56,11 @@ services:
     networks:
       - autobudget-net
     read_only: true
-    tmpfs:
-      - /tmp:size=32m,mode=1777
+    volumes:
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 33554432
     cap_drop: [ALL]
     stop_grace_period: 15s
     healthcheck:

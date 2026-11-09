@@ -22,6 +22,13 @@ done
 ready=$(docker node ls --format '{{.Status}} {{.Availability}}' | awk '$1=="Ready" && $2=="Active" {n++} END {print n+0}')
 [[ "$ready" -ge 2 ]] || { echo 'Need two Ready/Active nodes' >&2; exit 1; }
 command -v curl > /dev/null || { echo 'Instale curl para validar a API antes de concluir.' >&2; exit 1; }
+# A cached image on the manager does not prove the worker can obtain the tag.
+for image in "$BACKEND_IMAGE" "$FRONTEND_IMAGE" ${MONITOR_IMAGE:+"$MONITOR_IMAGE"}; do
+  if ! docker manifest inspect "$image" > /dev/null; then
+    echo "Imagem indisponível no registro: $image. Confira docker login e execute bash scripts/build-images.sh --push antes do deploy." >&2
+    exit 1
+  fi
+done
 docker stack config "${compose_files[@]}" > /dev/null
 docker stack deploy --with-registry-auth "${compose_files[@]}" autobudget
 echo "Aguardando $replicas réplica(s) de cada serviço..."

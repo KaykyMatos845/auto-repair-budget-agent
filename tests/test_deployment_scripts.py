@@ -53,6 +53,7 @@ class SwarmScriptTests(unittest.TestCase):
             docker.write_text('#!/bin/sh\ncase "$*" in\n'
                               '*ControlAvailable*) echo true ;;\n'
                               '"node ls"*) printf "Ready Active\\nReady Active\\n" ;;\n'
+                              '"manifest inspect"*) exit 0 ;;\n'
                               '"stack config"*|"stack deploy"*) exit 0 ;;\n'
                               '"stack services"*) printf "autobudget_backend 2/2\\nautobudget_frontend 2/2\\n" ;;\n'
                               '"service inspect"*) printf "rollback_completed\\ncompleted\\n" ;;\n'
@@ -86,6 +87,7 @@ class SwarmScriptTests(unittest.TestCase):
                                   '*"--filter status=ready"*) echo "invalid filter status" >&2; exit 99 ;;\n'
                                   '*ControlAvailable*) echo true ;;\n'
                                   '"node ls --format {{.Status}} {{.Availability}}") printf "%s" "$TEST_NODE_STATES" ;;\n'
+                                  '"manifest inspect"*) exit 0 ;;\n'
                                   '"stack config"*) exit 0 ;;\n'
                                   '"stack deploy"*) echo DEPLOY_REACHED; exit 17 ;;\n'
                                   '*) echo unexpected-command >&2; exit 98 ;;\nesac\n')
@@ -101,3 +103,21 @@ class SwarmScriptTests(unittest.TestCase):
                     self.assertIn('DEPLOY_REACHED', result.stdout)
                 else:
                     self.assertNotIn('DEPLOY_REACHED', result.stdout)
+
+    def test_missing_registry_image_stops_before_stack_deploy(self):
+        with tempfile.TemporaryDirectory() as directory:
+            docker = Path(directory) / 'docker'
+            docker.write_text('#!/bin/sh\ncase "$*" in\n'
+                              '*ControlAvailable*) echo true ;;\n'
+                              '"node ls"*) printf "Ready Active\\nReady Active\\n" ;;\n'
+                              '"manifest inspect"*) echo "manifest not found" >&2; exit 1 ;;\n'
+                              '*) echo unexpected-deployment >&2; exit 99 ;;\nesac\n')
+            docker.chmod(0o755)
+            result = subprocess.run(['bash', str(ROOT/'scripts/deploy-swarm.sh')], cwd=ROOT,
+                                    env={**os.environ, 'PATH': directory + os.pathsep + os.environ['PATH'],
+                                         'BACKEND_IMAGE': 'ghcr.io/example/backend:v6',
+                                         'FRONTEND_IMAGE': 'ghcr.io/example/frontend:v6', 'WITH_VISUALIZER': '0'},
+                                    text=True, capture_output=True)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn('Imagem indisponível', result.stderr)
+            self.assertNotIn('unexpected-deployment', result.stderr)
