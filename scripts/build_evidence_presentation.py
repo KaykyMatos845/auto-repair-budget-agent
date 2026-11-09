@@ -1,7 +1,7 @@
 """Extend the 20-slide deck using evidence visible in the project conversation.
 
 No chat screenshot is fabricated: tables and diagrams explicitly identify themselves
-as transcriptions/syntheses. All three videos were reviewed visually from their ZIP archives.
+as transcriptions/syntheses. All four videos were reviewed visually from their ZIP archives.
 """
 from pathlib import Path
 import argparse
@@ -107,7 +107,7 @@ replace(prs.slides[17],'Aplicação em 1/1, depois 2/2 e novamente 1/1.','Prints
 replace(prs.slides[18],'Estado declarativo aplicado em 1 → 2 → 1 réplicas.','Compose configurado; redução 2 → 1 registrada via CLI.')
 replace(prs.slides[18],'Docker Visualizer aberto e capturado nas três etapas.','Prints: duas réplicas, uma réplica e worker indisponível.')
 replace(prs.slides[18],'Configuração preparada não substitui as evidências da execução real nas duas VMs.','As próximas evidências distinguem resultados observados e registros ainda pendentes.')
-replace(prs.slides[19],'Roteiro: docs/DEMONSTRACAO.md\nConclua a comprovação com registros e capturas coletados nas duas VMs.','Demonstração: cluster, escala e falha do worker registrados em prints.\nTrês vídeos revisados e incorporados. Falta registrar a recuperação.')
+replace(prs.slides[19],'Roteiro: docs/DEMONSTRACAO.md\nConclua a comprovação com registros e capturas coletados nas duas VMs.','Demonstração: cluster, escala e falha do worker registrados em prints.\nQuatro vídeos revisados e incorporados. Falta registrar a recuperação.')
 for idx in [15,17,18,19]:
     note(prs.slides[idx], prs.slides[idx].notes_slide.notes_text_frame.text + '\nREVISÃO: os prints do chat confirmam redução via CLI e worker Down. Não foi comprovado o ciclo declarativo completo, a análise nova após a queda ou a recuperação. V01, V02 e V03 foram revisados visualmente e incorporados. V01 mostra uma nova análise e foi identificado pelo autor como teste após a queda. V02 mostra n2 Down com contagem ainda 2/2; não há captura simultânea do navegador e do terminal.')
 
@@ -180,14 +180,15 @@ text(s,7.07,3.4,5.35,1.95,'• Estado das tarefas após a queda.\n• Análise e
 banner(s,'Não afirmar migração, zero interrupções ou redundância do controle com um único manager.',True)
 note(s,'Se havia duas réplicas desejadas, o limite uma por nó deixa 1/2 durante a queda. Se havia uma, o Swarm pode recriar o backend no manager e voltar a 1/1; nesse cenário uma interrupção transitória é possível. Não sabemos qual cenário ocorreu sem contagem e cronologia. Uma tela já aberta não prova que o backend atendeu uma requisição depois da queda.')
 
-s=base('Acervo de vídeos','Três gravações recebidas para a apresentação','V03: teste inicial. V01: teste após queda, segundo o autor. V02: terminal com n2 Down.')
+s=base('Acervo de vídeos','Quatro gravações incorporadas à apresentação','V03: teste inicial. V01: teste após queda, segundo o autor. V02: terminal com n2 Down.')
 video_rows=[
  ('V01','Chrome · Auto Repair','2026-11-08 22-42-24'),
  ('V02','Terminal · root@kayky','2026-11-08 22-47-18'),
- ('V03','Chrome · Auto Repair','2026-11-08 22-31-35')]
+ ('V03','Chrome · Auto Repair','2026-11-08 22-31-35'),
+ ('V04','Terminal · Dockerfiles e YAML','2026-11-09 20-03-01')]
 table(s,['Arquivo','Nome da gravação','Data/hora no nome'],video_rows,[1.3,5.3,5.42])
-text(s,.85,5.48,11.6,.45,'V01: 52s. V02: 58s. V03: 2min22s. Todos incorporados ao PPTX.',18,MUTED)
-banner(s,'As três gravações estão no arquivo; não dependem de links externos.',True)
+text(s,.85,5.87,11.6,.3,'V01: 52s · V02: 58s · V03: 2min22s · V04: 49s',17,MUTED)
+banner(s,'As quatro gravações estão no arquivo; não dependem de links externos.',True)
 note(s,'V01: Auto Repair — Vistorias e orçamentos - Google Chrome 2026-11-08 22-42-24.mp4. V02: root@kayky_ _home_kayky_auto-repair-budget-agent 2026-11-08 22-47-18.mp4. V03: Auto Repair — Vistorias e orçamentos - Google Chrome 2026-11-08 22-31-35.mp4. V03 foi extraído do ZIP de 29 MB e revisado visualmente em sequência de quadros a cada dois segundos, com capturas em resolução original. Duração 141,876 segundos, 1920x1140. O áudio é silencioso (pico -91 dB). Uma cópia H.264 de 1280x760/15 fps foi incorporada ao PPTX; o original foi preservado fora do Git. V01 e V02 também foram revisados visualmente após recebimento em ZIP; ver slides específicos.')
 
 s=base('Roteiro de apresentação','Mostre o efeito antes de explicar o comando','Sequência sugerida; os tempos são estimativas para a fala, não durações dos vídeos.')
@@ -254,11 +255,19 @@ s.shapes.add_movie(str(media/'v02.mp4'), Inches(2.88), Inches(2.12), Inches(7.2)
 text(s,.85,6.55,11.65,.3,'n2 aparece Down. A contagem ainda mostra 2/2; verificar tarefas antes de afirmar convergência.',14,MUTED)
 note(s,'V02, arquivo de terminal 22-47-18. Observado watch a cada dois segundos com n2 Down, kayky Ready/Active/Leader; backend e frontend 2/2; monitor-proxy e Visualizer 1/1. Isso registra o estado exibido, não garante que todas as tarefas respondem. Complemento sugerido no manager: docker stack ps --no-trunc autobudget e docker service ps --no-trunc autobudget_backend / autobudget_frontend, junto de curl ou nova análise.')
 
+config_section_start=len(prs.slides)
+s=base('Vídeo V04 · Dockerfiles e Compose','Imagens e infraestrutura mostradas no terminal','Gravação incorporada · 49 segundos · clicar para reproduzir.')
+s.shapes.add_picture(str(media/'v04-dockerfiles.jpg'), Inches(2.88), Inches(2.12), width=Inches(7.2), height=Inches(4.275))
+s.shapes.add_movie(str(media/'v04.mp4'), Inches(2.88), Inches(2.12), Inches(7.2), Inches(4.275),poster_frame_image=str(media/'v04-dockerfiles.jpg'),mime_type='video/mp4')
+text(s,.85,6.55,11.65,.3,'YAMLs da stack e os três Dockerfiles exibidos. A execução da escala pelo Compose é outra etapa.',14,MUTED)
+note(s,'V04: kayky@kayky_ ~_auto-repair-budget-agent 2026-11-09 20-03-01.mp4, recebido em ZIP. Duração 49,131s, original 1920x1140. Revisão visual de quadros a cada três segundos e captura original em 39s. Primeiro mostra docker-compose.yml e docker-compose.demo.yml com variáveis de imagem, deploy, réplicas, redes, Visualizer e proxy. A partir de aproximadamente 36s, cat Dockerfile.frontend Dockerfile.backend Dockerfile.monitor: estágios Node/Nginx, download do modelo/runtime Python e monitor-proxy. Trilha silenciosa. Cópia incorporada preserva resolução 1920x1140, a 10 fps; não houve corte temporal. O conteúdo dos arquivos não comprova execução de um deploy ou ciclo de escala.')
+
 # Keep the original 20 slides and insert the evidence section before final audit/close.
 added=list(prs.slides._sldIdLst)[20:video_section_start]
 video_slides=list(prs.slides._sldIdLst)[video_section_start:failure_section_start]
-failure_slides=list(prs.slides._sldIdLst)[failure_section_start:]
-for element in original[:7]+video_slides+original[7:18]+added[:6]+failure_slides+added[6:]+original[18:]:
+failure_slides=list(prs.slides._sldIdLst)[failure_section_start:config_section_start]
+config_slides=list(prs.slides._sldIdLst)[config_section_start:]
+for element in original[:7]+video_slides+original[7:9]+config_slides+original[9:18]+added[:6]+failure_slides+added[6:]+original[18:]:
     prs.slides._sldIdLst.append(element)
 for i,slide in enumerate(prs.slides,1):
     for shape in slide.shapes:
@@ -268,7 +277,7 @@ for i,slide in enumerate(prs.slides,1):
     else:
         text(slide,11.6,7.12,1.1,.25,f'{i:02d} / {len(prs.slides):02d}',11,MUTED,align=PP_ALIGN.RIGHT)
 prs.core_properties.title='Auto Repair — apresentação e evidências da demonstração'
-prs.core_properties.subject='Base ampliada com evidências de Swarm e três vídeos incorporados'
+prs.core_properties.subject='Base ampliada com evidências de Swarm e quatro vídeos incorporados'
 
 # Replace synthesis-only layouts with the six original photographs from the ZIP.
 def find_title(value):

@@ -1,8 +1,8 @@
 # Revisão da apresentação e demonstração — Auto Repair
 
 Base preservada: `public/auto-repair-apresentacao-20-slides.pptx`.
-Entrega ampliada: `public/auto-repair-apresentacao-demonstracao.pptx`, **36 slides**,
-com três vídeos incorporados e seis prints originais do ZIP. PDF com as mesmas
+Entrega ampliada: `public/auto-repair-apresentacao-demonstracao.pptx`, **37 slides**,
+com quatro vídeos incorporados e seis prints originais do ZIP. PDF com as mesmas
 páginas, porém vídeos estáticos. Sem dependência de links externos para reprodução.
 
 ## Material revisto e incorporado
@@ -18,15 +18,16 @@ páginas, porém vídeos estáticos. Sem dependência de links externos para rep
 | V03 | Primeiro teste completo da aplicação, 141,876s | Capturas e vídeo incorporado |
 | V01 | Nova análise, revisão e orçamento, 51,714s; autor identifica como pós-queda | Captura e vídeo incorporado |
 | V02 | Terminal com n2 Down, 58,214s | Captura e vídeo incorporado |
+| V04 | Dockerfiles e YAMLs exibidos no terminal, 49,131s | Vídeo incorporado e captura original |
 
 P01 (Visualizer inicial com duas réplicas por serviço) foi visto no chat, mas não
 está entre as seis imagens do ZIP. P03 comprova a contagem inicial; o material
 recebido foi incorporado integralmente, sem reconstruir capturas fictícias.
-Os nomes completos dos vídeos estão nas notas do slide de acervo.
+Os nomes completos dos vídeos estão nas notas do acervo e dos slides de reprodução.
 
-A revisão visual cobriu sequências de quadros a cada dois segundos dos três vídeos,
-com extrações em resolução original. Todos têm áudio silencioso (pico -91 dB).
-As cópias H.264/AAC em `assets/demonstracao/` mantêm a duração, em 1280×760/15 fps.
+A revisão visual cobriu sequências de quadros a cada dois segundos dos quatro vídeos,
+com extrações em resolução original. V04 foi revisto em quadros a cada três segundos, com captura original em 39s. Todos têm áudio silencioso (pico -91 dB).
+As cópias H.264/AAC em `assets/demonstracao/` mantêm a duração: V01–V03 em 1280×760/15 fps; V04 em 1920×1140/10 fps, para legibilidade do terminal.
 Os originais de 1920×1140 foram preservados no workspace, fora do Git.
 As imagens do ZIP foram copiadas sem alterar os pixels. A compressão dos vídeos
 reduz tamanho e resolução, sem cortar a sequência. Não houve transcrição de fala.
@@ -65,7 +66,7 @@ Down, que informa o estado de comunicação do nó.
 
 | Requisito | Situação observada | Complemento necessário |
 |---|---|---|
-| Dockerfiles dos serviços | Frontend, backend e monitor próprios; Visualizer oficial por digest | Apontar os arquivos na fala |
+| Dockerfiles dos serviços | Frontend, backend e monitor próprios exibidos em V04; Visualizer oficial por digest no YAML | Evidência recebida e incorporada |
 | Swarm em VMs ou DinD | Duas VMs reais, manager e worker documentados | Não exige terceira VM |
 | Compose como infraestrutura como código | YAMLs e APP_REPLICAS configurados | Registrar escala aplicada pelo Compose |
 | Variação de réplicas | Estado 2/2, comando CLI de redução e Visualizer com uma réplica | Ciclo declarativo ainda não registrado |
@@ -146,4 +147,4 @@ python3 scripts/build_evidence_presentation.py
 ```
 
 O gerador lê a apresentação original e cria outro arquivo, sem sobrescrever a base.
-A versão atual contém os três vídeos, capturas extraídas e seis prints originais do ZIP. Não inclui tokens, chaves ou credenciais.
+A versão atual contém os quatro vídeos, capturas extraídas e seis prints originais do ZIP. Não inclui tokens, chaves ou credenciais.
